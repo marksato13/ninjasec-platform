@@ -198,7 +198,7 @@ Documentación y comentarios en **español**. Identificadores de código en **in
 
 ## ✅ Estado actual de los módulos
 
-Cada checklist en `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/0X-*.md` está cerrado (todos los P-XX en ✅ excepto algunos menores documentados como "mejoras futuras"). Resumen:
+Los checklists `01-14` en `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/` están cerrados (todos los P-XX en ✅ excepto menores documentados como "mejoras futuras"). Los `15-22` se documentaron retroactivamente el 2026-08-05 y **sí tienen pendientes abiertos**. Resumen:
 
 | # | Módulo | Última implementación destacada |
 |---|---|---|
@@ -217,32 +217,102 @@ Cada checklist en `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/0X-*.md` está cerrado (
 | 13 | Usuarios | Link "Ver auditoría" filtrado por entity_id |
 | 14 | Portal Cliente | Cambio de contraseña, KPI servicios reales |
 
+### Módulos construidos y documentados retroactivamente el 2026-08-05
+
+Estaban en producción sin especificación. Auditados contra el código y documentados en `PLANIFICACION/` + `IMPLEMENTACION/`:
+
+| # | Módulo | Ruta | Backend |
+|---|---|---|---|
+| 15 | Postulaciones (Reclutamiento) | `/dashboard/applications` | `modules/recruitment` |
+| 16 | Auditoría (audit log) | `/dashboard/audit` | `modules/audit` |
+| 17 | Aprobaciones | `/dashboard/approvals` | transversal (skills/certs/docs) |
+| 18 | Alertas y notificaciones | widget en `/dashboard` | `modules/alerts` |
+| 19 | Documentos y recursos | `/portal/documents`, `/portal/resources` | `modules/docs` |
+| 20 | Configuración del sistema | `/dashboard/settings` | `modules/catalogs` |
+| 21 | Habilidades y certificaciones | `/portal/profile`, `/dashboard/approvals` | `modules/skills`, `modules/certifications` |
+| 22 | Tareas del portal | `/portal/tasks` | reutiliza `modules/projects` |
+
+### Módulos planificados (23-30)
+
+Especificados el 2026-08-05, sin codear salvo el 23. Ver `DOCUMENTOS/PLATAFORMA/ROADMAP.md` para la priorización:
+
+| # | Módulo | Estado |
+|---|---|---|
+| 23 | Topología de red / Config Visualizer | 🟡 **Backend completo, falta UI** |
+| 24 | Cumplimiento y SGSI (ISO 27001) | ⏳ |
+| 25 | Gestión de riesgos (ISO 27005) | ⏳ |
+| 26 | Auditorías de sistemas (COBIT / ISO 19011) | ⏳ |
+| 27 | Arquitectura empresarial (TOGAF / ArchiMate) | ⏳ |
+| 28 | NetDoctor — diagnóstico multi-vendor | ⏳ |
+| 29 | Catálogo de equipos de red | ⏳ |
+| 30 | Integraciones open source y mini-SOAR | ⏳ |
+
 ---
 
 ## 🔜 Próximos pasos pendientes — **PRIORITARIO**
 
-### 🎯 Módulo Dispositivos — innovación / valor agregado (PEDIDO ACTIVO DEL USUARIO)
+📋 **Priorización y estimaciones: `DOCUMENTOS/PLATAFORMA/ROADMAP.md`**
+📋 **Inventario completo de pendientes: `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`**
 
-El usuario pidió **mejorar `/dashboard/devices`** (que es la parte de inventario) con:
+### 🔥 Deuda crítica — antes de cualquier módulo nuevo (~1 sesión)
 
-1. **Diagrama de red automático** por empresa (seleccionar cliente → diagrama de topología)
-   - Conexiones entre devices (firewall → switch → APs → endpoints)
-   - Distintos aspectos: red on-prem, nube (AWS/Azure), híbrido
-   - El usuario sugiere usar DrawIO (MCP disponible) o similar
-   - Auto-layout según instrucciones / heurística
-2. **Cumplir estándares e ISOs** — ej. ISO/IEC 27001 inventory, NIST CSF asset management
-   - Más metadatos por dispositivo: clasificación de criticidad, owner, data classification, lifecycle status (in-use / spare / retired), warranty expiration, last patch date, compliance tags
-   - Posibles campos nuevos en `Device`: `criticality` (low/medium/high/critical), `data_classification` (public/internal/confidential/restricted), `compliance_tags[]`, `lifecycle_state`, `warranty_expires_at`, `last_patched_at`, `responsible_user_id`, `cost_center`, `physical_location`
-3. **Cada activo con más opciones** — vista detalle enriquecida (timeline, eventos de auditoría, attachments, fotos, manuales)
-4. **Mejor visualmente** — quizás cards con hero image del modelo, badges de criticidad, iconos por tipo
+Verificada contra el código el 2026-08-06. Seis huecos que comprometen la integridad del dato o el aislamiento entre clientes:
 
-**Estado:** Sólo planificado. NO empezar a codear sin que el usuario apruebe el plan primero.
+| Pendiente | Módulo | Por qué |
+|---|---|---|
+| `20-P-08` Filtrar `GET /products` por organización | 20 | 🆕 **Fuga entre tenants.** `catalogs/routers/router.py:37` no filtra por `organization_id` pese a que `Product.organization_id` es `NOT NULL`. Cualquier autenticado —**incluido un `client`**— ve los productos de todas las organizaciones. **Fix de una línea** |
+| `21-P-02` / `17-P-05` Expiración de certificaciones | 21, 17 | Se muestra "verificado" sobre certificaciones caducadas — **información falsa de cara al cliente** |
+| `21-P-01` / `17-P-04` Re-verificación al editar | 21, 17 | Permite elevar una capacidad ya aprobada sin nueva revisión |
+| `15-P-05` Rate limiting en el endpoint público | 15 | `POST /job-applications/` no tiene auth ni throttling |
+| `20-P-06` Endpoints de escritura para areas y project-types | 20 | Bloquea toda la administración de catálogos |
+| `20-P-09` Unicidad compuesta con `organization_id` | 20 | 🆕 `Area.name` y `ProjectType.name` son `unique` globales: el segundo tenant no puede crear sus catálogos |
 
-**Recomendación de arquitectura (a discutir con usuario):**
-- Backend: ampliar `Device` con columnas ISO 27001-aligned + endpoint nuevo `GET /devices/topology?client_id=N` que devuelve nodes + edges
-- Tabla nueva `device_connections` (origin_device_id, target_device_id, link_type=ethernet|wifi|wan|vpn|cloud-peering, port, vlan, bandwidth)
-- Frontend: integrar `@xyflow/react` (React Flow) o `mermaid` para el diagrama. DrawIO podría usarse para export/import de diagramas existentes
-- Vista "Topología" como tab nuevo en la página de devices o como sección en `/dashboard/clients/[id]`
+### 🧱 Deuda de esquema — **bloqueante de FASE 2.8**
+
+**Alembic no es la fuente de verdad del esquema.** Lo construye `Base.metadata.create_all()` en `app/main.py:19`; `migrations/versions/` solo tiene dos parches incrementales.
+
+⚠️ **`create_all` crea las tablas que faltan pero NUNCA altera las existentes.** Toda columna nueva de un modelo se aplica en una base vacía y **se ignora sin error** en una base con datos — justo el escenario de una actualización en producción.
+
+Además, `alembic upgrade head` no levanta una base desde cero: la primera migración hace `add_column` sobre tablas que aún no existen (`down_revision = None` sin `create_table`).
+
+**Fix (~0.5 sesión):** migración base con `--autogenerate` sobre base vacía → encadenarla antes de `20260522_01` → retirar `create_all()` de `main.py`. **Antes** del deploy self-hosted, no después.
+
+### 🔐 Multi-tenancy — regla permanente
+
+24 de los 41 modelos llevan `organization_id`. El rol responde *qué puedo hacer*; el `organization_id` responde *sobre qué datos*. **Ambos controles se aplican siempre.**
+
+- Todo modelo nuevo con datos de negocio lleva `organization_id`
+- Toda restricción `unique` sobre un modelo multi-tenant se compone con `organization_id`
+- Excepciones globales por diseño: `Skill`, `DocType`, `Role`
+
+Detalle en `PLANIFICACION/01-ROLES-Y-ACCESOS.md` § Aislamiento multi-tenant.
+
+### 🎯 Módulo 23 — Topología de red: **el backend YA ESTÁ HECHO**
+
+Verificado el 2026-08-05. Existe y funciona:
+
+- ✅ Tabla `device_connections` + migración `e1d861bf2ce6`
+- ✅ Campos ISO en `Device`: `criticality`, `data_classification`, `responsible_user_id`
+- ✅ `GET /devices/topology?client_id=` → nodes + edges + clusters (`services/topology_service.py`)
+- ✅ CRUD `/device-connections` (`routers/connections.py`)
+- ✅ Cliente API TypeScript completo (`frontend/src/lib/api/topology.ts`)
+- ❌ **No existe ningún componente visual que lo consuma**
+
+**Falta solo la UI.** Es la mejor relación valor/esfuerzo del roadmap: 1 sesión sobre trabajo ya pagado.
+
+**Decisión pendiente:** librería de diagramación. Recomendado `@xyflow/react` (React Flow) — se reutiliza en el módulo 27 (ArchiMate), amortizando la dependencia en dos módulos. Mermaid queda descartado porque no soporta "clic en nodo → ficha del activo".
+
+Detalle en `PLANIFICACION/23-MODULO-TOPOLOGIA.md` y su checklist pareado.
+
+### 🎓 Entregables académicos con deadline duro
+
+Los módulos 24, 25, 26 y 27 son a la vez funcionalidad de producto y los entregables de mayor peso del ciclo 10 (SGSI ISO 27001, riesgos ISO 27005, auditoría COBIT/ISO 19011, TOGAF/ArchiMate). Cubren el 70% de Seguridad, el 55% de Auditoría y el 70% de Arquitectura Empresarial.
+
+Secuencia y estimaciones en la **Tanda 2** del ROADMAP.
+
+### ⚠️ Módulos con puerta de seguridad
+
+`28-P3` (NetDoctor por SSH) y `30-P6` (bloqueo automático Wazuh→pfSense) manipulan infraestructura de clientes. **No arrancan** sin credenciales cifradas, lista blanca de comandos, registro por comando, reversión inmediata y autorización escrita del cliente. Si no se garantizan, 28 se queda en P2 y 30 en P5 — ambos siguen aportando casi todo su valor.
 
 ### Mejoras menores documentadas
 
@@ -252,8 +322,9 @@ El usuario pidió **mejorar `/dashboard/devices`** (que es la parte de inventari
 - **08-P-02:** Drag & drop real en Kanban de leads (requiere `@dnd-kit`)
 - **09-P-05:** Mover `lastRun` de localStorage a server-side
 - **10-P-05:** Upload de imagen real para `photo_url` (S3/MinIO/filesystem)
-- **10-P-06 / 03-P-06 / 11-P-05 / 12-P-06:** Migraciones Alembic formales para columnas agregadas con `ALTER TABLE` directo (`city`, `country`, `area`, `photo_url`, `price_label`, `budget_label`, `is_public`)
-- **13-P-05:** Persistir reportes pre-generados (no solo runs)
+- ~~**10-P-06 / 03-P-06 / 11-P-05 / 12-P-06:** Migraciones Alembic formales~~ → ✅ **resueltos**: `20260522_01_pending_schema_updates.py` ya cubre `city`, `country`, `area`, `photo_url`, `price_label` y `budget_label` (verificado 2026-08-06)
+
+**Estado real del backlog (2026-08-06): 61 pendientes abiertos, 58 resueltos.** Los módulos 01-14 están *operativos*, no *cerrados*: quedan 7 cabos sueltos, todos de baja consecuencia.
 
 ---
 
@@ -295,9 +366,19 @@ done
 
 ## 📚 Documentación viva del proyecto
 
-- `DOCUMENTOS/PLATAFORMA/*.md` — Especificación funcional original por módulo (Source of Truth de requisitos)
-- `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/0X-*.md` — Checklist de implementación con estado actual + pendientes
-- Cada `.md` de IMPLEMENTACION mantiene el "diario" de cambios — actualizarlo después de cada feature
+Ubicación: `C:\Users\markp\Desktop\PY-MEGATRON\PY - PERSONAL\EMPRESA NINJA-SEC\DOCUMENTOS\PLATAFORMA\` (fuera del repo `PY-MK`).
+
+| Carpeta | Qué es | Cuándo se toca |
+|---|---|---|
+| `PLANIFICACION/NN-*.md` | El **qué**: especificación por módulo (Source of Truth de requisitos) | Aquí nace todo módulo nuevo |
+| `IMPLEMENTACION/NN-*.md` | El **cómo** + diario: checklist `# / Requisito / Estado / Archivos` | Actualizar después de cada feature |
+| `FLUJOS/*.md` | Procesos que cruzan 2+ módulos | Al definir un proceso transversal |
+| `FIX/*.md` | Ajustes puntuales: problema / cambio / archivos / resultado | Post-mortem de un fix |
+| `ROADMAP.md` | Priorización, estimaciones y decisiones pendientes | Al cerrar o reordenar una tanda |
+
+**Regla de acoplamiento:** cada archivo de `PLANIFICACION/` tiene su par con el mismo número y nombre en `IMPLEMENTACION/`. Módulos 01-30 ocupados; **el siguiente número libre es el 31**.
+
+⚠️ `tash/` es brainstorming histórico (36 documentos), **no** es especificación. No tomarlo como fuente de verdad.
 
 ---
 
