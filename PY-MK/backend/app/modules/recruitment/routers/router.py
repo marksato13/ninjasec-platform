@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.common.rate_limit import rate_limit
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.application_attachment import ApplicationAttachment
 from app.db.models.application_event import ApplicationEvent
@@ -149,8 +150,20 @@ def list_job_applications(
     return [JobApplicationRead.model_validate(item) for item in db.scalars(stmt).all()]
 
 
+# 15-P-05 — Unico endpoint sin autenticacion de toda la API.
+# 5 postulaciones por hora y por IP: holgado para una persona que se
+# equivoca y reintenta, inutil para inundar la tabla.
+# Ver el alcance real del limitador en app/common/rate_limit.py.
+public_application_limit = rate_limit(
+    max_requests=5, window_seconds=3600, name="job-application"
+)
+
+
 @router.post(
-    "/", response_model=JobApplicationRead, status_code=status.HTTP_201_CREATED
+    "/",
+    response_model=JobApplicationRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(public_application_limit)],
 )
 def create_job_application(
     payload: JobApplicationCreate, db: Session = Depends(get_db)

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, get_current_user, require_roles
 from app.common.deps.database import get_db
+from app.common.verification import revoke_verification_if_changed
 from app.db.models.enums import CertificationStatus, RoleCode
 from app.db.models.user import User
 from app.db.models.user_certification import UserCertification
@@ -103,7 +104,19 @@ def update_user_certification(
         ):
             raise HTTPException(status_code=404, detail="User not found")
 
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    data = payload.model_dump(exclude_unset=True)
+
+    # 21-P-01 / 17-P-04 — la aprobacion se refiere a lo que el revisor vio.
+    # Todos estos campos definen la credencial: si cambia cualquiera, el
+    # sello de verificado deja de aplicar y vuelve a la bandeja.
+    revoked = revoke_verification_if_changed(
+        certification,
+        data,
+        material_fields=("name", "issuer", "credential_id", "url", "issued_at", "expires_at"),
+        pending_value=CertificationStatus.PENDING,
+    )
+
+    for field, value in data.items():
         setattr(certification, field, value)
     db.add(certification)
     db.commit()
@@ -115,7 +128,12 @@ def update_user_certification(
         str(certification.id),
         current_user.id,
         metadata_json=json.dumps(
-            {"user_id": certification.user_id, "name": certification.name},
+            {
+                "user_id": certification.user_id,
+                "name": certification.name,
+                "verification_revoked": bool(revoked),
+                "changed_fields": revoked,
+            },
             ensure_ascii=True,
         ),
     )

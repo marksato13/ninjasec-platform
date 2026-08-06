@@ -52,8 +52,8 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| 21-P-01 | **Re-verificación al editar** | 🔴 Alta | Editar una skill aprobada no la devuelve a `pending`. Mismo hueco que `17-P-04` |
-| 21-P-02 | **Expiración automática** | 🔴 Alta | `expires_at` se guarda y nadie lo evalúa: una cert vencida sigue mostrándose como aprobada |
+| ~~21-P-01~~ | ~~**Re-verificación al editar**~~ | — | ✅ **Resuelto 2026-08-06**: `app/common/verification.py` → `revoke_verification_if_changed()`. Editar `level` de una skill aprobada la devuelve a `pending` y limpia `verified_by`/`verified_at`. Reenviar el mismo valor no revoca. Tests en `tests/test_reverification_on_edit.py` (6) |
+| ~~21-P-02~~ | ~~**Expiración automática**~~ | — | ✅ **Resuelto 2026-08-06**: campos derivados `is_expired`, `days_until_expiry` y `effective_status` en `UserCertificationRead`. No muta el `status` almacenado: se recalcula en cada lectura. UI en gris con "vencida" + aviso a 30 días. Tests en `tests/test_certifications_expiry.py` (5) |
 | 21-P-03 | Filtro de colaboradores por skill | 🟡 Media | "Muéstrame quién sabe FortiGate" no se puede responder desde la UI |
 | 21-P-04 | Certificaciones del equipo en el portal cliente | 🟡 Media | Argumento comercial desaprovechado: el cliente no ve que su auditor está certificado |
 | 21-P-05 | Adjuntar el certificado (PDF) | 🟡 Media | Hay `url` de validación pero no archivo. Depende del storage de `19-P-01` |
@@ -62,8 +62,20 @@
 
 ---
 
-## Riesgo abierto
+## ✅ Riesgo cerrado — 2026-08-06
 
-**`21-P-02` tiene consecuencia externa.** Si el directorio muestra "CCNA — verificado" con una certificación caducada en 2024, se está presentando información falsa a un cliente. Es el pendiente más urgente del módulo.
+**`21-P-02` tenía consecuencia externa.** Si el directorio mostraba "CCNA — verificado" con una certificación caducada en 2024, se presentaba información falsa a un cliente.
 
-**Fix propuesto:** en el `GET` de certificaciones, derivar un campo calculado `is_expired = expires_at < today` y que la UI muestre el badge "Vencida" en gris, sin tocar el `status` almacenado. Complementar con la alerta `18-P-03` para avisar 30 días antes del vencimiento.
+**Cerrado** con campos derivados en `UserCertificationRead`:
+
+| Campo | Qué resuelve |
+|---|---|
+| `is_expired` | `expires_at < ahora`. Sin fecha = no caduca |
+| `days_until_expiry` | Negativo si ya venció. Habilita el aviso previo de `18-P-03` |
+| `effective_status` | Lo que debe pintar la UI. `approved` + vencida → `expired` |
+
+**Por qué derivado y no un job que mute `status`:** no requiere migración ni tarea programada, no puede desincronizarse porque se recalcula en cada respuesta, y preserva el hecho histórico de que sí fue aprobada.
+
+**Un caso que no era obvio:** una certificación `rejected` y vencida sigue siendo `rejected`. La expiración no puede pisar un estado que ya era negativo — está cubierto por test.
+
+**En la UI:** el directorio de colaboradores cuenta solo las vigentes, ordena las válidas primero y pinta las vencidas en gris tachado. El perfil del propio colaborador avisa a 30 días del vencimiento.

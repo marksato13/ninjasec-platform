@@ -254,18 +254,28 @@ Especificados el 2026-08-05, sin codear salvo el 23. Ver `DOCUMENTOS/PLATAFORMA/
 📋 **Priorización y estimaciones: `DOCUMENTOS/PLATAFORMA/ROADMAP.md`**
 📋 **Inventario completo de pendientes: `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`**
 
-### 🔥 Deuda crítica — antes de cualquier módulo nuevo (~1 sesión)
+### ✅ Deuda crítica — cerrada el 2026-08-06
 
-Verificada contra el código el 2026-08-06. Seis huecos que comprometen la integridad del dato o el aislamiento entre clientes:
+Los seis huecos de integridad y aislamiento. **63 tests pasan** (26 previos + 37 nuevos).
 
-| Pendiente | Módulo | Por qué |
-|---|---|---|
-| `20-P-08` Filtrar `GET /products` por organización | 20 | 🆕 **Fuga entre tenants.** `catalogs/routers/router.py:37` no filtra por `organization_id` pese a que `Product.organization_id` es `NOT NULL`. Cualquier autenticado —**incluido un `client`**— ve los productos de todas las organizaciones. **Fix de una línea** |
-| `21-P-02` / `17-P-05` Expiración de certificaciones | 21, 17 | Se muestra "verificado" sobre certificaciones caducadas — **información falsa de cara al cliente** |
-| `21-P-01` / `17-P-04` Re-verificación al editar | 21, 17 | Permite elevar una capacidad ya aprobada sin nueva revisión |
-| `15-P-05` Rate limiting en el endpoint público | 15 | `POST /job-applications/` no tiene auth ni throttling |
-| `20-P-06` Endpoints de escritura para areas y project-types | 20 | Bloquea toda la administración de catálogos |
-| `20-P-09` Unicidad compuesta con `organization_id` | 20 | 🆕 `Area.name` y `ProjectType.name` son `unique` globales: el segundo tenant no puede crear sus catálogos |
+| Pendiente | Qué se implementó |
+|---|---|
+| `20-P-08` | Filtro por `organization_id` en los tres catálogos. `Area`/`ProjectType` admiten globales (`NULL`); `Product` no, porque su FK es `NOT NULL` |
+| `21-P-02` / `17-P-05` | `is_expired`, `days_until_expiry`, `effective_status` derivados en `UserCertificationRead` |
+| `21-P-01` / `17-P-04` | `app/common/verification.py` → `revoke_verification_if_changed()` |
+| `15-P-05` | `app/common/rate_limit.py` → 5 postulaciones/hora por IP |
+| `20-P-06` / `20-P-07` | `POST`/`PUT` de areas y project-types + endpoints `/usage` |
+| `20-P-09` | `UniqueConstraint(organization_id, …)` + migración `20260806_01` |
+
+**Reglas nuevas que hereda todo el código futuro:**
+
+1. **Verificar es un juicio sobre un contenido concreto.** Si el contenido cambia, la verificación se revoca. Usa `revoke_verification_if_changed()` — no dupliques la lógica.
+2. **La vigencia se deriva en lectura, no se mutan estados con un job.** No puede desincronizarse y no necesita tarea programada.
+3. **Un registro rechazado no asciende a pendiente** por una edición ni por caducar.
+4. **Datos de otra organización devuelven 404, no 403.** No se confirma que existan.
+5. **Los catálogos globales (`organization_id = NULL`) se ven pero no se editan** desde una organización.
+
+⚠️ **El rate limiter es por proceso y en memoria.** Con varios workers uvicorn el límite efectivo se multiplica por N y no frena un ataque distribuido. Está documentado en el propio módulo. Migrar a Redis o a Caddy antes de escalar.
 
 ### 🧱 Deuda de esquema — **bloqueante de FASE 2.8**
 

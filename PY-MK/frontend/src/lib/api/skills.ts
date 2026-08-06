@@ -2,7 +2,7 @@ import { request } from "./client";
 
 export type SkillItem = { id: number; name: string; category?: string | null; is_active: boolean; created_at?: string | null };
 export type UserSkillItem = { id: number; user_id: number; skill_id: number; skill_name?: string | null; level?: string | null; status: string; verified_by?: number | null; verified_at?: string | null; created_at?: string | null };
-export type UserCertificationItem = { id: number; user_id: number; name: string; issuer?: string | null; credential_id?: string | null; url?: string | null; status: string; verified_by?: number | null; verified_at?: string | null; issued_at?: string | null; expires_at?: string | null; created_at?: string | null };
+export type UserCertificationItem = { id: number; user_id: number; name: string; issuer?: string | null; credential_id?: string | null; url?: string | null; status: string; verified_by?: number | null; verified_at?: string | null; issued_at?: string | null; expires_at?: string | null; created_at?: string | null; is_expired: boolean; days_until_expiry: number | null; effective_status: string };
 
 export async function getSkills(): Promise<SkillItem[]> { return request<SkillItem[]>("/skills/"); }
 export async function createSkill(payload: { name: string; category?: string | null }): Promise<SkillItem> { return request<SkillItem>("/skills/", { method: "POST", body: JSON.stringify(payload) }); }

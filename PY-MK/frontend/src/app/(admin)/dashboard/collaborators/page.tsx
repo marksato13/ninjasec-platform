@@ -118,8 +118,20 @@ export default function DashboardCollaboratorsPage() {
       if (!m[c.user_id]) m[c.user_id] = [];
       m[c.user_id].push(c);
     }
+    // 21-P-02: las vigentes primero. Una certificación vencida no puede
+    // ocupar uno de los 3 espacios visibles y desplazar a una válida.
+    for (const list of Object.values(m)) {
+      list.sort((a, b) => Number(a.is_expired) - Number(b.is_expired));
+    }
     return m;
   }, [certifications]);
+
+  // El contador solo cuenta vigentes: es lo que el cliente interpreta
+  // como "este equipo está certificado".
+  const validCertCount = (userId: number) =>
+    (certsByUser[userId] ?? []).filter((c) => !c.is_expired).length;
+  const expiredCertCount = (userId: number) =>
+    (certsByUser[userId] ?? []).filter((c) => c.is_expired).length;
 
   const profiles    = data?.profiles ?? [];
   const usersById   = useMemo(() => {
@@ -365,7 +377,12 @@ export default function DashboardCollaboratorsPage() {
                       <span className="card-label">Certificaciones</span>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "var(--success)" }}>
                         <Award size={12} />
-                        {certsByUser[profile.user_id].length}
+                        {validCertCount(profile.user_id)}
+                        {expiredCertCount(profile.user_id) > 0 && (
+                          <span style={{ color: "var(--muted)", fontWeight: 400 }}>
+                            (+{expiredCertCount(profile.user_id)} vencida{expiredCertCount(profile.user_id) > 1 ? "s" : ""})
+                          </span>
+                        )}
                       </span>
                     </div>
                   )}
@@ -374,9 +391,17 @@ export default function DashboardCollaboratorsPage() {
                 {(certsByUser[profile.user_id]?.length ?? 0) > 0 && (
                   <div className="card-tags">
                     {certsByUser[profile.user_id].slice(0, 3).map((c) => (
-                      <span key={c.id} className="tag" title={c.issuer || ""} style={{ background: "rgba(52,211,153,0.16)", color: "#9fe7c7", border: "1px solid rgba(52,211,153,0.3)" }}>
+                      <span
+                        key={c.id}
+                        className="tag"
+                        title={c.is_expired ? `${c.issuer || ""} — vencida el ${c.expires_at?.slice(0, 10)}` : (c.issuer || "")}
+                        style={c.is_expired
+                          ? { background: "rgba(148,163,184,0.12)", color: "var(--muted)", border: "1px solid rgba(148,163,184,0.25)", textDecoration: "line-through" }
+                          : { background: "rgba(52,211,153,0.16)", color: "#9fe7c7", border: "1px solid rgba(52,211,153,0.3)" }}
+                      >
                         <Award size={10} style={{ marginRight: 4 }} />
                         {c.name.length > 22 ? c.name.slice(0, 22) + "…" : c.name}
+                        {c.is_expired && " · vencida"}
                       </span>
                     ))}
                     {certsByUser[profile.user_id].length > 3 && (

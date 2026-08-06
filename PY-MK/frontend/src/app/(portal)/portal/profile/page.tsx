@@ -400,7 +400,7 @@ export default function PortalProfilePage() {
           ) : (
             <ul className="stack-list">
               {certifications.map((cert) => (
-                <li key={cert.id}>
+                <li key={cert.id} style={cert.is_expired ? { opacity: 0.65 } : undefined}>
                   <strong>{cert.name}</strong>
                   {cert.issuer ? ` · ${cert.issuer}` : ""}
                   {cert.url ? (
@@ -408,7 +408,23 @@ export default function PortalProfilePage() {
                       Ver enlace
                     </a>
                   ) : null}
-                  <span className={`badge badge-${cert.status}`}>{cert.status}</span>
+                  {/* 21-P-02: se pinta effective_status, no status. Una
+                      certificacion aprobada pero vencida no es "approved". */}
+                  <span className={`badge badge-${cert.effective_status}`}>
+                    {cert.effective_status === "expired" ? "vencida" : cert.effective_status}
+                  </span>
+                  {cert.is_expired && cert.expires_at && (
+                    <span style={{ color: "var(--muted)", fontSize: 12, marginLeft: 8 }}>
+                      caducó el {cert.expires_at.slice(0, 10)} · renuévala para que vuelva a contar
+                    </span>
+                  )}
+                  {!cert.is_expired
+                    && cert.days_until_expiry !== null
+                    && cert.days_until_expiry <= 30 && (
+                    <span style={{ color: "var(--warning, #f59e0b)", fontSize: 12, marginLeft: 8 }}>
+                      vence en {cert.days_until_expiry} día{cert.days_until_expiry === 1 ? "" : "s"}
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, get_current_user, require_roles
 from app.common.deps.database import get_db
+from app.common.verification import revoke_verification_if_changed
 from app.db.models.enums import RoleCode, SkillStatus
 from app.db.models.skill import Skill
 from app.db.models.user import User
@@ -185,6 +186,15 @@ def update_user_skill(
         ):
             raise HTTPException(status_code=404, detail="User not found")
 
+    # 21-P-01 / 17-P-04 — `level` es el vector directo del problema:
+    # se aprueba "basico" y se edita a "experto" sin nueva revision.
+    revoked = revoke_verification_if_changed(
+        user_skill,
+        {"level": payload.level} if payload.level is not None else {},
+        material_fields=("level",),
+        pending_value=SkillStatus.PENDING,
+    )
+
     if payload.level is not None:
         user_skill.level = payload.level
     db.add(user_skill)
@@ -198,7 +208,12 @@ def update_user_skill(
         str(user_skill.id),
         current_user.id,
         metadata_json=json.dumps(
-            {"user_id": user_skill.user_id, "skill_id": user_skill.skill_id},
+            {
+                "user_id": user_skill.user_id,
+                "skill_id": user_skill.skill_id,
+                "verification_revoked": bool(revoked),
+                "changed_fields": revoked,
+            },
             ensure_ascii=True,
         ),
     )

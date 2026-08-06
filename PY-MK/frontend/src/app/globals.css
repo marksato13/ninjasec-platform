@@ -1533,6 +1533,16 @@ a {
   color: #ff9d9d;
 }
 
+/* 21-P-02 — certificación caducada.
+   Gris deliberado, no rojo: no es un rechazo ni un error del colaborador,
+   es una vigencia que expiró. Debe leerse como "ya no cuenta", no como
+   "está mal". */
+.badge-expired {
+  background: rgba(148, 163, 184, 0.16);
+  color: #b6c2d4;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+
 .doc-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1844,6 +1854,11 @@ a {
 [data-theme="light"] .badge-archived {
   background: rgba(220, 38, 38, 0.10);
   color: #991B1B;
+}
+[data-theme="light"] .badge-expired {
+  background: rgba(100, 116, 139, 0.12);
+  color: #475569;
+  border: 1px solid rgba(100, 116, 139, 0.25);
 }
 
 .section-heading {

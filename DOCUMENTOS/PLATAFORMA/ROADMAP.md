@@ -17,23 +17,23 @@ Tres ejes, en este orden:
 
 ---
 
-## 🔥 Tanda 0 — Deuda crítica (antes de cualquier módulo nuevo)
+## ✅ Tanda 0 — Deuda crítica · **CERRADA el 2026-08-06**
 
-Pendientes que comprometen la integridad del dato o el aislamiento entre clientes.
-Revisado el 2026-08-06: **entra `20-P-08` en primer lugar** y se añade la deuda de esquema.
+Los seis huecos que comprometían la integridad del dato o el aislamiento entre clientes. **63 tests pasan** (26 previos + 37 nuevos), sin regresiones.
 
-| # | Pendiente | Módulo | Por qué es crítico |
+| # | Pendiente | Módulo | Cómo se cerró |
 |---|---|---|---|
-| 1 | `20-P-08` Filtrar `GET /products` por organización | 20 | 🆕 **Fuga entre tenants.** `Product.organization_id` es `NOT NULL` pero el endpoint no filtra: cualquier autenticado —incluido un `client`— ve los productos de todas las organizaciones. **El fix es una línea** |
-| 2 | `21-P-02` / `17-P-05` Expiración de certificaciones | 21, 17 | Se muestra "verificado" sobre certificaciones caducadas — **información falsa de cara al cliente** |
-| 3 | `21-P-01` / `17-P-04` Re-verificación al editar | 21, 17 | Permite elevar una capacidad ya aprobada sin nueva revisión |
-| 4 | `15-P-05` Rate limiting en el endpoint público | 15 | Único endpoint sin autenticación; vector de inundación trivial |
-| 5 | `20-P-06` Endpoints de escritura para areas y project-types | 20 | Bloquea toda la administración de catálogos |
-| 6 | `20-P-09` Unicidad compuesta con `organization_id` | 20 | 🆕 `Area.name` y `ProjectType.name` son `unique` globales: el segundo tenant no puede crear sus catálogos. **Requiere migración — más barato antes de tener datos que colisionen** |
+| 1 | ~~`20-P-08` Filtrar `GET /products` por organización~~ | 20 | Los tres catálogos filtran por `organization_id`. `Area`/`ProjectType` admiten además globales (`NULL`). **Los tests se corrieron contra el código original y fallaron** — tienen dientes |
+| 2 | ~~`21-P-02` / `17-P-05` Expiración de certificaciones~~ | 21, 17 | `is_expired`, `days_until_expiry` y `effective_status` derivados en lectura, sin mutar el `status` almacenado |
+| 3 | ~~`21-P-01` / `17-P-04` Re-verificación al editar~~ | 21, 17 | `app/common/verification.py` — la regla en un solo sitio para que skills y certificaciones no diverjan |
+| 4 | ~~`15-P-05` Rate limiting en el endpoint público~~ | 15 | Ventana deslizante en memoria: 5 postulaciones/hora por IP |
+| 5 | ~~`20-P-06` Endpoints de escritura para areas y project-types~~ | 20 | `POST`/`PUT` + endpoints `/usage`. Cubre también `20-P-07` |
+| 6 | ~~`20-P-09` Unicidad compuesta con `organization_id`~~ | 20 | `UniqueConstraint` en los 3 modelos + migración `20260806_01` |
 
-**Esfuerzo total: ~1 sesión.** Es barato y cierra seis huecos reales.
+**Dos límites que quedaron escritos, no escondidos:**
 
-> **Orden dentro de la tanda:** `20-P-08` primero. Es la de menor esfuerzo y la única con consecuencia hacia afuera.
+- El rate limiter es **por proceso y en memoria**: con varios workers el límite efectivo se multiplica y no frena un ataque distribuido. Migrar a Redis o a Caddy cuando el despliegue crezca.
+- En PostgreSQL los `NULL` son distintos entre sí, así que la unicidad compuesta **no** impide dos catálogos globales homónimos. Los globales vienen del seed, que sí es controlado.
 
 ---
 
@@ -158,14 +158,14 @@ Son excelentes demos de portafolio. Dentro de NinjaSec serían ruido: no tienen 
 
 | Tanda | Sesiones | Naturaleza |
 |---|---|---|
-| 0 — Deuda crítica | ~1 | Obligatoria |
-| 0-bis — Deuda de esquema | ~0.5 | Obligatoria **antes de FASE 2.8** |
+| ~~0 — Deuda crítica~~ | — | ✅ **Cerrada el 2026-08-06** |
+| 0-bis — Deuda de esquema | ~0.5 | Obligatoria **antes de FASE 2.8** · ⚠️ ahora más urgente: la migración `20260806_01` es la primera que la necesita |
 | 1 — Ganancia rápida | ~2.5 | Alto retorno inmediato |
 | 2 — Académica | ~17 | **Deadline duro** |
 | 3 — Producto | ~13.5 | Sin fecha |
 | 4 — Alto riesgo | — | Condicionada |
 
-**Camino recomendado: 0 → 1 → 2**, intercalando la tanda 3 cuando la 2 esté encaminada.
+**Siguiente paso: Tanda 1**, empezando por `23-P1` (UI de topología) — el backend está hecho y nadie lo consume.
 La **0-bis** puede esperar mientras el entorno se siga recreando, pero **no puede saltarse antes del deploy self-hosted**.
 
 ---

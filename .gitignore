@@ -74,6 +74,9 @@ testsprite_tests/
 docker-compose.override.yml
 *.local.yml
 
+# ─── Repo git anterior de PY-MK (archivo historico local) ──────────
+.git.old/
+
 # ─── SO / editores ─────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

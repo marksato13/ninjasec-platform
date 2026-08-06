@@ -61,7 +61,7 @@
 | 15-P-02 | Upload real de CV | 🟡 Media | `cv_url` y `attachments` guardan solo URL; no hay almacenamiento (comparte bloqueo con `10-P-05`) |
 | 15-P-03 | Score agregado por postulación | 🟡 Media | Hay reviews individuales pero no promedio ni consolidado en el listado |
 | 15-P-04 | Notificación por correo al candidato | 🟢 Baja | Los cambios de estado no notifican a nadie |
-| 15-P-05 | Rate limiting en el endpoint público | 🔴 Alta | `POST /job-applications/` no tiene autenticación ni throttling — expuesto a spam automatizado |
+| ~~15-P-05~~ | ~~**Rate limiting en el endpoint público**~~ | — | ✅ **Resuelto 2026-08-06**: `app/common/rate_limit.py` — ventana deslizante en memoria, 5 postulaciones/hora por IP, respeta `X-Forwarded-For`. ⚠️ Es por proceso: con varios workers o réplicas hay que migrarlo a Redis o a Caddy. Tests en `tests/test_public_application_rate_limit.py` (4) |
 | 15-P-06 | Vista de detalle con timeline | 🟡 Media | El endpoint `/timeline` existe pero no hay UI que lo consuma |
 
 ---

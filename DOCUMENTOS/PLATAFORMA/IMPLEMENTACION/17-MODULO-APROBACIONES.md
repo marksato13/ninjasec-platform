@@ -50,14 +50,21 @@
 | 17-P-01 | **Contador de pendientes en el sidebar** | 🔴 Alta | Hoy hay que entrar a la bandeja para saber si hay algo. Un badge con el conteo de `pending` evitaría que se acumulen |
 | 17-P-02 | Rechazo con motivo obligatorio | 🔴 Alta | Se puede pasar a `rejected` sin explicar por qué. Sin motivo, el colaborador no sabe qué corregir |
 | 17-P-03 | Aprobación en lote | 🟡 Media | Verificar 20 skills exige 20 clics |
-| 17-P-04 | **Re-verificación al editar** | 🔴 Alta | Editar una skill ya aprobada **no** la devuelve a `pending` — se puede aprobar "Cisco básico" y editarlo a "CCIE" sin nueva revisión ⚠️ · **Duplicado de `21-P-01`: se arregla una sola vez** |
-| 17-P-05 | **Expiración automática de certificaciones** | 🔴 Alta | `expires_at` se guarda pero nada lo evalúa; una cert vencida sigue figurando como aprobada · **Duplicado de `21-P-02`: se arregla una sola vez** |
+| ~~17-P-04~~ | ~~**Re-verificación al editar**~~ | — | ✅ **Resuelto 2026-08-06** junto con `21-P-01` — mismo fix, `app/common/verification.py` |
+| ~~17-P-05~~ | ~~**Expiración automática de certificaciones**~~ | — | ✅ **Resuelto 2026-08-06** junto con `21-P-02` — mismo fix, campos derivados en el schema |
 | 17-P-06 | Notificación al declarante | 🟢 Baja | El colaborador no se entera de la resolución |
 
 ---
 
-## Riesgo abierto
+## ✅ Riesgo cerrado — 2026-08-06
 
-**`17-P-04` es un agujero de integridad real.** El flujo `declarar → aprobar → editar` permite elevar una capacidad ya verificada sin pasar de nuevo por revisión. Como el directorio de colaboradores es material de cara al cliente, esto compromete la confiabilidad del dato.
+**`17-P-04` era un agujero de integridad real.** El flujo `declarar → aprobar → editar` permitía elevar una capacidad ya verificada sin pasar de nuevo por revisión. Como el directorio de colaboradores es material de cara al cliente, comprometía la confiabilidad del dato.
+
+**Cerrado** con `app/common/verification.py`. La regla vive en un único sitio para que skills y certificaciones no puedan divergir:
+
+- Editar un campo material de un registro `approved` lo devuelve a `pending` y limpia `verified_by` / `verified_at`
+- Reenviar el mismo valor **no** revoca — guardar un formulario sin tocarlo no penaliza al colaborador
+- Un registro `rejected` no asciende a `pending` por una edición
+- La revocación queda en el audit log con los campos que la motivaron
 
 **Fix propuesto:** en `PUT /skills/user-skills/{id}` y en el equivalente de certificaciones, si el registro está en `approved` y cambia `skill_id`, `level` o `name`, forzar `status = pending` y limpiar `verified_by` / `verified_at`.
