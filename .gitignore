@@ -1,0 +1,101 @@
+# ═══════════════════════════════════════════════════════════════════
+# NinjaSec — .gitignore raíz
+# Complementa a PY-MK/.gitignore, que cubre el subárbol de la app.
+# ═══════════════════════════════════════════════════════════════════
+
+# ─── SECRETOS — nunca, bajo ninguna circunstancia ──────────────────
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+*secret*
+*credentials*
+!*.example
+
+# ─── Python ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# ─── Node / Next.js ────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.turbo/
+.swc/
+*.tsbuildinfo
+.eslintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ─── Logs y volcados ───────────────────────────────────────────────
+*.log
+logs/
+*.sql.dump
+postgres_data/
+
+# ─── Build / temporales ────────────────────────────────────────────
+dist/
+build/
+tmp/
+temp/
+.cache/
+
+# ─── Herramientas locales de IA / editor ───────────────────────────
+.claude/
+.agents/
+.playwright-mcp/
+skills-lock.json
+testsprite_tests/
+.vscode/settings.json
+.vscode/launch.json
+.idea/
+*.iml
+
+# ─── Docker local ──────────────────────────────────────────────────
+docker-compose.override.yml
+*.local.yml
+
+# ─── SO / editores ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+
+# ─── Salidas generadas ─────────────────────────────────────────────
+PY-MK/backend/reports_output/
+PY-MK/backend/generated/
+PY-MK/backend/*.pdf
+PY-MK/backend/*.xlsx
+PY-MK/frontend/out/
+
+# ─── LaTeX (entregables académicos) ────────────────────────────────
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.toc
+*.lof
+*.lot
+*.bbl
+*.blg
+*.out
