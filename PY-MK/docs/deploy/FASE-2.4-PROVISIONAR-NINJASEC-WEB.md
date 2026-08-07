@@ -358,9 +358,9 @@ Esperás:
 > **NO son parte del valor**. Hay que reemplazar la **palabra completa** por el
 > secreto real. Ejemplo correcto:
 >
-> ```
-> REDACTADO     ✅
-> POSTGRES_PASSWORD=<rHmqYW443IySi7F9Ep2NxkZX>   ❌ los <> se mandan literales al DATABASE_URL
+Correcto: reemplazar el marcador por un valor generado localmente. ✅
+Incorrecto: conservar literalmente `REEMPLAZAR_PASSWORD_DB`. ❌
+Incorrecto: anteponer `$` al marcador. ❌
 > POSTGRES_PASSWORD=REEMPLAZAR_PASSWORD_DB       ❌ olvidaste reemplazar
 > ```
 
