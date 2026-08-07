@@ -1,7 +1,7 @@
 # Implementación — Módulo Topología de Red
 
 > Basado en: `PLANIFICACION/23-MODULO-TOPOLOGIA.md`
-> Creado: 2026-08-05 · **Backend ~100% · Frontend 0%**
+> Creado: 2026-08-05 · Actualizado: 2026-08-07 · **23-P1 implementado en rama de frontend**
 
 ---
 
@@ -25,23 +25,48 @@
 
 ---
 
-## ⏳ P1 — Diagrama visual (sin parser)
+## ✅ P1 — Diagrama visual (sin parser)
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 14 | Decidir librería de diagramación | ⏳ | Recomendado `@xyflow/react` |
-| 15 | Instalar dependencia y verificar bundle | ⏳ | ~50 kB |
-| 16 | Componente `<NetworkTopology />` | ⏳ | `components/devices/network-topology.tsx` |
-| 17 | Nodo custom con icono por `device_type` | ⏳ | Reutilizar iconos Lucide del inventario |
-| 18 | Borde de nodo coloreado por `criticality` | ⏳ | Consistente con cards existentes |
-| 19 | Arista con estilo según `link_type` | ⏳ | Troncal punteada, VPN discontinua |
-| 20 | Grosor de arista según `bandwidth_mbps` | ⏳ | |
-| 21 | Agrupación visual por sede usando `clusters` | ⏳ | |
-| 22 | Auto-layout jerárquico | ⏳ | Firewall arriba → switches → APs |
-| 23 | Panel lateral al hacer clic en nodo | ⏳ | Ficha completa del activo |
-| 24 | Pestaña "Topología" en `/dashboard/devices` | ⏳ | Selector de cliente |
-| 25 | Estado vacío (cliente sin conexiones) | ⏳ | Con llamada a acción para declararlas |
-| 26 | Soporte de tema claro/oscuro | ⏳ | Vía variables CSS existentes |
+| 14 | Decidir librería de diagramación | ✅ | Se eligió `@xyflow/react` 12.11.2 en `PY-MK/frontend/package.json` |
+| 15 | Instalar dependencia y verificar bundle | ✅ | `package-lock.json`; `/dashboard/devices`: 66.3 kB propios, 201 kB First Load JS |
+| 16 | Componente `<NetworkTopology />` | ✅ | `PY-MK/frontend/src/components/devices/network-topology.tsx` |
+| 17 | Nodo custom con icono por `device_type` | ✅ | Lucide: `Shield`, `Router`, `Network`, `Server`, `Radio`, `Monitor`, `Cloud`, fallback `HelpCircle` |
+| 18 | Borde de nodo coloreado por `criticality` | ✅ | `CRITICALITY_COLOR` con cuatro niveles y fallback neutro |
+| 19 | Arista con estilo según `link_type` | ✅ | `LINK_COLOR`; `trunk`, `vpn` y `wifi` usan trazos discontinuos |
+| 20 | Grosor de arista según `bandwidth_mbps` | ✅ | `bandwidthWidth()` usa escala logarítmica limitada |
+| 21 | Agrupación visual por sede usando `clusters` | ✅ | Nodos `group` padre por sede, con fallback "Sin sede" |
+| 22 | Auto-layout jerárquico | ✅ | `TYPE_RANK`: firewall → router/cloud → switch → server/AP → endpoint/camera/other |
+| 23 | Panel lateral al hacer clic en nodo | ✅ | Ficha del activo; rol `client` no muestra dirección IP |
+| 24 | Pestaña "Topología" en `/dashboard/devices` | ✅ | `PY-MK/frontend/src/app/(admin)/dashboard/devices/page.tsx` añade tabs Inventario/Topología |
+| 25 | Estado vacío (cliente sin conexiones) | ✅ | Mensajes para selección, carga, error y topología no declarada |
+| 26 | Soporte de tema claro/oscuro | ✅ | `PY-MK/frontend/src/app/globals.css` usa tokens CSS existentes y adapta React Flow |
+
+### Decisiones técnicas de 23-P1
+
+- **Librería:** se aprueba `@xyflow/react` porque cubre nodos custom, zoom/pan, minimapa, controles, aristas con estilos, grupos por sede y click en nodo para ficha del activo. Mermaid queda descartado para P1 porque no resuelve bien interacción de ficha ni composición React.
+- **Amortización:** la dependencia queda aceptada para 23-P1 y se reutilizaría en `27-P3` si ese editor visual se implementa; no implica arrancar ni documentar `27-P3` como hecho.
+- **Bundle:** `npm ls @xyflow/react --depth=0` confirma `@xyflow/react@12.11.2`. `du -sh node_modules/@xyflow/react node_modules/@xyflow/system` reporta 3.2 MB + 1.3 MB instalados sin comprimir. La build de Next reporta `/dashboard/devices` con 66.3 kB propios y 201 kB First Load JS.
+- **Permisos:** 23-P1 no añade rutas backend ni mutaciones. La UI consume sólo `GET /devices/topology?client_id=` mediante `getTopology()` y `QK.topology(clientId)`.
+- **Aislamiento multi-tenant:** el aislamiento sigue en `TopologyService.build()`, que valida `client.organization_id == current_user.organization_id` y devuelve 404 si el cliente no pertenece a la organización. La ruta mantiene roles `super_admin`, `admin` y `collaborator`; la degradación visual para `client` en el componente oculta IP, pero no cambia permisos del endpoint.
+- **Límites de alcance:** 23-P1 es visualización read-only. No incluye editor de conexiones, drag-and-drop para crear enlaces, parser de configs, generación de alertas, export PNG/SVG/PDF ni "Aplicar a la topología". Esos ítems permanecen en P2/P3/P4.
+
+### Evidencia verificable 2026-08-07
+
+- Commit de implementación frontend: `df2106892d1e8ead41b3766e734ac4a7ab4b0adb` (`feat(frontend): añadir topología visual de red`).
+- Archivos modificados por la implementación: `PY-MK/frontend/package.json`, `PY-MK/frontend/package-lock.json`, `PY-MK/frontend/src/components/devices/network-topology.tsx`, `PY-MK/frontend/src/app/(admin)/dashboard/devices/page.tsx`, `PY-MK/frontend/src/app/globals.css`, `PY-MK/frontend/src/lib/query-keys.ts`.
+- `git diff --check HEAD^ HEAD` en `feat/issue-4-backend`: sin salida, sin errores de whitespace.
+- `NEXT_PUBLIC_API_URL=/api/v1 npm run build` en `PY-MK/frontend`: ✅ compila; genera 41 rutas; conserva warnings de lint preexistentes; `/dashboard/devices` queda en 66.3 kB y 201 kB First Load JS.
+- Primer intento paralelo de `NEXT_PUBLIC_API_URL=/api/v1 npm run build`: ❌ falló con `ENOENT .next/types/routes.d.ts` por concurrencia sobre el mismo `.next`; reejecución serial posterior: ✅.
+- `PYTHONPATH=. pytest -q`: no ejecutado en este entorno porque `pytest` no está instalado en PATH.
+- `python3 -m pytest -q`: no ejecutado en este entorno porque `/usr/bin/python3` no tiene módulo `pytest`, aunque `requirements.txt` declara `pytest==8.4.0`.
+- `PY-MK/frontend/next.config.ts`: sin cambios; los dos rewrites `/api/v1/:path*/` y `/api/v1/:path*` permanecen.
+
+### Evidencia visual para PR
+
+- Pendiente explícito de PR: adjuntar capturas de `/dashboard/devices` en pestaña "Topología" con un cliente con conexiones, incluyendo vista desktop y mobile, panel lateral tras click en nodo, estado vacío y modo claro/oscuro.
+- El bucle visual no queda marcado como completado en este checklist hasta que esas capturas estén adjuntas al PR o se registre una validación manual equivalente con navegador.
 
 ## ⏳ P2 — Editor de conexiones
 
@@ -84,9 +109,9 @@
 | Módulo 05 Dispositivos | ✅ cerrado |
 | Módulo 03 Clientes | ✅ cerrado |
 | Campos ISO en `Device` | ✅ migrados |
-| Librería de diagramación | ⏳ decisión pendiente |
+| Librería de diagramación | ✅ `@xyflow/react` 12.11.2 aprobado para P1 |
 
-**Sin bloqueos.** P1 puede empezar hoy mismo.
+**Sin bloqueos para P1.** Queda pendiente la evidencia visual de PR indicada arriba; P2/P3/P4 no forman parte de este cierre.
 
 ---
 
