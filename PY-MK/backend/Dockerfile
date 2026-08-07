@@ -13,4 +13,4 @@ COPY alembic.ini ./alembic.ini
 
 EXPOSE 8024
 
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8024"]
+CMD ["sh", "-c", "python -m app.db.migrate && exec python -m uvicorn app.main:app --host 0.0.0.0 --port 8024"]

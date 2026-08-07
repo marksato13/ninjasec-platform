@@ -23,6 +23,7 @@ Plataforma de infraestructura y ciberseguridad para PYMEs. Monitoreo, inventario
 | Ver qué está hecho y qué falta | `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md` |
 | Entender un módulo concreto | `DOCUMENTOS/PLATAFORMA/PLANIFICACION/NN-*.md` |
 | Saber quién puede hacer qué | `DOCUMENTOS/PLATAFORMA/PLANIFICACION/01-ROLES-Y-ACCESOS.md` |
+| Instalar o adoptar una base con Alembic | `PY-MK/docs/deploy/RUNBOOK-ALEMBIC.md` |
 
 ---
 

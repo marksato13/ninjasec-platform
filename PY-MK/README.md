@@ -95,6 +95,11 @@ Ver **[DEPLOY.md](./DEPLOY.md)** para los pasos completos:
 - Reglas pfSense (port-forward, firewall inter-VLAN)
 - Hardening final + backups
 
+Para crear el esquema, actualizarlo o adoptar de forma segura una base antigua
+creada con `create_all`, consulta el
+**[runbook operativo de Alembic](./docs/deploy/RUNBOOK-ALEMBIC.md)** antes de
+iniciar el backend.
+
 ---
 
 ## 📂 Estructura del repo
