@@ -26,6 +26,7 @@ import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
+import { NetworkTopology } from "@/components/devices/network-topology";
 import { QK } from "@/lib/query-keys";
 
 const DEVICE_TYPES = ["firewall", "switch", "server", "endpoint", "router", "ap", "camera", "other"];
@@ -84,6 +85,7 @@ export default function DashboardDevicesPage() {
   const queryClient    = useQueryClient();
 
   const [clientFilter, setClientFilter]          = useState("");
+  const [activeView, setActiveView]              = useState<"inventory" | "topology">("inventory");
   const [integFilter, setIntegFilter]            = useState("");
   const [typeFilter, setTypeFilter]              = useState("");
   const [statusFilter, setStatusFilter]          = useState("");
@@ -263,6 +265,25 @@ export default function DashboardDevicesPage() {
       <div className="state-panel">
         Puedes crear equipos en inventario <strong>sin integración</strong>. Luego, cuando corresponda, los asocias a una consola firewall.
       </div>
+
+      <div className="device-view-tabs" role="tablist" aria-label="Vista de dispositivos">
+        <button type="button" role="tab" aria-selected={activeView === "inventory"} className={activeView === "inventory" ? "active" : ""} onClick={() => setActiveView("inventory")}>Inventario</button>
+        <button type="button" role="tab" aria-selected={activeView === "topology"} className={activeView === "topology" ? "active" : ""} onClick={() => setActiveView("topology")}>Topología</button>
+      </div>
+
+      {activeView === "topology" ? (
+        <>
+          <article className="panel filters-panel topology-client-filter">
+            <label htmlFor="topology-client">Cliente</label>
+            <select id="topology-client" value={clientFilter} onChange={(e) => { setClientFilter(e.target.value); setIntegFilter(""); }}>
+              <option value="">Selecciona un cliente</option>
+              {clients.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
+            </select>
+          </article>
+          <NetworkTopology clientId={clientFilter ? Number(clientFilter) : undefined} />
+        </>
+      ) : (
+      <>
 
       {/* Banner pending_review */}
       {pendingCount > 0 && (
@@ -460,6 +481,8 @@ export default function DashboardDevicesPage() {
             </div>
           </div>
         ))
+      )}
+      </>
       )}
 
       {/* Modal: crear */}
