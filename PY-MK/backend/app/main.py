@@ -8,15 +8,12 @@ from fastapi.staticfiles import StaticFiles
 from app.api.router import api_router
 from app.core.config import settings
 from app.core.error_handlers import register_exception_handlers
-from app.db import models  # noqa: F401
-from app.db.base import Base
 from app.db.seed import seed_initial_data
-from app.db.session import SessionLocal, engine
+from app.db.session import SessionLocal
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    Base.metadata.create_all(bind=engine)
     if settings.seed_on_startup and not settings.is_production:
         db = SessionLocal()
         try:
