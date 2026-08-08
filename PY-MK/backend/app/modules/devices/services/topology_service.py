@@ -7,9 +7,11 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.models.client import Client
+from app.db.models.client_profile import ClientProfile
 from app.db.models.client_site import ClientSite
 from app.db.models.device import Device
 from app.db.models.device_connection import DeviceConnection
+from app.db.models.enums import RoleCode
 from app.db.models.integration import Integration
 from app.db.models.user import User
 from app.modules.devices.schemas import (
@@ -29,6 +31,14 @@ class TopologyService:
         client = self.db.get(Client, client_id)
         if not client or client.organization_id != self.current_user.organization_id:
             raise HTTPException(status_code=404, detail="Client not found")
+
+        is_client = self.current_user.role == RoleCode.CLIENT.value
+        if is_client:
+            profile = self.db.scalar(
+                select(ClientProfile).where(ClientProfile.user_id == self.current_user.id)
+            )
+            if not profile or profile.client_id != client_id:
+                raise HTTPException(status_code=404, detail="Client not found")
 
         devices = list(self.db.scalars(
             select(Device)
@@ -53,7 +63,7 @@ class TopologyService:
                 device_type=d.device_type,
                 vendor=d.vendor,
                 model=d.model,
-                ip_address=d.ip_address,
+                ip_address=None if is_client else d.ip_address,
                 status=d.status,
                 criticality=d.criticality,
                 data_classification=d.data_classification,
@@ -77,8 +87,8 @@ class TopologyService:
                     source=c.source_device_id,
                     target=c.target_device_id,
                     link_type=c.link_type,
-                    port_source=c.port_source,
-                    port_target=c.port_target,
+                    port_source=None if is_client else c.port_source,
+                    port_target=None if is_client else c.port_target,
                     vlan_id=c.vlan_id,
                     bandwidth_mbps=c.bandwidth_mbps,
                 ))

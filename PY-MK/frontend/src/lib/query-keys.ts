@@ -22,6 +22,7 @@ export const QK = {
 
   // Devices
   devices:         (f?: object)               => ["devices", f]                 as const,
+  topology:        (clientId: number)          => ["devices", "topology", clientId] as const,
 
   // Integrations
   integrations:    (clientId?: number)         => ["integrations", clientId]     as const,
