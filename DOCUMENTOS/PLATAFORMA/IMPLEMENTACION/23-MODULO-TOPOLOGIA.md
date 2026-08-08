@@ -1,7 +1,7 @@
 # Implementación — Módulo Topología de Red
 
 > Basado en: `PLANIFICACION/23-MODULO-TOPOLOGIA.md`
-> Creado: 2026-08-05 · **Backend ~100% · Frontend 0%**
+> Creado: 2026-08-05 · Actualizado: 2026-08-08 · **P1 visual completado**
 
 ---
 
@@ -29,19 +29,27 @@
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 14 | Decidir librería de diagramación | ⏳ | Recomendado `@xyflow/react` |
-| 15 | Instalar dependencia y verificar bundle | ⏳ | ~50 kB |
-| 16 | Componente `<NetworkTopology />` | ⏳ | `components/devices/network-topology.tsx` |
-| 17 | Nodo custom con icono por `device_type` | ⏳ | Reutilizar iconos Lucide del inventario |
-| 18 | Borde de nodo coloreado por `criticality` | ⏳ | Consistente con cards existentes |
-| 19 | Arista con estilo según `link_type` | ⏳ | Troncal punteada, VPN discontinua |
-| 20 | Grosor de arista según `bandwidth_mbps` | ⏳ | |
-| 21 | Agrupación visual por sede usando `clusters` | ⏳ | |
-| 22 | Auto-layout jerárquico | ⏳ | Firewall arriba → switches → APs |
-| 23 | Panel lateral al hacer clic en nodo | ⏳ | Ficha completa del activo |
-| 24 | Pestaña "Topología" en `/dashboard/devices` | ⏳ | Selector de cliente |
-| 25 | Estado vacío (cliente sin conexiones) | ⏳ | Con llamada a acción para declararlas |
-| 26 | Soporte de tema claro/oscuro | ⏳ | Vía variables CSS existentes |
+| 14 | Decidir librería de diagramación | ✅ | `@xyflow/react` 12.11.2 |
+| 15 | Instalar dependencia y verificar bundle | ✅ | Ruta `/dashboard/devices`: 66.3 kB propios, 201 kB First Load JS; paquete instalado 4.4 MB sin comprimir |
+| 16 | Componente `<NetworkTopology />` | ✅ | `components/devices/network-topology.tsx` |
+| 17 | Nodo custom con icono por `device_type` | ✅ | Iconos Lucide |
+| 18 | Borde de nodo coloreado por `criticality` | ✅ | Cuatro niveles y fallback |
+| 19 | Arista con estilo según `link_type` | ✅ | Color por tipo; trunk, VPN y wifi discontinuos |
+| 20 | Grosor de arista según `bandwidth_mbps` | ✅ | Escala logarítmica limitada |
+| 21 | Agrupación visual por sede usando `clusters` | ✅ | Nodos padre por sede |
+| 22 | Auto-layout jerárquico | ✅ | Firewall → router/cloud → switch → servidor/AP → endpoint |
+| 23 | Panel lateral al hacer clic en nodo | ✅ | Vista degradada para `client` sin IP ni puertos |
+| 24 | Pestaña "Topología" en `/dashboard/devices` | ✅ | Selector de cliente compartido |
+| 25 | Estado vacío (cliente sin conexiones) | ✅ | Mensajes para selección y topología no declarada |
+| 26 | Soporte de tema claro/oscuro | ✅ | Tokens CSS existentes y estilos de React Flow adaptados |
+
+### Evidencia 2026-08-08
+
+- `NEXT_PUBLIC_API_URL=/api/v1 npm run build`: finaliza correctamente, 41 páginas generadas; conserva los warnings de lint preexistentes.
+- `/dashboard/devices`: 66.3 kB de código de ruta y 201 kB de First Load JS en la salida de Next.js.
+- Los dos rewrites de `frontend/next.config.ts` permanecen sin cambios.
+- El frontend sólo consume `GET /devices/topology?client_id=` mediante el cliente TypeScript existente; el aislamiento continúa delegado al endpoint con validación de `organization_id`.
+- El endpoint mantiene los roles existentes (`super_admin`, `admin` y `collaborator`), por lo que un perfil `client` no recibe el contrato sensible; adicionalmente, el componente omite IP y detalles de puertos cuando se reutiliza con ese rol.
 
 ## ⏳ P2 — Editor de conexiones
 
@@ -73,7 +81,7 @@
 | 40 | Botón "Aplicar a la topología" → crea `device_connections` con `origen: auto` | ⏳ |
 | 41 | Export PNG / SVG | ⏳ |
 | 42 | Export PDF con diagrama + inventario (ReportLab existente) | ⏳ |
-| 43 | Vista degradada para rol `client` (sin IPs ni puertos) | ⏳ |
+| 43 | Vista degradada para rol `client` (sin IPs ni puertos) | ✅ P1 |
 
 ---
 
@@ -84,7 +92,7 @@
 | Módulo 05 Dispositivos | ✅ cerrado |
 | Módulo 03 Clientes | ✅ cerrado |
 | Campos ISO en `Device` | ✅ migrados |
-| Librería de diagramación | ⏳ decisión pendiente |
+| Librería de diagramación | ✅ `@xyflow/react` 12.11.2 |
 
 **Sin bloqueos.** P1 puede empezar hoy mismo.
 
