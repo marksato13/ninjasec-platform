@@ -83,6 +83,11 @@
 | 42 | Export PDF con diagrama + inventario (ReportLab existente) | ⏳ |
 | 43 | Vista degradada para rol `client` (sin IPs ni puertos) | ✅ P1 |
 
+## Evidencia de pruebas
+
+- [x] Contrato de topología: `PYTHONPATH=. pytest -q tests/test_topology.py` valida nodos por tipo y criticidad, enlaces, agrupación por sede, estado vacío y selección de activo mediante `id`.
+- [x] Autorización: la misma suite valida el aislamiento entre organizaciones, permisos de edición y la vista degradada del cliente sin IPs ni puertos.
+
 ---
 
 ## Dependencias

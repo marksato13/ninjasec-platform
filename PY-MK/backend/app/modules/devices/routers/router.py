@@ -68,6 +68,7 @@ def get_topology(
             RoleCode.SUPER_ADMIN.value,
             RoleCode.ADMIN.value,
             RoleCode.COLLABORATOR.value,
+            RoleCode.CLIENT.value,
         )
     ),
     db: Session = Depends(get_db),
