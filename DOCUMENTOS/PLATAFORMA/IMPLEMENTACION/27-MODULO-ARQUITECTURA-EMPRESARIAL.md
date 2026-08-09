@@ -1,7 +1,7 @@
 # Implementación — Módulo Arquitectura Empresarial
 
 > Basado en: `PLANIFICACION/27-MODULO-ARQUITECTURA-EMPRESARIAL.md`
-> Creado: 2026-08-05 · **Estado: no iniciado**
+> Creado: 2026-08-05 · Actualizado: 2026-08-09 · **Estado: no iniciado en código**
 
 ---
 
@@ -19,6 +19,21 @@
 | 8 | Página `/dashboard/architecture` con listado de modelos | ⏳ | |
 | 9 | Vista de listado por capa (tabla, sin lienzo aún) | ⏳ | |
 | 10 | Versionado: `approved` es inmutable, se crea versión nueva | ⏳ | 🔴 |
+
+### Alcance entregado y evidencia — 2026-08-09
+
+Esta actualización es **solo documental**. En este worktree no existe todavía un módulo `architecture` en backend ni frontend:
+
+- `rg -n "ArchitectureModel|ArchitectureElement|ArchitectureRelationship|relationship_type|sync-technology|architecture" PY-MK/backend PY-MK/frontend -S` no encuentra modelos, servicios, rutas, cliente API ni pantalla de arquitectura empresarial; el único resultado es una cadena genérica ajena al módulo en `compliance/iso27001_2022.py`.
+- `rg --files PY-MK/backend PY-MK/frontend | rg "architecture|Architecture|arquitectura"` no encuentra archivos propios del módulo.
+
+Por tanto, P1 queda **pendiente de implementación**. No se entrega CRUD, migración Alembic, pantalla `/dashboard/architecture`, versionado ni persistencia de elementos/relaciones.
+
+**Exclusiones explícitas:**
+
+- La sincronización automática de la capa tecnológica desde dispositivos/topología corresponde a **P2** y no está implementada en P1.
+- El editor visual con React Flow, paleta ArchiMate, drag-and-drop y creación visual de relaciones corresponde a **P3** y no está implementado.
+- La validación completa de relaciones legales según **ArchiMate 3.2** corresponde a **P3** y no está implementada. En este estado ni siquiera se persiste `relationship_type` porque no existen aún las entidades ni endpoints del módulo. Cuando P1 se implemente, si solo se almacena `relationship_type` como valor tipado/enumerado, deberá documentarse como persistencia básica y no como validación ArchiMate 3.2.
 
 ## ⏳ P2 — Sincronización de la capa tecnológica
 
