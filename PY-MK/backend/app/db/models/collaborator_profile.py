@@ -19,5 +19,6 @@ class CollaboratorProfile(Base):
     portfolio_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     area: Mapped[str | None] = mapped_column(String(60), nullable=True)
     photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    photo_storage_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     user = relationship("User", back_populates="collaborator_profile")

@@ -16,6 +16,11 @@ class ProjectDoc(Base):
     title: Mapped[str] = mapped_column(String(160), nullable=False)
     summary: Mapped[str | None] = mapped_column(String(400), nullable=True)
     github_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    file_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(nullable=True)
     preview_md: Mapped[str | None] = mapped_column(String(4000), nullable=True)
     visibility: Mapped[DocVisibility] = mapped_column(
         Enum(DocVisibility, name="doc_visibility_enum"),

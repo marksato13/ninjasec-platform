@@ -14,6 +14,9 @@ class ApplicationAttachment(Base):
         ForeignKey("job_applications.id"), nullable=False
     )
     file_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(nullable=True)
     file_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
     uploaded_by_user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"), nullable=False

@@ -10,6 +10,10 @@ class ProjectDocRead(ORMModel):
     title: str
     summary: str | None = None
     github_url: str | None = None
+    file_url: str | None = None
+    file_name: str | None = None
+    file_type: str | None = None
+    file_size: int | None = None
     preview_md: str | None = None
     visibility: str
     status: str

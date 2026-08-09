@@ -3,12 +3,14 @@ from datetime import datetime
 
 from app.core.time_utils import utcnow
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, get_current_user, require_roles
 from app.common.deps.database import get_db
+from app.common.storage import DOCUMENT_TYPES, storage
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
 from app.db.models.doc_type import DocType
@@ -50,6 +52,37 @@ def _get_project_member(
             ProjectMember.user_id == user_id,
         )
     )
+
+
+def _get_accessible_doc(
+    db: Session, doc_id: int, current_user: CurrentUser, *, write: bool = False
+) -> tuple[ProjectDoc, Project]:
+    row = db.execute(
+        select(ProjectDoc, Project)
+        .join(Project, Project.id == ProjectDoc.project_id)
+        .where(ProjectDoc.id == doc_id)
+    ).one_or_none()
+    if not row:
+        raise HTTPException(status_code=404, detail="Document not found")
+    doc, project = row
+    if current_user.role in (RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value):
+        if project.organization_id != current_user.organization_id:
+            raise HTTPException(status_code=404, detail="Document not found")
+    elif current_user.role == RoleCode.COLLABORATOR.value:
+        member = _get_project_member(db, project.id, current_user.id)
+        if not member or (write and not member.can_publish_docs):
+            raise HTTPException(status_code=404, detail="Document not found")
+    else:
+        profile = _get_client_profile(db, current_user.id)
+        if (
+            write
+            or not profile
+            or project.client_id != profile.client_id
+            or not doc.enabled
+            or doc.visibility != DocVisibility.CLIENT
+        ):
+            raise HTTPException(status_code=404, detail="Document not found")
+    return doc, project
 
 
 @router.get("/doc-types", response_model=list[DocTypeRead])
@@ -218,6 +251,49 @@ def create_project_doc(
         ),
     )
     return ProjectDocRead.model_validate(doc)
+
+@router.post("/project-docs/{doc_id}/file", response_model=ProjectDocRead)
+async def upload_project_doc_file(
+    doc_id: int,
+    file: UploadFile = File(...),
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> ProjectDocRead:
+    doc, project = _get_accessible_doc(db, doc_id, current_user, write=True)
+    saved = await storage.save(
+        file, f"organizations/{project.organization_id}/documents", DOCUMENT_TYPES
+    )
+    doc.file_url = f"/api/v1/project-docs/{doc.id}/download"
+    doc.file_key = saved.key
+    doc.file_name = saved.original_name
+    doc.file_type = saved.content_type
+    doc.file_size = saved.size
+    doc.updated_by = current_user.id
+    db.commit()
+    db.refresh(doc)
+    AuditService(db).record(
+        project.organization_id,
+        "project_doc.file_uploaded",
+        "project_docs",
+        str(doc.id),
+        current_user.id,
+        metadata_json=json.dumps({"storage_key": saved.key}, ensure_ascii=True),
+    )
+    return ProjectDocRead.model_validate(doc)
+
+@router.get("/project-docs/{doc_id}/download")
+def download_project_doc_file(
+    doc_id: int,
+    current_user: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    doc, project = _get_accessible_doc(db, doc_id, current_user)
+    if not doc.file_url or not doc.file_key:
+        raise HTTPException(status_code=404, detail="File not found")
+    path = storage.resolve(doc.file_key)
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path, media_type=doc.file_type, filename=doc.file_name)
 
 
 @router.put("/project-docs/{doc_id}", response_model=ProjectDocRead)
