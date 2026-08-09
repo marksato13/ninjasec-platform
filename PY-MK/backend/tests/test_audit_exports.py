@@ -79,7 +79,7 @@ def _seed_filtered_events(db, seed_data) -> str:
 
 def _pdf_text(pdf: bytes) -> bytes:
     """Extrae los streams de texto comprimidos por ReportLab, sin dependencias extra."""
-    streams = re.findall(rb"stream\r?\n(.*?)\r?\nendstream", pdf, re.DOTALL)
+    streams = re.findall(rb"stream\r?\n(.*?)\r?\n?endstream", pdf, re.DOTALL)
     return b"".join(
         zlib.decompress(base64.a85decode(stream.strip()[:-2]))
         for stream in streams
