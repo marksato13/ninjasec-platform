@@ -1,13 +1,18 @@
+import asyncio
+import logging
 from datetime import date, datetime, timedelta
 
 from app.core.time_utils import utcnow
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from jwt import PyJWTError
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
+from starlette.concurrency import run_in_threadpool
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.core.security import decode_access_token
 from app.db.models.client_site import ClientSite
 from app.db.models.device import Device
 from app.db.models.enums import FindingSeverity, FindingStatus, RoleCode, TicketStatus
@@ -15,6 +20,8 @@ from app.db.models.integration import Integration
 from app.db.models.organization_alert_threshold import OrganizationAlertThreshold
 from app.db.models.security_review import ReviewFinding, ReviewRecommendation, SecurityReview
 from app.db.models.support_ticket import SupportTicket
+from app.db.repositories.users import UserRepository
+from app.db.session import SessionLocal
 from app.modules.alerts.schemas import (
     AlertItem,
     AlertRefreshResult,
@@ -23,6 +30,8 @@ from app.modules.alerts.schemas import (
 )
 from app.modules.alerts.services import get_alert_thresholds
 from app.modules.audit.services.audit_service import AuditService
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -84,20 +93,15 @@ router.add_api_route(
 # 8.1 — GET /alerts/active
 # ---------------------------------------------------------------------------
 
-@router.get("/active", response_model=list[AlertItem])
-def get_active_alerts(
-    client_id: int | None = None,
-    current_user: CurrentUser = Depends(
-        require_roles(
-            RoleCode.SUPER_ADMIN.value,
-            RoleCode.ADMIN.value,
-            RoleCode.COLLABORATOR.value,
-        )
-    ),
-    db: Session = Depends(get_db),
+def compute_active_alerts(
+    db: Session, org_id: int, client_id: int | None = None
 ) -> list[AlertItem]:
-    org_id = current_user.organization_id
-    now    = utcnow()
+    """Recalcula el conjunto de alertas activas de una organización.
+
+    Compartido por GET /alerts/active y el WebSocket de push (02-P-05) --
+    una sola fuente de verdad para el motor derivado, sin tabla.
+    """
+    now = utcnow()
     alerts: list[AlertItem] = []
     thresholds = get_alert_thresholds(db, org_id)
 
@@ -114,6 +118,21 @@ def get_active_alerts(
     _order = {"critical": 0, "warning": 1, "info": 2}
     alerts.sort(key=lambda a: _order.get(a.severity, 9))
     return alerts
+
+
+@router.get("/active", response_model=list[AlertItem])
+def get_active_alerts(
+    client_id: int | None = None,
+    current_user: CurrentUser = Depends(
+        require_roles(
+            RoleCode.SUPER_ADMIN.value,
+            RoleCode.ADMIN.value,
+            RoleCode.COLLABORATOR.value,
+        )
+    ),
+    db: Session = Depends(get_db),
+) -> list[AlertItem]:
+    return compute_active_alerts(db, current_user.organization_id, client_id)
 
 
 # ---------------------------------------------------------------------------
@@ -190,6 +209,88 @@ def refresh_alerts(
         integrations_marked_risk=len(expired_integrations),
         devices_marked_pending_review=len(unreviewed_devices),
     )
+
+
+# ---------------------------------------------------------------------------
+# 02-P-05 — WebSocket de push para alertas críticas
+# ---------------------------------------------------------------------------
+
+_WS_POLL_SECONDS = 12
+_ALLOWED_WS_ROLES = {
+    RoleCode.SUPER_ADMIN.value,
+    RoleCode.ADMIN.value,
+    RoleCode.COLLABORATOR.value,
+}
+
+
+def _resolve_ws_user(token: str) -> CurrentUser | None:
+    """Misma validación que get_current_user(), pero sin Depends() --
+    un WebSocket no tiene header Authorization, el token llega por query
+    param (?token=) y se valida acá antes de aceptar la conexión."""
+    db = SessionLocal()
+    try:
+        payload = decode_access_token(token)
+        email = payload.get("sub")
+        if not email:
+            return None
+        user = UserRepository(db).get_by_email(email)
+        if not user or not user.is_active or user.role_code.value not in _ALLOWED_WS_ROLES:
+            return None
+        return CurrentUser(
+            id=user.id,
+            organization_id=user.organization_id,
+            email=user.email,
+            role=user.role_code.value,
+            full_name=user.full_name,
+        )
+    except PyJWTError:
+        return None
+    finally:
+        db.close()
+
+
+def _alert_signature(alerts: list[AlertItem]) -> tuple:
+    # created_at cambia en cada recálculo aunque nada haya cambiado
+    # realmente -- se excluye de la firma para no emitir de más.
+    return tuple(
+        (a.type, a.entity_type, a.entity_id, a.severity, a.message) for a in alerts
+    )
+
+
+@router.websocket("/ws")
+async def alerts_websocket(websocket: WebSocket, token: str, client_id: int | None = None):
+    current_user = await run_in_threadpool(_resolve_ws_user, token)
+    if not current_user:
+        await websocket.close(code=4401)
+        return
+
+    await websocket.accept()
+    last_signature: tuple | None = None
+    try:
+        while True:
+            db = SessionLocal()
+            try:
+                alerts = await run_in_threadpool(
+                    compute_active_alerts, db, current_user.organization_id, client_id
+                )
+            finally:
+                db.close()
+
+            signature = _alert_signature(alerts)
+            if signature != last_signature:
+                last_signature = signature
+                await websocket.send_json(
+                    {"type": "alerts", "data": [a.model_dump(mode="json") for a in alerts]}
+                )
+            await asyncio.sleep(_WS_POLL_SECONDS)
+    except WebSocketDisconnect:
+        pass
+    except Exception:
+        logger.exception("Error en /alerts/ws, cerrando conexión")
+        try:
+            await websocket.close(code=1011)
+        except RuntimeError:
+            pass
 
 
 # ---------------------------------------------------------------------------

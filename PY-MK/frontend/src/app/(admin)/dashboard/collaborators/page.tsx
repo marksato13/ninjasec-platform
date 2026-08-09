@@ -99,7 +99,7 @@ export default function DashboardCollaboratorsPage() {
   // Skills expand state (card id → expanded bool)
   const [expandedSkills, setExpandedSkills] = useState<Record<number, boolean>>({});
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: QK.collaborators(),
     queryFn: async () => {
       const [profiles, users] = await Promise.all([getCollaborators(), getUsers()]);
@@ -333,6 +333,7 @@ export default function DashboardCollaboratorsPage() {
       </article>
 
       {/* Loading */}
+      {error && <p className="form-error">Error al cargar colaboradores</p>}
       {isLoading && <div className="state-panel">Cargando colaboradores...</div>}
 
       {/* ── CARDS VIEW ── */}
