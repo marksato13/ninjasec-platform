@@ -87,4 +87,5 @@ export const QK = {
   riskThreats:     ()                          => ["risk-threats"]                as const,
   riskVulnerabilities: ()                      => ["risk-vulnerabilities"]        as const,
   riskHeatmap:     (clientId?: number)         => ["risk-heatmap", clientId]      as const,
+  hostScores:      (clientId?: number)         => ["host-scores", clientId]       as const,
 } as const;
