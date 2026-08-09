@@ -10,6 +10,7 @@ from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.area import Area
 from app.db.models.catalog_device import CatalogDevice
 from app.db.models.compliance import ComplianceControl, ComplianceFramework
+from app.db.models.risk import Threat, Vulnerability
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
 from app.db.models.collaborator_profile import CollaboratorProfile
@@ -878,6 +879,7 @@ def seed_initial_data(db: Session) -> None:
     db.commit()
 
     seed_compliance_catalog(db)
+    seed_risk_catalog(db)
 
 
 def seed_compliance_catalog(db: Session) -> None:
@@ -915,4 +917,49 @@ def seed_compliance_catalog(db: Session) -> None:
                 title=title,
             )
         )
+    db.commit()
+
+
+_RISK_THREATS_SEED = [
+    ("T-DEL-01", "Acceso lógico no autorizado", "Deliberada", "Uso de credenciales robadas o débiles para entrar a un sistema"),
+    ("T-DEL-02", "Malware / ransomware", "Deliberada", "Software malicioso que compromete confidencialidad, integridad o disponibilidad"),
+    ("T-DEL-03", "Ingeniería social / phishing", "Deliberada", "Manipulación de personal para obtener acceso o información"),
+    ("T-DEL-04", "Denegación de servicio (DoS/DDoS)", "Deliberada", "Saturación deliberada de un servicio o recurso"),
+    ("T-DEL-05", "Exfiltración de datos", "Deliberada", "Sustracción intencional de información sensible"),
+    ("T-ACC-01", "Error humano de configuración", "Accidental", "Cambios de configuración incorrectos por descuido u omisión"),
+    ("T-ACC-02", "Pérdida o daño de equipo", "Accidental", "Extravío, robo o daño físico de dispositivos con información"),
+    ("T-ACC-03", "Fallo de hardware", "Accidental", "Falla física de un componente crítico de infraestructura"),
+    ("T-AMB-01", "Corte de energía eléctrica", "Ambiental", "Interrupción del suministro eléctrico que afecta disponibilidad"),
+    ("T-AMB-02", "Desastre natural", "Ambiental", "Sismo, inundación u otro evento que dañe infraestructura física"),
+]
+
+_RISK_VULNERABILITIES_SEED = [
+    ("V-TEC-01", "Software sin parches de seguridad", "Técnica", "Versiones desactualizadas con vulnerabilidades conocidas (CVE)"),
+    ("V-TEC-02", "Contraseñas débiles o por defecto", "Técnica", "Credenciales fáciles de adivinar o nunca rotadas"),
+    ("V-TEC-03", "Falta de cifrado en tránsito o reposo", "Técnica", "Datos sensibles expuestos sin protección criptográfica"),
+    ("V-TEC-04", "Ausencia de segmentación de red", "Técnica", "Un compromiso puntual se propaga sin restricción lateral"),
+    ("V-TEC-05", "Puertos de administración expuestos", "Técnica", "Servicios de gestión accesibles sin lista blanca ni VPN"),
+    ("V-ORG-01", "Falta de respaldo verificado", "Organizacional", "Copias de seguridad inexistentes o nunca restauradas en pruebas"),
+    ("V-ORG-02", "Sin plan de respuesta a incidentes", "Organizacional", "No hay procedimiento definido ante un incidente de seguridad"),
+    ("V-ORG-03", "Falta de capacitación del personal", "Organizacional", "Usuarios sin formación en buenas prácticas de seguridad"),
+    ("V-FIS-01", "Control de acceso físico débil", "Física", "Centros de datos o racks accesibles sin control adecuado"),
+    ("V-FIS-02", "Sin redundancia de energía", "Física", "Ausencia de UPS o generador ante corte eléctrico"),
+]
+
+
+def seed_risk_catalog(db: Session) -> None:
+    """25-P2 -- catálogo global reutilizable de amenazas/vulnerabilidades
+    (ISO 27005/MAGERIT). Idempotente: compara por código."""
+    existing_threats = set(db.scalars(select(Threat.code).where(Threat.organization_id.is_(None))).all())
+    for code, name, category, description in _RISK_THREATS_SEED:
+        if code in existing_threats:
+            continue
+        db.add(Threat(code=code, name=name, category=category, description=description, is_global=True, organization_id=None))
+
+    existing_vulns = set(db.scalars(select(Vulnerability.code).where(Vulnerability.organization_id.is_(None))).all())
+    for code, name, category, description in _RISK_VULNERABILITIES_SEED:
+        if code in existing_vulns:
+            continue
+        db.add(Vulnerability(code=code, name=name, category=category, description=description, is_global=True, organization_id=None))
+
     db.commit()

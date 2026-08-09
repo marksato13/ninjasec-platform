@@ -61,7 +61,8 @@ class RiskBase(ORMModel):
 
 
 class RiskCreate(RiskBase):
-    pass
+    threat_ids: list[int] = Field(default_factory=list)
+    vulnerability_ids: list[int] = Field(default_factory=list)
 
 
 class RiskUpdate(ORMModel):
@@ -81,8 +82,37 @@ class RiskUpdate(ORMModel):
     review_date: date | None = None
 
 
+class CatalogEntryBase(ORMModel):
+    code: str = Field(min_length=1, max_length=40)
+    name: str = Field(min_length=1, max_length=160)
+    description: str | None = Field(default=None, max_length=500)
+    category: str = Field(min_length=1, max_length=50)
+
+
+class CatalogEntryCreate(CatalogEntryBase):
+    pass
+
+
+class CatalogEntryRead(CatalogEntryBase):
+    id: int
+    is_global: bool
+
+
+class RiskAssociationsUpdate(ORMModel):
+    threat_ids: list[int] = Field(default_factory=list)
+    vulnerability_ids: list[int] = Field(default_factory=list)
+
+
 class RiskRead(RiskBase):
     id: int
     inherent_score: int
     created_at: datetime
     updated_at: datetime
+    threats: list[CatalogEntryRead] = Field(default_factory=list)
+    vulnerabilities: list[CatalogEntryRead] = Field(default_factory=list)
+
+
+class HeatmapCell(ORMModel):
+    likelihood: int
+    impact: int
+    risks: list[RiskRead]

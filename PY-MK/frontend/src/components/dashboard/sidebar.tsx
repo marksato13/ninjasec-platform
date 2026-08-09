@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertTriangle,
   BarChart3,
   BookOpen,
   BriefcaseBusiness,
@@ -60,6 +61,7 @@ const navGroups: NavGroup[] = [
       { label: "Integraciones", href: "/dashboard/integrations",      icon: IC(Plug) },
       { label: "Dispositivos",  href: "/dashboard/devices",           icon: IC(Server) },
       { label: "Revisiones",    href: "/dashboard/security-reviews",  icon: IC(ShieldCheck) },
+      { label: "Riesgos",       href: "/dashboard/risks",             icon: IC(AlertTriangle) },
       { label: "Tickets",       href: "/dashboard/support-tickets",   icon: IC(Ticket) },
     ],
   },

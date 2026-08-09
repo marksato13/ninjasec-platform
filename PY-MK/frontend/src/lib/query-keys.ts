@@ -80,4 +80,11 @@ export const QK = {
   projectTypes:    ()                          => ["project-types"]              as const,
   products:        ()                          => ["products"]                   as const,
   architectureModels: ()                       => ["architecture-models"]         as const,
+
+  // Risks
+  riskAssets:      (clientId?: number)         => ["risk-assets", clientId]       as const,
+  risks:           (clientId?: number)         => ["risks", clientId]             as const,
+  riskThreats:     ()                          => ["risk-threats"]                as const,
+  riskVulnerabilities: ()                      => ["risk-vulnerabilities"]        as const,
+  riskHeatmap:     (clientId?: number)         => ["risk-heatmap", clientId]      as const,
 } as const;
