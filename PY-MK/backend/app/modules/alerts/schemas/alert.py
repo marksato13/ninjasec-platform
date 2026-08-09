@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class AlertItem(BaseModel):
@@ -15,3 +15,13 @@ class AlertItem(BaseModel):
 class AlertRefreshResult(BaseModel):
     integrations_marked_risk: int
     devices_marked_pending_review: int
+
+
+class AlertThresholds(BaseModel):
+    overdue_days: int
+    no_review_days: int
+
+
+class AlertThresholdsUpdate(BaseModel):
+    overdue_days: int = Field(ge=1, le=3650)
+    no_review_days: int = Field(ge=1, le=3650)

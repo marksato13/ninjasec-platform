@@ -47,7 +47,7 @@
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
 | 18-P-01 | **WebSocket en lugar de polling** | 🟡 Media | Hoy 60 s de latencia y una consulta completa por cliente conectado. Heredado de `02-P-05` |
-| 18-P-02 | **Umbrales configurables por organización** | 🔴 Alta | `_OVERDUE_DAYS = 7` y `_NO_REVIEW_DAYS = 30` están hardcodeados. Un cliente con SLA de 24 h no puede reflejarlo |
+| ~~18-P-02~~ | ~~**Umbrales configurables por organización**~~ | — | ✅ **Resuelto 2026-08-08**: tabla `organization_alert_thresholds`, `GET/PUT /alerts/thresholds` restringidos a admin y motor de alertas con fallback 7/30. Tests en `tests/test_alert_thresholds.py` |
 | 18-P-03 | Alerta de certificación por vencer | 🟡 Media | `user_certifications.expires_at` existe y nadie lo vigila (conecta con `17-P-05`) |
 | 18-P-04 | Alerta de dispositivo crítico caído | 🔴 Alta | `Device.criticality` ya existe; un `critical` en `offline` debería ser alerta roja inmediata |
 | 18-P-05 | Alerta de garantía vencida | 🟢 Baja | Requiere el campo `warranty_expires_at`, aún no implementado |

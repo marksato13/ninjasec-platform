@@ -50,7 +50,7 @@
 | 20-P-02 | **CRUD de tipos de proyecto desde la UI** | 🔴 Alta | Mismo caso que `20-P-01` |
 | 20-P-03 | CRUD de productos | 🟡 Media | El endpoint `GET` existe; no hay pestaña ni escritura |
 | 20-P-04 | Toggle `is_active` desde la UI | 🟡 Media | El campo existe en los tres catálogos y no se puede accionar |
-| 20-P-05 | **Pestaña de umbrales operativos** | 🔴 Alta | Los valores de alertas (`_OVERDUE_DAYS`, `_NO_REVIEW_DAYS`) están hardcodeados. Ver `18-P-02` |
+| 20-P-05 | **Pestaña de umbrales operativos** | 🔴 Alta | Backend listo 2026-08-08: tabla y `GET/PUT /alerts/thresholds` con aislamiento, auditoría y fallback 7/30. Falta conectar la pestaña UI |
 | ~~20-P-06~~ | ~~Endpoints `POST`/`PUT` para areas y project-types~~ | — | ✅ **Resuelto 2026-08-06**: `catalogs/routers/router.py`. Slug derivado del nombre, unicidad validada con 409, catálogos globales protegidos. Tests en `tests/test_catalogs_write.py` (12) |
 | ~~20-P-07~~ | ~~Aviso de uso antes de desactivar~~ | — | ✅ **Resuelto 2026-08-06**: `GET /areas/{id}/usage` y `/project-types/{id}/usage` devuelven cuántos proyectos, servicios y productos dependen. El conteo queda también en el audit log al desactivar |
 | ~~20-P-08~~ | ~~**`GET /products` no filtra por organización**~~ | — | ✅ **Resuelto 2026-08-06**: filtro por `organization_id` en los tres catálogos. `Area`/`ProjectType` además admiten globales (`NULL`). Tests en `tests/test_catalogs_tenant_isolation.py` (5) — **verificado que fallan sin el fix** |

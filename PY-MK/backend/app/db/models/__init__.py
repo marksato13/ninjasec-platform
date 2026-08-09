@@ -19,6 +19,7 @@ from app.db.models.integration import Integration
 from app.db.models.job_application import JobApplication
 from app.db.models.lead import Lead
 from app.db.models.organization import Organization
+from app.db.models.organization_alert_threshold import OrganizationAlertThreshold
 from app.db.models.product import Product
 from app.db.models.project import Project
 from app.db.models.project_doc import ProjectDoc
@@ -66,6 +67,7 @@ __all__ = [
     "JobApplication",
     "Lead",
     "Organization",
+    "OrganizationAlertThreshold",
     "Product",
     "Project",
     "ProjectDoc",

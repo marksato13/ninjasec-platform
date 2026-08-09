@@ -11,16 +11,72 @@ from app.common.deps.database import get_db
 from app.db.models.device import Device
 from app.db.models.enums import FindingSeverity, FindingStatus, RoleCode, TicketStatus
 from app.db.models.integration import Integration
+from app.db.models.organization_alert_threshold import OrganizationAlertThreshold
 from app.db.models.security_review import ReviewFinding, ReviewRecommendation, SecurityReview
 from app.db.models.support_ticket import SupportTicket
-from app.modules.alerts.schemas import AlertItem, AlertRefreshResult
+from app.modules.alerts.schemas import (
+    AlertItem,
+    AlertRefreshResult,
+    AlertThresholds,
+    AlertThresholdsUpdate,
+)
+from app.modules.alerts.services import get_alert_thresholds
 from app.modules.audit.services.audit_service import AuditService
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
-_OVERDUE_DAYS    = 7
-_NO_REVIEW_DAYS  = 30
 _INACTIVE_DEVICE = {"retired", "inactive"}
+
+
+def read_alert_thresholds(
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)
+    ),
+    db: Session = Depends(get_db),
+) -> AlertThresholds:
+    thresholds = get_alert_thresholds(db, current_user.organization_id)
+    return AlertThresholds(**thresholds.__dict__)
+
+
+def update_alert_thresholds(
+    payload: AlertThresholdsUpdate,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)
+    ),
+    db: Session = Depends(get_db),
+) -> AlertThresholds:
+    org_id = current_user.organization_id
+    configured = db.get(OrganizationAlertThreshold, org_id)
+    if configured is None:
+        configured = OrganizationAlertThreshold(organization_id=org_id)
+    configured.overdue_days = payload.overdue_days
+    configured.no_review_days = payload.no_review_days
+    db.add(configured)
+    db.commit()
+    db.refresh(configured)
+    AuditService(db).record(
+        org_id,
+        "alerts.thresholds.update",
+        "organization_alert_thresholds",
+        str(org_id),
+        current_user.id,
+        metadata_json=(
+            f'{{"overdue_days":{configured.overdue_days},'
+            f'"no_review_days":{configured.no_review_days}}}'
+        ),
+    )
+    return AlertThresholds(
+        overdue_days=configured.overdue_days,
+        no_review_days=configured.no_review_days,
+    )
+
+
+router.add_api_route(
+    "/thresholds", read_alert_thresholds, methods=["GET"], response_model=AlertThresholds
+)
+router.add_api_route(
+    "/thresholds", update_alert_thresholds, methods=["PUT"], response_model=AlertThresholds
+)
 
 
 # ---------------------------------------------------------------------------
@@ -41,12 +97,16 @@ def get_active_alerts(
 ) -> list[AlertItem]:
     org_id = current_user.organization_id
     now    = utcnow()
-    today  = date.today()
     alerts: list[AlertItem] = []
+    thresholds = get_alert_thresholds(db, org_id)
 
     alerts.extend(_license_expired_alerts(db, org_id, client_id, now))
     alerts.extend(_critical_finding_alerts(db, org_id, client_id, now))
-    alerts.extend(_ticket_overdue_alerts(db, org_id, client_id, now, today))
+    alerts.extend(
+        _ticket_overdue_alerts(
+            db, org_id, client_id, now, thresholds.overdue_days
+        )
+    )
 
     # Ordenar: critical primero, luego warning, luego info
     _order = {"critical": 0, "warning": 1, "info": 2}
@@ -72,7 +132,8 @@ def refresh_alerts(
     """
     org_id = current_user.organization_id
     today  = date.today()
-    cutoff = utcnow() - timedelta(days=_NO_REVIEW_DAYS)
+    thresholds = get_alert_thresholds(db, org_id)
+    cutoff = utcnow() - timedelta(days=thresholds.no_review_days)
 
     # --- Integrations con licencia vencida → "risk" ---
     expired_stmt = select(Integration).where(
@@ -222,9 +283,9 @@ def _ticket_overdue_alerts(
     org_id: int,
     client_id: int | None,
     now: datetime,
-    today: date,
+    overdue_days: int,
 ) -> list[AlertItem]:
-    cutoff = utcnow() - timedelta(days=_OVERDUE_DAYS)
+    cutoff = utcnow() - timedelta(days=overdue_days)
     stmt = select(SupportTicket).where(
         SupportTicket.organization_id == org_id,
         SupportTicket.status.in_([TicketStatus.OPEN, TicketStatus.IN_PROGRESS]),
