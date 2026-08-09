@@ -319,6 +319,106 @@ a {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+/* Landing hero: mismo lenguaje visual que /login (grid + orbes) */
+.landing-hero-wrap {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 32px;
+  padding: 22px;
+}
+.landing-hero-wrap .login-grid-bg {
+  border-radius: 32px;
+}
+.landing-hero-wrap .hero-marketing {
+  background: color-mix(in srgb, var(--panel) 92%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.landing-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 22px;
+}
+.landing-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  min-width: 108px;
+}
+.landing-stat strong {
+  font-size: 1.5rem;
+  line-height: 1.1;
+  color: var(--text);
+}
+.landing-stat span {
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.landing-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  counter-reset: landing-step;
+}
+.landing-step {
+  position: relative;
+  border-radius: 20px;
+  padding: 22px 20px 20px;
+}
+.landing-step::before {
+  counter-increment: landing-step;
+  content: counter(landing-step);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3B82F6, #06B6D4);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+.landing-step h4 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+.landing-step p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.landing-step-arrow {
+  position: absolute;
+  top: 26px;
+  right: -22px;
+  color: rgba(59, 130, 246, 0.45);
+  z-index: 2;
+}
+
+.landing-reveal {
+  animation: landing-fade-up 0.6s ease both;
+}
+.landing-reveal--delay-1 { animation-delay: 0.08s; }
+.landing-reveal--delay-2 { animation-delay: 0.16s; }
+@keyframes landing-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-reveal { animation: none; }
+}
+
 .panel {
   border-radius: 24px;
   padding: 24px;
@@ -2745,8 +2845,13 @@ a {
 
 @media (max-width: 1180px) {
   .marketing-grid--three,
-  .metrics-grid {
+  .metrics-grid,
+  .landing-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .landing-step-arrow {
+    display: none;
   }
 
   .content-grid,
@@ -2777,6 +2882,7 @@ a {
   .admin-shell,
   .content-grid,
   .split-grid,
+  .landing-steps,
   .site-footer__inner {
     grid-template-columns: 1fr;
   }
