@@ -12,6 +12,7 @@ from app.modules.collaborators.routers.router import router as collaborators_rou
 from app.modules.collection.routers.router import router as collection_router
 from app.modules.devices.routers.router import router as devices_router
 from app.modules.devices.routers.connections import router as device_connections_router
+from app.modules.devices.routers.configs import router as device_configs_router
 from app.modules.catalogs.routers.router import router as catalogs_router
 from app.modules.docs.routers.router import router as docs_router
 from app.modules.integrations.routers.router import router as integrations_router
@@ -41,6 +42,7 @@ api_router.include_router(client_services_router)
 api_router.include_router(collaborators_router)
 api_router.include_router(devices_router)
 api_router.include_router(device_connections_router)
+api_router.include_router(device_configs_router)
 api_router.include_router(catalogs_router)
 api_router.include_router(skills_router)
 api_router.include_router(certifications_router)

@@ -43,3 +43,28 @@ export async function retireDevice(deviceId: number): Promise<DeviceItem> {
 export async function exportDevicesXlsx(filters?: DeviceFilters): Promise<void> {
   return downloadFile(`/devices/export-xlsx${buildQuery({ ...filters })}`, "inventario.xlsx");
 }
+
+export type DeviceConfigItem = {
+  id: number;
+  device_id: number;
+  vendor_detected: string;
+  parsed_json: string;
+  parse_warnings?: string | null;
+  uploaded_by: number;
+  uploaded_at?: string | null;
+  has_raw_config: boolean;
+};
+
+export async function getDeviceConfigs(deviceId: number): Promise<DeviceConfigItem[]> {
+  return request<DeviceConfigItem[]>(`/device-configs/?device_id=${deviceId}`);
+}
+
+export async function saveDeviceConfig(payload: {
+  device_id: number;
+  vendor_detected: string;
+  parsed_json: string;
+  parse_warnings?: string | null;
+  raw_config?: string | null;
+}): Promise<DeviceConfigItem> {
+  return request<DeviceConfigItem>("/device-configs/", { method: "POST", body: JSON.stringify(payload) });
+}
