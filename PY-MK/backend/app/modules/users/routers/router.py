@@ -39,6 +39,18 @@ def create_user(
 ) -> UserRead:
     if payload.organization_id != current_user.organization_id:
         raise HTTPException(status_code=403, detail="Organization access denied")
+
+    # 01-P-05: solo super_admin puede dar de alta un super_admin o un admin.
+    # Mismo criterio que update_user() -- un admin no puede escalar
+    # privilegios ni de sí mismo ni de terceros vía el path de creación.
+    if current_user.role != RoleCode.SUPER_ADMIN.value and payload.role_code in (
+        RoleCode.SUPER_ADMIN.value,
+        RoleCode.ADMIN.value,
+    ):
+        raise HTTPException(
+            status_code=403, detail="Only super_admin can create admin or super_admin users"
+        )
+
     repository = UserRepository(db)
     if repository.get_by_email(payload.email):
         raise HTTPException(status_code=400, detail="Email already exists")
@@ -61,12 +73,14 @@ def create_user(
     db.add(user)
     db.commit()
     db.refresh(user)
+    is_privileged = payload.role_code in (RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)
     AuditService(db).record(
         current_user.organization_id,
         "user.created",
         "users",
         str(user.id),
         current_user.id,
+        metadata_json=f'{{"role_code":"{payload.role_code}","privileged":{str(is_privileged).lower()}}}' if is_privileged else None,
     )
     return UserRead.model_validate(user)
 
@@ -81,7 +95,7 @@ def update_user(
     db: Session = Depends(get_db),
 ) -> UserRead:
     user = Repository(db).get_by_id(User, user_id)
-    if not user:
+    if not user or user.organization_id != current_user.organization_id:
         raise HTTPException(status_code=404, detail="User not found")
 
     # Admin no puede editar a super_admin ni a otros admin (solo a su propio registro)
@@ -127,7 +141,7 @@ def delete_user(
     db: Session = Depends(get_db),
 ) -> dict[str, str]:
     user = Repository(db).get_by_id(User, user_id)
-    if not user:
+    if not user or user.organization_id != current_user.organization_id:
         raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
