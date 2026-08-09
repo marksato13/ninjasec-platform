@@ -31,6 +31,7 @@
 | 8 | `GET /audit-logs/` restringido a super_admin y admin | ✅ | `modules/audit/routers/router.py:15` |
 | 9 | **Sin endpoint de escritura ni borrado** | ✅ | Verificado: el router solo expone `GET` |
 | 10 | Filtro por `entity_type` / `entity_id` | ✅ | `router.py` query params |
+| 10.1 | Export PDF/XLSX con filtros activos y límite de 5.000 eventos | ✅ | `GET /audit-logs/export?format=pdf|xlsx`; pruebas de archivos válidos, filtros y resultado vacío en `tests/test_audit_exports.py` |
 
 ### Frontend
 
@@ -39,6 +40,7 @@
 | 11 | Página `/dashboard/audit` con listado cronológico | ✅ | `(admin)/dashboard/audit/page.tsx` |
 | 12 | Enlace profundo desde Usuarios (`?entity_id=`) | ✅ | `(admin)/dashboard/users/page.tsx` → "Ver auditoría" |
 | 13 | Oculto en el sidebar para collaborator y client | ✅ | `components/dashboard/sidebar.tsx` |
+| 13.1 | Botones PDF/XLSX conectados a acción, entidad e ID activos | ✅ | `(admin)/dashboard/audit/page.tsx` + `lib/api/audit.ts` |
 
 ### Módulos que alimentan el log
 
@@ -58,7 +60,7 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| 16-P-01 | **Exportar a PDF/XLSX** | 🔴 Alta | Requisito directo del curso de Auditoría y del entregable E5. Sin export, la evidencia no sale de la plataforma |
+| ~~16-P-01~~ | ~~Exportar a PDF/XLSX~~ | ✅ **Implementado** | PDF con ReportLab y XLSX con openpyxl; columnas Fecha, Usuario, Acción y Entidad afectada; mismos filtros activos; límite seguro de 5.000; encabezados presentes sin resultados |
 | 16-P-02 | Filtro por rango de fechas en la UI | 🟡 Media | Un auditor pide "todo lo del trimestre", no "todo" |
 | 16-P-03 | Filtro por usuario autor | 🟡 Media | Clave para investigar una cuenta concreta |
 | 16-P-04 | Paginación server-side | 🟡 Media | Con 86 registros seed va bien; a 50.000 la página se cae |
