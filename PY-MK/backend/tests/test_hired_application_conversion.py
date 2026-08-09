@@ -27,7 +27,7 @@ def test_hired_creates_user_and_profile_from_application(
     http_client, db, admin_token, seed_data
 ):
     """La contratación crea ambas entidades sin pasos manuales."""
-    application = _application("  [EMAIL_REDACTED] ")
+    application = _application("  Ana.Postulante@Example.com ")
     db.add(application)
     db.commit()
 
@@ -40,7 +40,7 @@ def test_hired_creates_user_and_profile_from_application(
     assert response.status_code == 200, response.text
     assert response.json()["status"] == JobApplicationStatus.HIRED.value
     user = db.scalar(
-        select(User).where(func.lower(User.email) == "[EMAIL_REDACTED]")
+        select(User).where(func.lower(User.email) == "ana.postulante@example.com")
     )
     assert user is not None
     assert user.full_name == application.full_name
