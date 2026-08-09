@@ -73,3 +73,24 @@ export async function createConnection(payload: DeviceConnectionCreate): Promise
 export async function deleteConnection(connectionId: number): Promise<{ message: string }> {
   return request<{ message: string }>(`/device-connections/${connectionId}`, { method: "DELETE" });
 }
+
+export type CandidateConnection = {
+  target_device_id: number;
+  target_hostname: string;
+  reason: string;
+  link_type_guess: LinkType;
+  source_ip?: string | null;
+  target_ip?: string | null;
+};
+
+export type DeduceConnectionsPayload = {
+  interfaces: { name: string; ip_address?: string | null; subnet_mask?: string | null }[];
+  static_routes: { destination: string; mask: string; next_hop: string }[];
+};
+
+export async function deduceConnections(deviceId: number, payload: DeduceConnectionsPayload): Promise<CandidateConnection[]> {
+  return request<CandidateConnection[]>(`/devices/${deviceId}/topology/deduce-connections`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}

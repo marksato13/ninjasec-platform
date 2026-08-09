@@ -285,7 +285,7 @@ export default function DashboardDevicesPage() {
           <NetworkTopology clientId={clientFilter ? Number(clientFilter) : undefined} />
         </>
       ) : activeView === "config" ? (
-        <ConfigVisualizer devices={rawDevices} />
+        <ConfigVisualizer devices={rawDevices} clientId={clientFilter ? Number(clientFilter) : undefined} />
       ) : (
       <>
 

@@ -5,6 +5,10 @@ from app.modules.devices.schemas.connection import (
 )
 from app.modules.devices.schemas.device import DeviceCreate, DeviceRead, DeviceUpdate
 from app.modules.devices.schemas.topology import (
+    CandidateConnection,
+    DeduceConnectionsRequest,
+    ParsedInterfaceInput,
+    ParsedStaticRouteInput,
     TopologyCluster,
     TopologyEdge,
     TopologyNode,
@@ -12,6 +16,8 @@ from app.modules.devices.schemas.topology import (
 )
 
 __all__ = [
+    "CandidateConnection",
+    "DeduceConnectionsRequest",
     "DeviceConfigCreate",
     "DeviceConfigRead",
     "DeviceConnectionCreate",
@@ -19,6 +25,8 @@ __all__ = [
     "DeviceCreate",
     "DeviceRead",
     "DeviceUpdate",
+    "ParsedInterfaceInput",
+    "ParsedStaticRouteInput",
     "TopologyCluster",
     "TopologyEdge",
     "TopologyNode",

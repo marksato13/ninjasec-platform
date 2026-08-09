@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 from collections import defaultdict
 
 from fastapi import HTTPException
@@ -15,6 +16,8 @@ from app.db.models.enums import RoleCode
 from app.db.models.integration import Integration
 from app.db.models.user import User
 from app.modules.devices.schemas import (
+    CandidateConnection,
+    DeduceConnectionsRequest,
     TopologyCluster,
     TopologyEdge,
     TopologyNode,
@@ -118,3 +121,80 @@ class TopologyService:
             edges=edges,
             clusters=clusters,
         )
+
+    def deduce_connections(self, device_id: int, payload: DeduceConnectionsRequest) -> list[CandidateConnection]:
+        """23-P4: propone `device_connections` a partir de lo que el parser extrajo
+        de un running-config, cruzando contra los demás dispositivos del mismo
+        cliente. El parser no extrae vecinos (no hay CDP/LLDP) -- se usan dos
+        heurísticas honestas, ambas documentadas en la respuesta vía `reason`:
+
+        1. Misma subred: la IP de un dispositivo hermano cae dentro de la red
+           de una interfaz local con IP configurada.
+        2. Next-hop de ruta estática: el next-hop coincide exactamente con la
+           IP de un dispositivo hermano.
+
+        Es una propuesta para revisión humana, no una verdad de topología --
+        el endpoint que la aplica (`POST /device-connections`) exige
+        confirmación explícita por cada candidato.
+        """
+        source = self.db.get(Device, device_id)
+        if not source:
+            raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
+        integration = self.db.get(Integration, source.integration_id) if source.integration_id else None
+        if not integration or integration.organization_id != self.current_user.organization_id:
+            raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
+
+        siblings = list(self.db.scalars(
+            select(Device)
+            .join(Integration, Device.integration_id == Integration.id)
+            .where(
+                Integration.client_id == integration.client_id,
+                Integration.organization_id == self.current_user.organization_id,
+                Device.id != device_id,
+                Device.ip_address.is_not(None),
+            )
+        ).all())
+
+        candidates: dict[int, CandidateConnection] = {}
+
+        for iface in payload.interfaces:
+            if not iface.ip_address or not iface.subnet_mask:
+                continue
+            try:
+                network = ipaddress.ip_network(f"{iface.ip_address}/{iface.subnet_mask}", strict=False)
+            except ValueError:
+                continue
+            for sibling in siblings:
+                if sibling.id in candidates or not sibling.ip_address:
+                    continue
+                try:
+                    sibling_ip = ipaddress.ip_address(sibling.ip_address)
+                except ValueError:
+                    continue
+                if sibling_ip in network:
+                    candidates[sibling.id] = CandidateConnection(
+                        target_device_id=sibling.id,
+                        target_hostname=sibling.hostname,
+                        reason=f"{iface.name} ({iface.ip_address}/{iface.subnet_mask}) está en la misma subred que {sibling.hostname} ({sibling.ip_address})",
+                        source_ip=iface.ip_address,
+                        target_ip=sibling.ip_address,
+                    )
+
+        for route in payload.static_routes:
+            try:
+                next_hop = ipaddress.ip_address(route.next_hop)
+            except ValueError:
+                continue
+            for sibling in siblings:
+                if sibling.id in candidates or not sibling.ip_address:
+                    continue
+                if sibling.ip_address == str(next_hop):
+                    candidates[sibling.id] = CandidateConnection(
+                        target_device_id=sibling.id,
+                        target_hostname=sibling.hostname,
+                        reason=f"Ruta estática {route.destination}/{route.mask} apunta a {sibling.hostname} ({sibling.ip_address}) como next-hop",
+                        source_ip=None,
+                        target_ip=sibling.ip_address,
+                    )
+
+        return list(candidates.values())
