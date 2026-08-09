@@ -84,7 +84,7 @@ def test_cv_upload_is_persisted_listed_and_downloadable(
 ):
     application = JobApplication(
         full_name="Candidata Storage",
-        email="[EMAIL_REDACTED]",
+        email="candidata.storage@example.com",
         cv_url="https://example.com/cv-original.pdf",
     )
     db.add(application)
@@ -158,7 +158,7 @@ def test_external_urls_remain_available_without_storage_migration(
     external_cv_url = "https://example.com/cv-historico.pdf"
     application = JobApplication(
         full_name="Candidata URL externa",
-        email="[EMAIL_REDACTED]",
+        email="candidata.url.externa@example.com",
         cv_url=external_cv_url,
     )
     db.add(application)
