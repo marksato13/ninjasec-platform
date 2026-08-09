@@ -1,6 +1,16 @@
 # NinjaSec — Plataforma
 
-Plataforma de infraestructura y ciberseguridad para PYMEs. Monitoreo, inventario, gestión de clientes, tickets, revisiones de seguridad y ciclo comercial, con el cumplimiento normativo (ISO 27001 / 27005 / 19011, COBIT, TOGAF) como subproducto de la operación.
+Plataforma de infraestructura y ciberseguridad para PYMEs, consultoras y MSPs. Un mismo sistema cubre el ciclo completo de un proveedor de servicios de seguridad: captar clientes (leads → propuesta → alta), operarlos (inventario de dispositivos, integraciones de monitoreo, revisiones de seguridad con hallazgos, tickets de soporte), gestionar al equipo (reclutamiento, colaboradores, skills y certificaciones, portal propio) y sostenerlo con controles internos (auditoría, aprobaciones, alertas, roles y aislamiento por organización). El cumplimiento normativo (ISO 27001 / 27005 / 19011, COBIT, TOGAF) se documenta como subproducto de la operación real, no como papeleo aparte.
+
+> **Origen:** nace como consultoría para que estudiantes de Desarrollo, Infraestructura y Ciberseguridad practiquen entregando valor real a PYMEs. Hoy es un MVP avanzado — 22 de 30 módulos operativos en producción, con una flota de agentes de IA ([self-hosted-ai-devops](https://github.com/marksato13/self-hosted-ai-devops)) avanzando el resto issue por issue.
+
+### 🔗 Vista previa en vivo
+
+**https://write-six-wishing-dominant.trycloudflare.com**
+
+Backend, frontend y base de datos reales, reconstruidos desde el `main` más reciente — no es una demo estática. Login con las credenciales del seed (`admin@ninjasec.local` / `change-me` para super_admin; el resto de roles en `PY-MK/CLAUDE.md`).
+
+⚠️ **Es un túnel temporal**, no un despliegue: se corta si se reinicia el proceso que lo sirve. No usar como URL permanente ni compartir fuera de para mirar el avance.
 
 ---
 
