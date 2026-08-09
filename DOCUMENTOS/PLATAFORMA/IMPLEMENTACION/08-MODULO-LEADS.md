@@ -70,6 +70,7 @@
 | # | Pendiente | Razón |
 |---|-----------|-------|
 | ~~08-P-01~~ | ~~Conversión lead → cliente~~ | ✅ **Implementado** (manual): botón "Convertir a cliente" en el modal de lead cuando `status === CLOSED_WON`. Crea Cliente con `company_name = lead.company_name \|\| lead.contact_name`, `commercial_status = "active"`, y un `notes` armado con interest_area + contacto + teléfono + source + mensaje original. Invalida `QK.clients()` |
-| 08-P-02 | Drag & drop real en el Kanban | Actualmente con botones de transición. Implementar con `@dnd-kit` o similar requeriría agregar una dependencia nueva; pendiente de confirmar |
+| ~~08-P-02~~ | ~~Drag & drop real en el Kanban~~ | ✅ **Implementado** (verificado 2026-08-09): drag & drop nativo HTML5 en `leads/page.tsx` (`draggable`, `onDragStart`/`onDragEnd`, `handleDropToColumn`) — no hizo falta `@dnd-kit`. Corrige el estado de este pendiente, que había quedado desactualizado |
 | ~~08-P-03~~ | ~~Formulario `/contacto` crea lead~~ | ✅ **Implementado**: `lead-form.tsx` refactor — usa `requestPublic` (proxy de Next.js) en vez de fetch directo con URL hardcoded `:8021`. Agregados inputs `phone` y `interest_area`. Confirmado: `/contacto` HTTP 200 |
 | ~~08-P-04~~ | ~~Fuente del lead (`source`) en el modal de detalle~~ | ✅ **Implementado**: nuevo `<select>` en el modal con 7 opciones (linkedin/referral/website/event/google_ads/cold_outreach/other). Se carga desde `lead.source` al abrir y se persiste vía `updateLead` |
+| 08-P-05 | Sin estado de error visible si falla la carga de leads | `leads/page.tsx:71` destructura `useQuery` sin `error`, a diferencia de otras vistas que sí renderizan `{error && <p className="form-error">...}`. Un fetch fallido se ve igual que "sin leads todavía". Comparte issue con `10-P-07` |

@@ -84,3 +84,4 @@
 | ~~10-P-04~~ | ~~Collaborator podía editar cualquier perfil~~ | ✅ **Implementado** en sesión anterior |
 | ~~10-P-05~~ | ~~Upload de imagen (vs URL externa)~~ | ✅ **Resuelto 2026-08-08**: el endpoint de foto usa el storage local común, valida JPG/PNG/WEBP hasta 5 MB y sirve la imagen con autorización de tenant. `photo_url` externo sigue aceptándose sin migración |
 | ~~10-P-06~~ | ~~Migración Alembic para `area` y `photo_url`~~ | ✅ **Resuelto** (verificado 2026-08-06): `20260522_01_pending_schema_updates.py:33-36` agrega ambas columnas a `collaborator_profiles` |
+| 10-P-07 | Sin estado de error visible si falla la carga de colaboradores | `collaborators/page.tsx:102` destructura `useQuery` sin `error`. Mismo patrón faltante que `08-P-05`, comparten issue |
