@@ -19,7 +19,7 @@ export type IntegrationItem = {
 export type IntegrationCreatePayload = {
   organization_id: number;
   client_id: number;
-  connector_type: "pfSense" | "FortiGate";
+  connector_type: "pfSense" | "FortiGate" | "Wazuh";
   name: string;
   base_url: string;
   auth_type?: string;

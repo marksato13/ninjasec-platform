@@ -6,7 +6,7 @@ import Link from "next/link";
 import { createIntegration, DashboardClient } from "@/lib/api";
 import { getStoredUser } from "@/lib/auth";
 
-type ConnectorType = "pfSense" | "FortiGate";
+type ConnectorType = "pfSense" | "FortiGate" | "Wazuh";
 
 type IntegrationFormProps = {
   clients: DashboardClient[];
@@ -78,6 +78,7 @@ export function IntegrationForm({ clients, onCreated }: IntegrationFormProps) {
       <select value={connectorType} onChange={(event) => setConnectorType(event.target.value as ConnectorType)}>
         <option value="pfSense">pfSense</option>
         <option value="FortiGate">FortiGate</option>
+        <option value="Wazuh">Wazuh</option>
       </select>
       <label className="checkbox-row">
         <input
