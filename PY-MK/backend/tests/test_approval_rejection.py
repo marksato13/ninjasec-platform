@@ -10,9 +10,11 @@ API = "/api/v1"
 
 
 def _super_admin(db, seed_data):
-    role = Role(code=RoleCode.SUPER_ADMIN.value, name="Super Admin")
-    db.add(role)
-    db.flush()
+    role = db.query(Role).filter(Role.code == RoleCode.SUPER_ADMIN.value).first()
+    if role is None:
+        role = Role(code=RoleCode.SUPER_ADMIN.value, name="Super Admin")
+        db.add(role)
+        db.flush()
     user = User(
         organization_id=seed_data["org"].id,
         role_id=role.id,
