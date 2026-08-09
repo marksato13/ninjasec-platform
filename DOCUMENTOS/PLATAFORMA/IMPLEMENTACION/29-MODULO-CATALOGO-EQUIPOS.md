@@ -1,24 +1,28 @@
 # Implementación — Módulo Catálogo de Equipos de Red
 
 > Basado en: `PLANIFICACION/29-MODULO-CATALOGO-EQUIPOS.md`
-> Creado: 2026-08-05 · **Estado: no iniciado**
+> Creado: 2026-08-05 · **Estado: P1 backend hecho 2026-08-09, falta UI**
 
 ---
 
-## ⏳ P1 — Catálogo con filtros facetados
+## 🟡 P1 — Catálogo con filtros facetados (backend hecho, falta UI)
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 1 | Modelo `CatalogDevice` con specs completas | ⏳ | |
-| 2 | Migración Alembic | ⏳ | |
-| 3 | `slug` único e inmutable | ⏳ | |
-| 4 | `GET /catalog/devices` con filtros combinables | ⏳ | |
-| 5 | CRUD restringido a admin y super_admin | ⏳ | |
-| 6 | **Carga inicial: 20-30 modelos habituales en PYMEs peruanas** | ⏳ | Cisco, MikroTik, Ubiquiti, TP-Link, Fortinet |
-| 7 | Página `/dashboard/catalog/devices` | ⏳ | |
-| 8 | Filtros facetados con conteo por faceta | ⏳ | |
-| 9 | Búsqueda difusa por marca, modelo y tags | ⏳ | |
-| 10 | Cards con badge de `lifecycle_status` | ⏳ | Activo / EOS / EOL |
+| 1 | Modelo `CatalogDevice` con specs completas | ✅ | `db/models/catalog_device.py` — sin `organization_id`, catálogo global (mismo criterio que `Skill`/`DocType`/`Role`) |
+| 2 | Migración Alembic | ✅ | `20260809_03_catalog_devices.py` |
+| 3 | `slug` único e inmutable | ✅ | `UniqueConstraint`; `CatalogDeviceUpdate` ni siquiera expone el campo `slug` — no hay forma de mandarlo por `PUT` |
+| 4 | `GET /catalog/devices` con filtros combinables | ✅ | `modules/device_catalog/routers/router.py` — brand, category, subcategory, osi_layer, segment, lifecycle_status, poe, stackable, rack_mountable, managed, `q` (búsqueda libre por marca/modelo/tags) |
+| 5 | CRUD restringido a admin y super_admin | ✅ | Lectura: super_admin/admin/collaborator. Escritura: super_admin/admin |
+| 6 | Carga inicial de prueba | 🟡 **Parcial** | 4 modelos de ejemplo (Cisco, MikroTik, Ubiquiti — incluye uno `eol` para poder probar ese filtro), no los 20-30 reales que pide el doc de planificación — issue #18 solo pedía "seed mínimo para poder probar los filtros", no un catálogo real completo |
+| 7 | Página `/dashboard/catalog/devices` | ⏳ | Fuera del alcance de #18 (backend-only) |
+| 8 | Filtros facetados con conteo por faceta | ⏳ | Requiere la UI (#7) |
+| 9 | Búsqueda difusa por marca, modelo y tags | ⏳ | El backend ya soporta `q` (`ilike`, no difusa de verdad); falta la UI |
+| 10 | Cards con badge de `lifecycle_status` | ⏳ | Requiere la UI (#7) |
+
+Validado con `tests/test_catalog_devices.py`: filtros combinados, filtro por `lifecycle_status`, slug duplicado rechazado (400), slug no cambia aunque se mande en el `PUT`, colaborador consulta pero no crea (403).
+
+Los 3 agentes de la flota no generaron ningún commit para este issue; se completó manualmente.
 
 ## ⏳ P2 — Ficha y enlaces
 
