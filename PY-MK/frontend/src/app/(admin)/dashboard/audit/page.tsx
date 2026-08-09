@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { AuditItem, DashboardUser, getAuditLogs, getUsers } from "@/lib/api";
+import { AuditItem, DashboardUser, exportAuditLogs, getAuditLogs, getUsers } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
+import { notifyError } from "@/lib/alerts";
 
 const ACTION_BADGE: Record<string, string> = {
   "client.created":       "badge-active",
@@ -52,6 +53,7 @@ function AuditPageInner() {
   const [filterAction, setFilterAction] = useState("");
   const [filterEntity, setFilterEntity] = useState("");
   const [filterEntityId, setFilterEntityId] = useState("");
+  const [exporting, setExporting] = useState<"pdf" | "xlsx" | null>(null);
 
   // P-02: aceptar filtros via query string (?entity_type=users&entity_id=N)
   useEffect(() => {
@@ -88,11 +90,30 @@ function AuditPageInner() {
     .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")),
   [items, filterAction, filterEntity, filterEntityId]);
 
+  async function handleExport(format: "pdf" | "xlsx") {
+    setExporting(format);
+    try {
+      await exportAuditLogs(format, {
+        action: filterAction || undefined,
+        entity_type: filterEntity || undefined,
+        entity_id: filterEntityId || undefined,
+      });
+    } catch (err) {
+      notifyError("No se pudo exportar", err instanceof Error ? err.message : undefined);
+    } finally {
+      setExporting(null);
+    }
+  }
+
   return (
     <section className="page-stack">
       <div className="section-heading">
         <div><p className="eyebrow">Admin</p><h2>Auditoría</h2></div>
-        <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{filtered.length} evento{filtered.length !== 1 ? "s" : ""}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+          <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{filtered.length} evento{filtered.length !== 1 ? "s" : ""}</span>
+          <button className="button button-ghost" type="button" disabled={exporting !== null} onClick={() => handleExport("pdf")}>{exporting === "pdf" ? "Generando..." : "Exportar PDF"}</button>
+          <button className="button button-ghost" type="button" disabled={exporting !== null} onClick={() => handleExport("xlsx")}>{exporting === "xlsx" ? "Generando..." : "Exportar XLSX"}</button>
+        </div>
       </div>
 
       {error && <p className="form-error">{error instanceof Error ? error.message : "No se pudo cargar auditoría"}</p>}
@@ -123,6 +144,9 @@ function AuditPageInner() {
             Filtrando por {filterEntity || "entidad"} #{filterEntityId}
           </p>
         )}
+        <p style={{ margin: "8px 0 0", fontSize: "0.78rem", color: "var(--muted)" }}>
+          Las exportaciones aplican estos filtros y están limitadas a 5,000 eventos más recientes.
+        </p>
       </article>
 
       <article className="panel">
