@@ -120,7 +120,7 @@ Cosas que no pertenecen a un módulo pero condicionan a todos.
 | G-02 | Sin migración base | misma evidencia | `alembic upgrade head` sobre una base vacía falla: intenta `add_column` sobre tablas que no existen |
 | G-03 | Secretos comprometidos sin rotar | `docs/deploy/HANDOFF-CLAUDE-OPS-UBUNTU.md` | `POSTGRES_PASSWORD`, `JWT_SECRET_KEY` y el token DuckDNS deben rotarse **antes** de cualquier exposición pública |
 | ~~G-04~~ | ~~Logs de desarrollo en el repo~~ | — | ✅ **Resuelto 2026-08-06**: `*.log` en el `.gitignore` raíz. Los 10 archivos `backend-*.log` siguen en disco pero fuera del repositorio |
-| G-05 | `FIX-INVENTARIO-PRIMERO-SIN-INTEGRACION.ml` | `FIX/` | Extensión mal escrita (`.ml`), stub de 7 líneas cuyo contenido ya está completo en el `.md` gemelo. No renderiza |
+| G-05 | `FIX-INVENTARIO-PRIMERO-SIN-INTEGRACION.md` | `FIX/` | Extensión mal escrita (`.ml`), stub de 7 líneas cuyo contenido ya está completo en el `.md` gemelo. No renderiza |
 | G-06 | Módulos backend sin ficha | `organizations/`, `collection/` | Registrados en `api/router.py` y sin documento propio. Son thin (1 endpoint cada uno) — se cubren en 01 y 04 |
 
 **G-01 y G-02 son bloqueantes de FASE 2.8** (deploy self-hosted). Ver `ROADMAP.md`.
