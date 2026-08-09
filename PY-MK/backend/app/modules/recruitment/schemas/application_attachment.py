@@ -15,5 +15,7 @@ class ApplicationAttachmentRead(ORMModel):
     application_id: int
     file_url: str
     file_type: str | None = None
+    file_name: str | None = None
+    file_size: int | None = None
     uploaded_by_user_id: int
     created_at: datetime | None = None

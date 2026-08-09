@@ -3,13 +3,15 @@ from datetime import date, datetime, time
 
 from app.core.time_utils import utcnow
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
 from app.common.rate_limit import rate_limit
+from app.common.storage import DOCUMENT_TYPES, storage
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.application_attachment import ApplicationAttachment
 from app.db.models.application_event import ApplicationEvent
@@ -520,6 +522,64 @@ def create_application_attachment(
         {"file_type": payload.file_type},
     )
     return ApplicationAttachmentRead.model_validate(attachment)
+
+@router.post(
+    "/{application_id}/attachments/upload",
+    response_model=ApplicationAttachmentRead,
+    status_code=status.HTTP_201_CREATED,
+)
+async def upload_application_attachment(
+    application_id: int,
+    file: UploadFile = File(...),
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    ),
+    db: Session = Depends(get_db),
+) -> ApplicationAttachmentRead:
+    application = _ensure_application_access(db, application_id, current_user)
+    saved = await storage.save(file, f"applications/{application.id}", DOCUMENT_TYPES)
+    attachment = ApplicationAttachment(
+        application_id=application.id,
+        file_url="pending",
+        file_key=saved.key,
+        file_name=saved.original_name,
+        file_type=saved.content_type,
+        file_size=saved.size,
+        uploaded_by_user_id=current_user.id,
+    )
+    db.add(attachment)
+    db.flush()
+    attachment.file_url = f"/api/v1/job-applications/{application.id}/attachments/{attachment.id}/download"
+    if saved.content_type == "application/pdf":
+        application.cv_url = attachment.file_url
+    _record_application_event(db, application.id, "attachment", {"actor_id": current_user.id})
+    db.commit()
+    db.refresh(attachment)
+    _record_audit_log(db, current_user, "application_attachment_uploaded", application.id, {})
+    return ApplicationAttachmentRead.model_validate(attachment)
+
+@router.get("/{application_id}/attachments/{attachment_id}/download")
+def download_application_attachment(
+    application_id: int,
+    attachment_id: int,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    ),
+    db: Session = Depends(get_db),
+) -> FileResponse:
+    _ensure_application_access(db, application_id, current_user)
+    attachment = db.scalar(
+        select(ApplicationAttachment).where(
+            ApplicationAttachment.id == attachment_id,
+            ApplicationAttachment.application_id == application_id,
+        )
+    )
+    if not attachment or not attachment.file_key:
+        raise HTTPException(status_code=404, detail="File not found")
+    path = storage.resolve(attachment.file_key)
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path, media_type=attachment.file_type, filename=attachment.file_name)
 
 
 @router.get(

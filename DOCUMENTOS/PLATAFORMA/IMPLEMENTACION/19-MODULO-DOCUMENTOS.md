@@ -51,7 +51,7 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| 19-P-01 | **Upload real de archivos** | 🔴 Alta | Solo se guardan URLs. Un cliente que no usa GitHub no tiene dónde poner su contrato. Comparte bloqueo con `10-P-05` y `15-P-02` — resolver los tres con un único storage (MinIO o filesystem + Caddy) |
+| ~~19-P-01~~ | ~~**Upload real de archivos**~~ | — | ✅ **Resuelto 2026-08-08**: filesystem local persistente (`STORAGE_PATH`, volumen `uploads_data`) con descarga autenticada por FastAPI, aislamiento por organización, validación MIME y límite de 10 MB. `github_url` permanece sin cambios como alternativa válida. Tests E2E en `tests/test_file_storage.py` |
 | 19-P-02 | Versionado de documentos | 🟡 Media | Editar pisa el contenido anterior; no hay historial de versiones |
 | 19-P-03 | Búsqueda de texto completo | 🟡 Media | Solo se filtra por proyecto y estado, no por contenido |
 | 19-P-04 | Render real de Markdown | 🟡 Media | `preview_md` se muestra como texto plano, sin formatear |
@@ -61,6 +61,10 @@
 ---
 
 ## Decisión de arquitectura a preservar
+
+### Backend elegido (2026-08-08)
+
+Se eligió **filesystem local persistente** en lugar de MinIO: el despliegue actual es de un solo nodo y no justifica otro servicio ni credenciales. Los archivos viven en el volumen Docker `uploads_data`; FastAPI autoriza cada descarga (rol, proyecto y tenant), por lo que Caddy conserva el proxy `/api/*` y no expone el volumen como directorio público. Si se escala a varios nodos, la interfaz `LocalStorage` es el punto de sustitución por almacenamiento de objetos.
 
 **La plataforma no aloja archivos, aloja punteros.** Es una decisión correcta y consistente con el criterio del proyecto: evita duplicar versionado, no convierte a NinjaSec en un file server y mantiene la fuente de verdad donde el equipo ya trabaja.
 

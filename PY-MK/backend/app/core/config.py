@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
     cors_origins: str = "http://localhost:3010,http://127.0.0.1:3010,http://localhost:3018,http://127.0.0.1:3018,http://localhost:3014,http://127.0.0.1:3014,http://localhost:3012,http://127.0.0.1:3012"
 
+    storage_path: str = "./storage"
+    storage_max_file_size: int = 10 * 1024 * 1024
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property

@@ -1,12 +1,10 @@
-from pathlib import Path
-from uuid import uuid4
-
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.common.storage import IMAGE_TYPES, storage
 from app.db.models.collaborator_profile import CollaboratorProfile
 from app.db.models.user import User
 from app.db.models.enums import RoleCode
@@ -14,7 +12,6 @@ from app.db.repositories.base import Repository
 from app.modules.collaborators.schemas import CollaboratorCreate, CollaboratorRead, CollaboratorUpdate
 
 router = APIRouter(prefix="/collaborators", tags=["collaborators"])
-_UPLOAD_DIR = Path("app/static/uploads/collaborators")
 
 
 @router.get("/", response_model=list[CollaboratorRead])
@@ -96,30 +93,38 @@ async def upload_collaborator_photo(
     if current_user.role == RoleCode.COLLABORATOR.value and profile.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Collaborators can only edit their own profile")
 
-    if not file.filename:
-        raise HTTPException(status_code=400, detail="Invalid file")
-    content_type = (file.content_type or "").lower()
-    allowed = {
-        "image/jpeg": ".jpg",
-        "image/png": ".png",
-        "image/webp": ".webp",
-    }
-    ext = allowed.get(content_type)
-    if ext is None:
-        raise HTTPException(status_code=400, detail="Only JPG, PNG or WEBP images are allowed")
-
-    _UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-    filename = f"collab_{profile_id}_{uuid4().hex[:10]}{ext}"
-    save_path = _UPLOAD_DIR / filename
-    file_bytes = await file.read()
-    if len(file_bytes) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="Image too large (max 5MB)")
-    save_path.write_bytes(file_bytes)
-
-    profile.photo_url = f"/static/uploads/collaborators/{filename}"
+    saved = await storage.save(
+        file,
+        f"organizations/{current_user.organization_id}/collaborators",
+        IMAGE_TYPES,
+        max_size=5 * 1024 * 1024,
+    )
+    profile.photo_url = f"/api/v1/collaborators/{profile.id}/photo"
+    profile.photo_storage_key = saved.key
     db.commit()
     db.refresh(profile)
     return CollaboratorRead.model_validate(profile)
+
+@router.get("/{profile_id}/photo")
+def download_collaborator_photo(
+    profile_id: int,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    ),
+    db: Session = Depends(get_db),
+):
+    from fastapi.responses import FileResponse
+
+    profile = Repository(db).get_by_id(CollaboratorProfile, profile_id)
+    user = Repository(db).get_by_id(User, profile.user_id) if profile else None
+    if not profile or not user or user.organization_id != current_user.organization_id:
+        raise HTTPException(status_code=404, detail="Collaborator profile not found")
+    if not profile.photo_storage_key:
+        raise HTTPException(status_code=404, detail="File not found")
+    path = storage.resolve(profile.photo_storage_key)
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(path)
 
 
 @router.delete("/{profile_id}")
