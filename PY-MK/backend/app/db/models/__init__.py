@@ -26,6 +26,7 @@ from app.db.models.project_doc import ProjectDoc
 from app.db.models.project_member import ProjectMember
 from app.db.models.project_recommendation import ProjectRecommendation
 from app.db.models.project_requirement import ProjectRequirement
+from app.db.models.project_task import ProjectTask
 from app.db.models.project_type import ProjectType
 from app.db.models.report import Report
 from app.db.models.report_run import ReportRun
@@ -74,6 +75,7 @@ __all__ = [
     "ProjectMember",
     "ProjectRecommendation",
     "ProjectRequirement",
+    "ProjectTask",
     "ProjectType",
     "Report",
     "ReportRun",

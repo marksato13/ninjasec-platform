@@ -1,41 +1,38 @@
 "use client";
 
-import { FolderKanban } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import { getProjects, getProjectMembers, ProjectItem } from "@/lib/api";
-import { getStoredUser } from "@/lib/auth";
-import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getProjectTasks } from "@/lib/api";
 
 const STATUS_LABEL: Record<string, string> = {
-  planning:  "Planificación",
-  active:    "Activo",
-  paused:    "Pausado",
-  completed: "Completado",
+  pending:     "Pendiente",
+  in_progress: "En curso",
+  done:        "Hecha",
 };
 
-function formatDate(value?: string | null) {
-  if (!value) return "—";
-  return new Date(value).toLocaleDateString("es-PE", { day: "2-digit", month: "short", year: "numeric" });
-}
+const STATUS_BADGE: Record<string, string> = {
+  pending:     "badge-draft",
+  in_progress: "badge-active",
+  done:        "badge-archived",
+};
 
 export default function PortalTasksPage() {
-  const user       = getStoredUser();
   const [statusFilter, setStatusFilter] = useState("");
 
-  const { data: projects = [], isLoading, error } = useQuery({
-    queryKey: ["portal-my-projects"],
-    queryFn:  () => getProjects(),
+  const { data: tasks = [], isLoading, error } = useQuery({
+    queryKey: ["portal-my-tasks"],
+    queryFn:  () => getProjectTasks(),
   });
 
-  const filtered = projects.filter((p) =>
-    statusFilter ? p.status === statusFilter : true
+  const filtered = tasks.filter((t) =>
+    statusFilter ? t.status === statusFilter : true
   );
 
-  const activeCount    = projects.filter((p) => p.status === "active").length;
-  const planningCount  = projects.filter((p) => p.status === "planning").length;
-  const completedCount = projects.filter((p) => p.status === "completed").length;
+  const pendingCount    = tasks.filter((t) => t.status === "pending").length;
+  const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
+  const doneCount       = tasks.filter((t) => t.status === "done").length;
 
   return (
     <section className="page-stack">
@@ -43,20 +40,20 @@ export default function PortalTasksPage() {
       <div className="section-heading">
         <div>
           <p className="eyebrow">Portal</p>
-          <h2>Mis proyectos</h2>
+          <h2>Mis tareas</h2>
         </div>
         <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-          {projects.length} asignación{projects.length !== 1 ? "es" : ""}
+          {tasks.length} tarea{tasks.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       {/* KPIs */}
       <div className="metrics-grid">
         {[
-          { label: "Activos",       value: activeCount,    badge: "badge-active" },
-          { label: "Planificación", value: planningCount,  badge: "badge-draft" },
-          { label: "Completados",   value: completedCount, badge: "badge-archived" },
-          { label: "Total",         value: projects.length, badge: "" },
+          { label: "Pendientes", value: pendingCount },
+          { label: "En curso",   value: inProgressCount },
+          { label: "Hechas",     value: doneCount },
+          { label: "Total",      value: tasks.length },
         ].map((kpi) => (
           <article className="metric-card panel" key={kpi.label}>
             <p className="eyebrow">{kpi.label}</p>
@@ -69,10 +66,9 @@ export default function PortalTasksPage() {
       <div className="panel-actions">
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
           <option value="">Todos los estados</option>
-          <option value="active">Activos</option>
-          <option value="planning">En planificación</option>
-          <option value="paused">Pausados</option>
-          <option value="completed">Completados</option>
+          <option value="pending">Pendientes</option>
+          <option value="in_progress">En curso</option>
+          <option value="done">Hechas</option>
         </select>
       </div>
 
@@ -81,49 +77,45 @@ export default function PortalTasksPage() {
         <div className="panel-head">
           <div>
             <p className="eyebrow">Asignaciones</p>
-            <h3>Proyectos en los que participas</h3>
+            <h3>Tareas de tus proyectos</h3>
           </div>
         </div>
 
-        {error && <p className="form-error">Error al cargar proyectos</p>}
+        {error && <p className="form-error">Error al cargar tareas</p>}
 
         {isLoading ? (
-          <div className="empty-state">Cargando proyectos…</div>
+          <div className="empty-state">Cargando tareas…</div>
         ) : filtered.length === 0 ? (
           <div className="empty-state">
-            <FolderKanban size={28} style={{ opacity: 0.35, margin: "0 auto 8px", display: "block" }} />
-            No tienes proyectos asignados{statusFilter ? " con ese estado" : ""}.
+            <ListChecks size={28} style={{ opacity: 0.35, margin: "0 auto 8px", display: "block" }} />
+            No tienes tareas{statusFilter ? " con ese estado" : ""} todavía.
           </div>
         ) : (
           <div className="table-like">
-            <div className="table-row table-head" style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr" }}>
+            <div className="table-row table-head" style={{ gridTemplateColumns: "2fr 1.4fr 1fr 1fr 2fr" }}>
+              <span>Tarea</span>
               <span>Proyecto</span>
+              <span>Responsable</span>
               <span>Estado</span>
-              <span>Inicio</span>
-              <span>Fin estimado</span>
               <span>Descripción</span>
             </div>
-            {filtered.map((project) => (
+            {filtered.map((task) => (
               <div
                 className="table-row"
-                key={project.id}
-                style={{ gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr" }}
+                key={task.id}
+                style={{ gridTemplateColumns: "2fr 1.4fr 1fr 1fr 2fr" }}
               >
-                <span style={{ fontWeight: 600 }}>{project.name}</span>
+                <span style={{ fontWeight: 600 }}>{task.title}</span>
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{task.project_name}</span>
+                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{task.assigned_user_name}</span>
                 <span>
-                  <span className={`badge ${getStatusBadgeClass(project.status)}`}>
-                    {STATUS_LABEL[project.status] ?? project.status}
+                  <span className={`badge ${STATUS_BADGE[task.status] ?? "badge-draft"}`}>
+                    {STATUS_LABEL[task.status] ?? task.status}
                   </span>
                 </span>
                 <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
-                  {formatDate(project.start_date)}
-                </span>
-                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
-                  {formatDate(project.end_date)}
-                </span>
-                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
-                  {project.description?.slice(0, 60) ?? "—"}
-                  {(project.description?.length ?? 0) > 60 ? "…" : ""}
+                  {task.description?.slice(0, 60) ?? "—"}
+                  {(task.description?.length ?? 0) > 60 ? "…" : ""}
                 </span>
               </div>
             ))}

@@ -19,6 +19,7 @@ from app.modules.leads.routers.router import router as leads_router
 from app.modules.organizations.routers.router import router as organizations_router
 from app.modules.projects.routers.router import router as projects_router
 from app.modules.projects.routers.extras import router as project_extras_router
+from app.modules.projects.routers.tasks import router as project_tasks_router
 from app.modules.security_reviews.routers.router import router as security_reviews_router
 from app.modules.skills.routers.router import router as skills_router
 from app.modules.recruitment.routers.router import router as recruitment_router
@@ -45,6 +46,7 @@ api_router.include_router(skills_router)
 api_router.include_router(certifications_router)
 api_router.include_router(projects_router)
 api_router.include_router(project_extras_router)
+api_router.include_router(project_tasks_router)
 api_router.include_router(services_router)
 api_router.include_router(leads_router)
 api_router.include_router(recruitment_router)

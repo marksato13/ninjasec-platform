@@ -9,6 +9,11 @@ from app.modules.projects.schemas.requirement import (
     ProjectRequirementCreate,
     ProjectRequirementRead,
 )
+from app.modules.projects.schemas.task import (
+    ProjectTaskCreate,
+    ProjectTaskRead,
+    ProjectTaskUpdate,
+)
 
 __all__ = [
     "ProjectCreate",
@@ -18,5 +23,8 @@ __all__ = [
     "ProjectRecommendationRead",
     "ProjectMemberCreate",
     "ProjectMemberRead",
+    "ProjectTaskCreate",
+    "ProjectTaskRead",
+    "ProjectTaskUpdate",
     "ProjectUpdate",
 ]
