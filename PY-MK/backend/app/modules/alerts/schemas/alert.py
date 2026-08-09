@@ -4,9 +4,9 @@ from pydantic import BaseModel, Field
 
 
 class AlertItem(BaseModel):
-    type: str           # "license_expired" | "critical_finding_open" | "ticket_overdue"
+    type: str           # "license_expired" | "critical_finding_open" | "critical_device_offline" | "ticket_overdue"
     severity: str       # "critical" | "warning" | "info"
-    entity_type: str    # "integration" | "review_finding" | "support_ticket"
+    entity_type: str    # "integration" | "review_finding" | "device" | "support_ticket"
     entity_id: int
     message: str
     created_at: datetime
