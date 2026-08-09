@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Pencil, Plus, Power } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,21 +11,40 @@ import {
   AreaItem,
   DocTypeItem,
   ProjectTypeItem,
+  createArea,
   createDocType,
+  createProjectType,
+  getAreaUsage,
   getAreas,
   getDocTypes,
+  getProjectTypeUsage,
   getProjectTypes,
+  updateArea,
+  updateProjectType,
 } from "@/lib/api";
-import { notifyError, notifySuccess } from "@/lib/alerts";
+import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 
 type Tab = "project-types" | "areas" | "doc-types";
+type CatalogTab = "project-types" | "areas";
 
 const docTypeSchema = z.object({
   name:  z.string().min(2, "Mínimo 2 caracteres").max(100),
   scope: z.enum(["public", "private", "both"]),
 });
 type DocTypeFormValues = z.infer<typeof docTypeSchema>;
+
+const catalogSchema = z.object({
+  name: z.string().min(2, "Mínimo 2 caracteres").max(120),
+});
+type CatalogFormValues = z.infer<typeof catalogSchema>;
+
+// areas y tipos de proyecto comparten forma (id, name, slug, is_active) y
+// las mismas operaciones — se despachan por pestaña en vez de duplicar UI.
+const CATALOG_API = {
+  "areas": { create: createArea, update: updateArea, usage: getAreaUsage },
+  "project-types": { create: createProjectType, update: updateProjectType, usage: getProjectTypeUsage },
+} as const;
 
 export default function DashboardSettingsPage() {
   const user         = getStoredUser();
@@ -35,10 +54,20 @@ export default function DashboardSettingsPage() {
 
   const [tab,        setTab]        = useState<Tab>("project-types");
   const [showCreate, setShowCreate] = useState(false);
+  const [editingId,  setEditingId]  = useState<number | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<DocTypeFormValues>({
     resolver: zodResolver(docTypeSchema),
     defaultValues: { name: "", scope: "public" },
+  });
+
+  const catalogForm = useForm<CatalogFormValues>({
+    resolver: zodResolver(catalogSchema),
+    defaultValues: { name: "" },
+  });
+  const editForm = useForm<CatalogFormValues>({
+    resolver: zodResolver(catalogSchema),
+    defaultValues: { name: "" },
   });
 
   const { data: projectTypes = [], isLoading: ptLoading } = useQuery<ProjectTypeItem[]>({
@@ -66,6 +95,52 @@ export default function DashboardSettingsPage() {
     },
     onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
   });
+
+  const createCatalogMutation = useMutation({
+    mutationFn: (v: CatalogFormValues) => CATALOG_API[tab as CatalogTab].create({ name: v.name }),
+    onSuccess: () => {
+      notifySuccess(tab === "areas" ? "Área creada" : "Tipo de proyecto creado");
+      catalogForm.reset();
+      setShowCreate(false);
+      queryClient.invalidateQueries({ queryKey: [tab] });
+    },
+    onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
+  });
+
+  const renameCatalogMutation = useMutation({
+    mutationFn: ({ catalogTab, id, name }: { catalogTab: CatalogTab; id: number; name: string }) =>
+      CATALOG_API[catalogTab].update(id, { name }),
+    onSuccess: () => {
+      notifySuccess("Nombre actualizado");
+      setEditingId(null);
+      editForm.reset();
+      queryClient.invalidateQueries({ queryKey: [tab] });
+    },
+    onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
+  });
+
+  const toggleActiveMutation = useMutation({
+    mutationFn: ({ catalogTab, id, isActive, confirmDeactivation }: { catalogTab: CatalogTab; id: number; isActive: boolean; confirmDeactivation?: boolean }) =>
+      CATALOG_API[catalogTab].update(id, { is_active: isActive, confirm_deactivation: confirmDeactivation ?? false }),
+    onSuccess: (_data, variables) => {
+      notifySuccess(variables.isActive ? "Registro activado" : "Registro desactivado");
+      queryClient.invalidateQueries({ queryKey: [tab] });
+    },
+    onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
+  });
+
+  async function handleDeactivate(catalogTab: CatalogTab, id: number, name: string) {
+    const { in_use_by: inUseBy } = await CATALOG_API[catalogTab].usage(id).catch(() => ({ in_use_by: 0 }));
+    const confirmed = await confirmDelete({
+      title: `¿Desactivar "${name}"?`,
+      text: inUseBy > 0
+        ? `${inUseBy} registro(s) lo usan actualmente. El histórico sigue siendo válido, pero dejará de estar disponible para elegir en registros nuevos.`
+        : "No está en uso. Dejará de estar disponible para elegir en registros nuevos.",
+      confirmText: "Sí, desactivar",
+    });
+    if (!confirmed) return;
+    toggleActiveMutation.mutate({ catalogTab, id, isActive: false, confirmDeactivation: inUseBy > 0 });
+  }
 
   const TAB_LABELS: Record<Tab, string> = {
     "project-types": "Tipos de proyecto",
@@ -112,16 +187,44 @@ export default function DashboardSettingsPage() {
             <p className="eyebrow">Catálogo</p>
             <h3>{TAB_LABELS[tab]}</h3>
           </div>
-          {isAdmin && tab === "doc-types" && (
+          {isAdmin && (
             <button
               className="button button-primary button-sm"
               type="button"
-              onClick={() => setShowCreate((s) => !s)}
+              onClick={() => { setShowCreate((s) => !s); setEditingId(null); }}
             >
               <Plus size={14} /> Nuevo
             </button>
           )}
         </div>
+
+        {showCreate && (tab === "areas" || tab === "project-types") && (
+          <form
+            className="entity-form"
+            onSubmit={catalogForm.handleSubmit((v) => createCatalogMutation.mutate(v))}
+            style={{ borderTop: "1px solid var(--line)", paddingTop: 14, marginBottom: 14 }}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "start" }}>
+              <div>
+                <input
+                  type="text"
+                  placeholder={tab === "areas" ? "Nombre del área" : "Nombre del tipo de proyecto"}
+                  {...catalogForm.register("name")}
+                />
+                {catalogForm.formState.errors.name && (
+                  <p className="form-error">{catalogForm.formState.errors.name.message}</p>
+                )}
+              </div>
+              <button
+                className="button button-success button-sm"
+                type="submit"
+                disabled={createCatalogMutation.isPending}
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
+        )}
 
         {showCreate && tab === "doc-types" && (
           <form
@@ -152,16 +255,25 @@ export default function DashboardSettingsPage() {
           <div className="table-like">
             {tab === "project-types" && (
               <>
-                <div className="table-row table-head" style={{ gridTemplateColumns: "1fr auto" }}>
-                  <span>Nombre</span><span>Estado</span>
+                <div className="table-row table-head" style={{ gridTemplateColumns: "1fr auto auto" }}>
+                  <span>Nombre</span><span>Estado</span><span></span>
                 </div>
                 {projectTypes.map((item) => (
-                  <div className="table-row" key={item.id} style={{ gridTemplateColumns: "1fr auto" }}>
-                    <span>{item.name}</span>
-                    <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
-                      {item.is_active ? "Activo" : "Inactivo"}
-                    </span>
-                  </div>
+                  <CatalogRow
+                    key={item.id}
+                    item={item}
+                    catalogTab="project-types"
+                    isAdmin={isAdmin}
+                    editingId={editingId}
+                    setEditingId={setEditingId}
+                    editForm={editForm}
+                    onRename={(id, name) => renameCatalogMutation.mutate({ catalogTab: "project-types", id, name })}
+                    onToggleActive={(id) =>
+                      item.is_active
+                        ? handleDeactivate("project-types", id, item.name)
+                        : toggleActiveMutation.mutate({ catalogTab: "project-types", id, isActive: true })
+                    }
+                  />
                 ))}
                 {projectTypes.length === 0 && <div className="empty-state">Sin registros.</div>}
               </>
@@ -169,16 +281,25 @@ export default function DashboardSettingsPage() {
 
             {tab === "areas" && (
               <>
-                <div className="table-row table-head" style={{ gridTemplateColumns: "1fr auto" }}>
-                  <span>Área</span><span>Estado</span>
+                <div className="table-row table-head" style={{ gridTemplateColumns: "1fr auto auto" }}>
+                  <span>Área</span><span>Estado</span><span></span>
                 </div>
                 {areas.map((item) => (
-                  <div className="table-row" key={item.id} style={{ gridTemplateColumns: "1fr auto" }}>
-                    <span>{item.name}</span>
-                    <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
-                      {item.is_active ? "Activo" : "Inactivo"}
-                    </span>
-                  </div>
+                  <CatalogRow
+                    key={item.id}
+                    item={item}
+                    catalogTab="areas"
+                    isAdmin={isAdmin}
+                    editingId={editingId}
+                    setEditingId={setEditingId}
+                    editForm={editForm}
+                    onRename={(id, name) => renameCatalogMutation.mutate({ catalogTab: "areas", id, name })}
+                    onToggleActive={(id) =>
+                      item.is_active
+                        ? handleDeactivate("areas", id, item.name)
+                        : toggleActiveMutation.mutate({ catalogTab: "areas", id, isActive: true })
+                    }
+                  />
                 ))}
                 {areas.length === 0 && <div className="empty-state">Sin registros.</div>}
               </>
@@ -230,5 +351,88 @@ export default function DashboardSettingsPage() {
         </article>
       )}
     </section>
+  );
+}
+
+function CatalogRow({
+  item,
+  catalogTab,
+  isAdmin,
+  editingId,
+  setEditingId,
+  editForm,
+  onRename,
+  onToggleActive,
+}: {
+  item: AreaItem | ProjectTypeItem;
+  catalogTab: CatalogTab;
+  isAdmin: boolean;
+  editingId: number | null;
+  setEditingId: (id: number | null) => void;
+  editForm: ReturnType<typeof useForm<CatalogFormValues>>;
+  onRename: (id: number, name: string) => void;
+  onToggleActive: (id: number) => void;
+}) {
+  const isEditing = editingId === item.id;
+
+  if (isEditing) {
+    return (
+      <form
+        className="table-row"
+        style={{ gridTemplateColumns: "1fr auto auto", alignItems: "center" }}
+        onSubmit={editForm.handleSubmit((v) => onRename(item.id, v.name))}
+      >
+        <div>
+          <input type="text" autoFocus {...editForm.register("name")} />
+          {editForm.formState.errors.name && (
+            <p className="form-error">{editForm.formState.errors.name.message}</p>
+          )}
+        </div>
+        <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
+          {item.is_active ? "Activo" : "Inactivo"}
+        </span>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button className="button button-success button-sm" type="submit">Guardar</button>
+          <button
+            className="button button-ghost button-sm"
+            type="button"
+            onClick={() => setEditingId(null)}
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    );
+  }
+
+  return (
+    <div className="table-row" style={{ gridTemplateColumns: "1fr auto auto", alignItems: "center" }}>
+      <span>{item.name}</span>
+      <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
+        {item.is_active ? "Activo" : "Inactivo"}
+      </span>
+      {isAdmin ? (
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            className="button button-ghost button-sm"
+            type="button"
+            title="Editar nombre"
+            onClick={() => { setEditingId(item.id); editForm.reset({ name: item.name }); }}
+          >
+            <Pencil size={14} />
+          </button>
+          <button
+            className={`button button-sm ${item.is_active ? "button-ghost" : "button-success"}`}
+            type="button"
+            title={item.is_active ? "Desactivar" : "Activar"}
+            onClick={() => onToggleActive(item.id)}
+          >
+            <Power size={14} />
+          </button>
+        </div>
+      ) : (
+        <span />
+      )}
+    </div>
   );
 }

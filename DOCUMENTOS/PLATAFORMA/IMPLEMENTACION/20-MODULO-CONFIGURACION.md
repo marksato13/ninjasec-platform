@@ -39,6 +39,10 @@
 | 13 | Listado + alta de tipos de documento | ✅ | `settings/page.tsx` |
 | 14 | Validación Zod en el formulario | ✅ | `docTypeSchema` (name ≥2, scope enum) |
 | 15 | Gating por rol (`isSuperAdmin` / `isAdmin`) | ✅ | `settings/page.tsx` → `getStoredUser()` |
+| 16 | Pantalla para editar umbrales de alertas | ✅ | `settings/page.tsx` → `GET/PUT /alerts/thresholds` |
+| 17 | CRUD de áreas desde Configuración | ✅ | `settings/page.tsx` → pestaña **Áreas** + `POST/PUT /areas` |
+| 18 | CRUD de tipos de proyecto desde Configuración | ✅ | `settings/page.tsx` → pestaña **Tipos de proyecto** + `POST/PUT /project-types` |
+| 19 | Desactivación con aviso de uso | ✅ | `settings/page.tsx` + `GET /areas/{id}/usage` y `/project-types/{id}/usage` |
 
 ---
 
@@ -46,13 +50,13 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| 20-P-01 | **CRUD de áreas desde la UI** | 🔴 Alta | Solo lectura. Crear un área exige SQL directo o modificar el seed |
-| 20-P-02 | **CRUD de tipos de proyecto desde la UI** | 🔴 Alta | Mismo caso que `20-P-01` |
+| ~~20-P-01~~ | ~~**CRUD de áreas desde la UI**~~ | — | ✅ **Resuelto 2026-08-09**: la pantalla `/dashboard/settings`, pestaña **Áreas**, permite crear, editar y desactivar áreas usando `POST /areas`, `PUT /areas/{id}` y `GET /areas/{id}/usage`. Antes de desactivar un área usada muestra el conteo de dependencias y envía `confirm_deactivation: true` solo tras confirmación del administrador |
+| ~~20-P-02~~ | ~~**CRUD de tipos de proyecto desde la UI**~~ | — | ✅ **Resuelto 2026-08-09**: la pantalla `/dashboard/settings`, pestaña **Tipos de proyecto**, permite crear, editar y desactivar tipos usando `POST /project-types`, `PUT /project-types/{id}` y `GET /project-types/{id}/usage`. Mantiene los catálogos globales como visibles/no editables |
 | 20-P-03 | CRUD de productos | 🟡 Media | El endpoint `GET` existe; no hay pestaña ni escritura |
-| 20-P-04 | Toggle `is_active` desde la UI | 🟡 Media | El campo existe en los tres catálogos y no se puede accionar |
+| 20-P-04 | Toggle `is_active` de productos desde la UI | 🟡 Media | Áreas y tipos de proyecto ya tienen desactivación con aviso de uso; falta cubrir productos |
 | ~~20-P-05~~ | ~~**Pestaña de umbrales operativos**~~ | — | ✅ **Resuelto 2026-08-09**: configuración persistida por organización para umbrales de alertas. Backend en commit `a1ac5e8`: tabla `organization_alert_thresholds`, modelo `OrganizationAlertThreshold`, servicio `get_alert_thresholds()` y `GET/PUT /alerts/thresholds`. El comportamiento mantiene valores por defecto `overdue_days = 7` y `no_review_days = 30` cuando la organización no tiene registro propio |
 | ~~20-P-06~~ | ~~Endpoints `POST`/`PUT` para areas y project-types~~ | — | ✅ **Resuelto 2026-08-06**: `catalogs/routers/router.py`. Slug derivado del nombre, unicidad validada con 409, catálogos globales protegidos. Tests en `tests/test_catalogs_write.py` (12) |
-| ~~20-P-07~~ | ~~Aviso de uso antes de desactivar~~ | — | ✅ **Resuelto 2026-08-06**: `GET /areas/{id}/usage` y `/project-types/{id}/usage` devuelven cuántos proyectos, servicios y productos dependen. El conteo queda también en el audit log al desactivar |
+| ~~20-P-07~~ | ~~Aviso de uso antes de desactivar~~ | — | ✅ **Reforzado 2026-08-08**: `GET /areas/{id}/usage` y `/project-types/{id}/usage` devuelven el uso. El `PUT` rechaza con `409` y `detail.in_use_by` la desactivación de un catálogo usado salvo que reciba `confirm_deactivation: true`; la baja sigue siendo lógica y conserva las referencias históricas. Tests en `tests/test_catalogs_write.py` |
 | ~~20-P-08~~ | ~~**`GET /products` no filtra por organización**~~ | — | ✅ **Resuelto 2026-08-06**: filtro por `organization_id` en los tres catálogos. `Area`/`ProjectType` además admiten globales (`NULL`). Tests en `tests/test_catalogs_tenant_isolation.py` (5) — **verificado que fallan sin el fix** |
 | ~~20-P-09~~ | ~~**`unique` global en catálogos multi-tenant**~~ | — | ✅ **Resuelto 2026-08-06**: `UniqueConstraint(organization_id, name/slug)` en `Area`, `ProjectType` y `Product` + migración `20260806_01_catalog_tenant_unique.py`. Tests en `tests/test_catalogs_composite_unique.py` (5) |
 | 20-P-10 | `organization_id` nullable en `Area` y `ProjectType` | 🟡 Media | Un registro con `organization_id = NULL` es visible para todos sin que ninguna regla lo declare. Decidir: o es catálogo global explícito, o es `NOT NULL` |
@@ -92,10 +96,40 @@ Era el módulo **menos completo** de los construidos: funcionaba como *visor*, n
 - No se borra, se desactiva: un área referenciada por proyectos históricos no puede desaparecer
 
 **Orden de trabajo restante:**
-1. `20-P-01` y `20-P-02` — conectar la UI a los endpoints que ya existen
-2. `20-P-04` — toggle de `is_active` usando el endpoint `/usage` para el aviso
-3. `20-P-03` — CRUD de productos
-4. `20-P-10` / `20-P-11` — decidir si `Area`/`ProjectType` son globales o por tenant, y si `client` debe leer catálogos
+1. `20-P-03` — CRUD de productos
+2. `20-P-04` — toggle de `is_active` de productos
+3. `20-P-10` / `20-P-11` — decidir si `Area`/`ProjectType` son globales o por tenant, y si `client` debe leer catálogos
+
+---
+
+## ✅ CRUD de catálogos en Configuración — 2026-08-09
+
+`20-P-01` y `20-P-02` quedan cerrados: los endpoints de escritura que existían desde la Tanda 0 ya están conectados desde `/dashboard/settings`.
+
+**Pantalla creada:**
+
+| Pestaña | Acciones | Endpoints |
+|---|---|---|
+| **Áreas** | Listar, crear, editar y desactivar | `GET /areas`, `POST /areas`, `PUT /areas/{id}`, `GET /areas/{id}/usage` |
+| **Tipos de proyecto** | Listar, crear, editar y desactivar | `GET /project-types`, `POST /project-types`, `PUT /project-types/{id}`, `GET /project-types/{id}/usage` |
+
+La UI mantiene el patrón de Configuración: pestañas dentro de `/dashboard/settings`, formularios compactos, validación en el cliente, acciones restringidas a `admin` y `super_admin`, y uso de las alertas existentes en lugar de `alert()` o `window.confirm`.
+
+**Flujo de desactivación con uso:**
+
+1. El administrador pulsa desactivar sobre un área o tipo de proyecto.
+2. La pantalla consulta el endpoint `/usage` correspondiente.
+3. Si `in_use_by` es mayor que cero, se muestra el conteo antes de continuar.
+4. Al confirmar, la UI envía `PUT` con `is_active: false` y `confirm_deactivation: true`.
+5. El backend rechaza con `409` cualquier desactivación usada que no incluya confirmación; con confirmación conserva las referencias históricas y solo cambia `is_active`.
+
+**Evidencia de pruebas:**
+
+```bash
+docker run --rm -v /home/m4rk/workspace/worktrees/issue-9-backend/PY-MK/backend:/app -w /app python:3.12-slim sh -c 'pip install -q -r requirements.txt && PYTHONPATH=. pytest -q tests/test_catalogs_write.py'
+```
+
+**Resultado:** `14 passed, 52 warnings`.
 
 ---
 

@@ -64,10 +64,10 @@ Hoy no duele porque el entorno se recrea. **Duele el día que haya una base con 
 |---|---|---|---|
 | 1 | **23-P1** Diagrama de topología (UI) | 1 sesión | 🔥 El backend está 100% hecho y **nadie lo consume**. Máximo retorno del roadmap |
 | 2 | **23-P2** Editor de conexiones | 0.5 sesión | Completa el módulo y lo hace usable |
-| 3 | `20-P-01`/`20-P-02` CRUD de catálogos en UI | 0.5 sesión | Desbloquea `18-P-02` |
+| 3 | ~~`20-P-01`/`20-P-02` CRUD de catálogos en UI~~ | — | ✅ **Cerrado 2026-08-09**: `/dashboard/settings` ya permite crear, editar y desactivar áreas y tipos de proyecto; la desactivación consulta `/usage` y exige confirmación cuando hay dependencias |
 | 4 | `16-P-01` Export del audit log a PDF/XLSX | 0.5 sesión | Requisito del curso de Auditoría y de E5 |
 
-**Total: ~2.5 sesiones.** Al terminar hay una funcionalidad demostrable nueva (topología) y la plataforma queda administrable.
+**Total pendiente: ~2 sesiones.** Al terminar hay una funcionalidad demostrable nueva (topología) y la plataforma queda administrable.
 
 ---
 
