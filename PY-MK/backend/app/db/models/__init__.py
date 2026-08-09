@@ -8,6 +8,11 @@ from app.db.models.area import Area
 from app.db.models.catalog_device import CatalogDevice
 from app.db.models.client import Client
 from app.db.models.client_contact import ClientContact
+from app.db.models.compliance import (
+    ClientControlStatus,
+    ComplianceControl,
+    ComplianceFramework,
+)
 from app.db.models.client_profile import ClientProfile
 from app.db.models.client_service import ClientService
 from app.db.models.client_site import ClientSite
@@ -59,6 +64,9 @@ __all__ = [
     "CatalogDevice",
     "Client",
     "ClientContact",
+    "ClientControlStatus",
+    "ComplianceControl",
+    "ComplianceFramework",
     "ClientProfile",
     "ClientService",
     "ClientSite",

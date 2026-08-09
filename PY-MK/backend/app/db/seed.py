@@ -9,6 +9,7 @@ from app.core.security import hash_password
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.area import Area
 from app.db.models.catalog_device import CatalogDevice
+from app.db.models.compliance import ComplianceControl, ComplianceFramework
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
 from app.db.models.collaborator_profile import CollaboratorProfile
@@ -874,4 +875,44 @@ def seed_initial_data(db: Session) -> None:
         if not db.scalar(select(CatalogDevice).where(CatalogDevice.slug == entry["slug"])):
             db.add(CatalogDevice(**entry))
 
+    db.commit()
+
+    seed_compliance_catalog(db)
+
+
+def seed_compliance_catalog(db: Session) -> None:
+    """24-P1 -- carga el catálogo de los 93 controles del Anexo A de ISO
+    27001:2022. Idempotente: compara por código, no duplica si se llama
+    de nuevo."""
+    from app.modules.compliance.iso27001_2022 import ISO_27001_2022_CONTROLS
+
+    framework = db.scalar(
+        select(ComplianceFramework).where(ComplianceFramework.slug == "iso-27001-2022")
+    )
+    if framework is None:
+        framework = ComplianceFramework(
+            name="ISO/IEC 27001", version="2022", slug="iso-27001-2022"
+        )
+        db.add(framework)
+        db.flush()
+
+    existing_codes = set(
+        db.scalars(
+            select(ComplianceControl.code).where(
+                ComplianceControl.framework_id == framework.id
+            )
+        ).all()
+    )
+    for code, category, title in ISO_27001_2022_CONTROLS:
+        if code in existing_codes:
+            continue
+        db.add(
+            ComplianceControl(
+                framework_id=framework.id,
+                code=code,
+                parent_code=code.rsplit(".", 1)[0],
+                category=category,
+                title=title,
+            )
+        )
     db.commit()
