@@ -58,7 +58,7 @@
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
 | 15-P-01 | **Conversión `hired` → Colaborador** | 🔴 Alta | Al marcar `hired` no se crea el usuario ni el `collaborator_profile`. Hoy es manual y se pierde la trazabilidad del origen |
-| 15-P-02 | Upload real de CV | 🟡 Media | `cv_url` y `attachments` guardan solo URL; no hay almacenamiento (comparte bloqueo con `10-P-05`) |
+| ~~15-P-02~~ | ~~Upload real de CV~~ | — | ✅ **Resuelto 2026-08-08**: endpoint multipart en `/{id}/attachments/upload`, listado y descarga autenticada. Un PDF actualiza `cv_url`; las URLs externas existentes y la creación de adjuntos por URL continúan válidas. Evidencia: `tests/test_file_storage.py` |
 | 15-P-03 | Score agregado por postulación | 🟡 Media | Hay reviews individuales pero no promedio ni consolidado en el listado |
 | 15-P-04 | Notificación por correo al candidato | 🟢 Baja | Los cambios de estado no notifican a nadie |
 | ~~15-P-05~~ | ~~**Rate limiting en el endpoint público**~~ | — | ✅ **Resuelto 2026-08-06**: `app/common/rate_limit.py` — ventana deslizante en memoria, 5 postulaciones/hora por IP, respeta `X-Forwarded-For`. ⚠️ Es por proceso: con varios workers o réplicas hay que migrarlo a Redis o a Caddy. Tests en `tests/test_public_application_rate_limit.py` (4) |

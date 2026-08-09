@@ -82,5 +82,5 @@
 | ~~10-P-02~~ | ~~Certificaciones en el perfil~~ | ✅ **Implementado**: `getUserCertifications()` cargado en background y agrupado por `user_id`. Cada card muestra contador en `card-meta` (con icono `Award`) + hasta 3 tags verdes con nombre de cert (+ "más" si hay más) |
 | ~~10-P-03~~ | ~~Foto real del colaborador~~ | ✅ **Implementado** (parcial): columna `photo_url VARCHAR(500)` + input URL en el form. `CollabAvatar` renderiza `<img>` si está set, con fallback a iniciales en caso de error de carga. Para upload de archivo (no solo URL), se necesitaría infraestructura de storage adicional (S3, etc.) |
 | ~~10-P-04~~ | ~~Collaborator podía editar cualquier perfil~~ | ✅ **Implementado** en sesión anterior |
-| 10-P-05 | Upload de imagen (vs URL externa) | Actualmente photo_url acepta solo URL externa. Para subir archivo necesita endpoint de upload + storage backend (S3, MinIO, o filesystem local) |
+| ~~10-P-05~~ | ~~Upload de imagen (vs URL externa)~~ | ✅ **Resuelto 2026-08-08**: el endpoint de foto usa el storage local común, valida JPG/PNG/WEBP hasta 5 MB y sirve la imagen con autorización de tenant. `photo_url` externo sigue aceptándose sin migración |
 | ~~10-P-06~~ | ~~Migración Alembic para `area` y `photo_url`~~ | ✅ **Resuelto** (verificado 2026-08-06): `20260522_01_pending_schema_updates.py:33-36` agrega ambas columnas a `collaborator_profiles` |

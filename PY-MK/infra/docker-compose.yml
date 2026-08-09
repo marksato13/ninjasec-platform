@@ -37,6 +37,9 @@ services:
       CORS_ORIGINS:                ${CORS_ORIGINS:-http://localhost:3018}
       SEED_ON_STARTUP:             ${SEED_ON_STARTUP:-true}
       IS_PRODUCTION:               ${IS_PRODUCTION:-false}
+      STORAGE_PATH:                /data/uploads
+    volumes:
+      - uploads_data:/data/uploads
     ports:
       - "8024:8024"
     healthcheck:
@@ -63,3 +66,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:
