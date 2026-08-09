@@ -1,23 +1,39 @@
 # Implementación — Módulo Integraciones Open Source y Mini-SOAR
 
 > Basado en: `PLANIFICACION/30-MODULO-INTEGRACIONES-OPENSOURCE.md`
-> Creado: 2026-08-05 · **Estado: no iniciado**
+> Creado: 2026-08-05 · Actualizado: 2026-08-09 · **P1 parcial (issue #61)**
 
 ---
 
-## ⏳ P1 — Esquema normalizado + conector Wazuh
+## 🟡 P1 — Esquema normalizado + conector Wazuh (parcial)
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 1 | Modelo `SecurityEvent` (esquema común) | ⏳ | |
-| 2 | Migración Alembic + índices por `occurred_at` y `client_id` | ⏳ | |
-| 3 | Campo `raw_payload` — nunca se descarta el original | ⏳ | 🔴 |
-| 4 | Conector Wazuh (API REST, solo lectura) | ⏳ | |
-| 5 | Credenciales cifradas en reposo | ⏳ | 🔴 |
-| 6 | `GET /security-events` con filtros | ⏳ | |
-| 7 | Recolección manual bajo demanda | ⏳ | |
+| 1 | Modelo `SecurityEvent` (esquema común) | ⏳ | **Decisión deliberada**: no se creó una tabla nueva. Se reutilizó `CollectionSnapshot` (ya existente, ya tiene `raw_payload`/`normalized_payload` por integración+dispositivo) en vez de duplicar infraestructura — ver nota abajo |
+| 2 | Migración Alembic + índices por `occurred_at` y `client_id` | ⏳ | No aplica mientras no exista `SecurityEvent` — `CollectionSnapshot` ya tiene `collected_at` e `integration_id` indexado |
+| 3 | Campo `raw_payload` — nunca se descarta el original | ✅ | Ya existía en `CollectionSnapshot` para pfSense/FortiGate; el conector Wazuh sigue el mismo contrato |
+| 4 | Conector Wazuh (API REST, solo lectura) | 🟡 | **Simulado**, mismo criterio que pfSense/FortiGate (`simulate_connector_test`) — no hay llamada HTTP real a un Wazuh Manager todavía. Ver nota abajo |
+| 5 | Credenciales cifradas en reposo | ⏳ | Sigue pendiente — bloqueante para conectar un Wazuh real, no para el modo simulado |
+| 6 | `GET /security-events` con filtros | ⏳ | Los eventos siguen accesibles vía `GET /device-configs`-equivalente (`CollectionSnapshot` por integración), no hay endpoint dedicado todavía |
+| 7 | Recolección manual bajo demanda | ✅ | `POST /integrations/{id}/collect` ya existe y ya soporta `wazuh` como `connector_type` |
 | 8 | Vista de eventos con filtros por fuente, tipo y severidad | ⏳ | |
 | 9 | **Política de retención configurable** | ⏳ | 🔴 sin esto la tabla crece sin control |
+
+### Esquema normalizado (ECS-lite) — issue #61, resuelto 2026-08-09
+
+**El problema real que se resolvió**: pfSense y FortiGate ya tenían `normalized_payload`, pero con formatos completamente distintos entre sí (`{"uptime_status":...}` vs `{"threat_events":...}`) — no había ninguna clave en común, imposible correlacionar eventos entre fuentes.
+
+**La solución**: las tres fuentes (pfSense, FortiGate, Wazuh) ahora devuelven la misma envoltura en `normalized_payload`:
+```json
+{"events": [{"@timestamp": "...", "event": {"category": "...", "severity": "..."}, "source": {"ip": "..."}, "rule": {"description": "..."}, "extra": {...}}]}
+```
+Subconjunto real de Elastic Common Schema (ECS) — de ahí "ECS-lite". Lo que no encaja en ECS (ej. `active_vpn_sessions`, `rule_id`) queda en `extra`, sin perderse.
+
+**Por qué no se creó `SecurityEvent` todavía**: `CollectionSnapshot` (módulo `collection`, ya existente) ya persiste `raw_payload`/`normalized_payload` por `integration_id`+`device_id`. Crear una tabla `SecurityEvent` que solo re-empaqueta ese mismo JSON en filas individuales es trabajo real, pero no era necesario para resolver el problema de fondo del issue (falta de esquema común). Se deja explícitamente como pendiente (#1/#2/#6/#8 arriba) para cuando haga falta filtrar/consultar eventos individuales por severidad o tipo — hoy el JSON ya trae esa información, solo que no es queryable por SQL.
+
+**Frontend**: `integration-form.tsx` agrega "Wazuh" al selector de `connector_type`; el banner de `/dashboard/integrations` ya no dice "solo pfSense y FortiGate".
+
+**Verificado**: `pytest` completo en verde (175 tests, 1 skip, incluye 4 casos nuevos en `test_integration_connectors.py`: conector alcanzable, conector no soportado, las tres fuentes comparten el mismo esquema, Wazuh genera dispositivo + evento crítico). Smoke test manual end-to-end vía curl: crear integración Wazuh → `POST /collect` → dispositivo `wazuh-manager` creado automáticamente.
 
 ## ⏳ P2 — Normalización y correlación
 

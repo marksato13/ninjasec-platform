@@ -107,8 +107,8 @@ export default function DashboardIntegrationsPage() {
       </div>
 
       <div className="state-panel">
-        Orden recomendado: <strong>Clientes -&gt; Dispositivos (Inventario) -&gt; Integraciones</strong>. Por ahora las integraciones soportadas son solo
-        firewalls <strong>pfSense</strong> y <strong>FortiGate</strong>.
+        Orden recomendado: <strong>Clientes -&gt; Dispositivos (Inventario) -&gt; Integraciones</strong>. Por ahora las integraciones soportadas son
+        <strong>pfSense</strong>, <strong>FortiGate</strong> y <strong>Wazuh</strong>.
       </div>
 
       {message ? (
