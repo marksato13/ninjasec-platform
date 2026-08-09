@@ -5,6 +5,7 @@ from app.db.models.application_event import ApplicationEvent
 from app.db.models.application_note import ApplicationNote
 from app.db.models.application_review import ApplicationReview
 from app.db.models.area import Area
+from app.db.models.catalog_device import CatalogDevice
 from app.db.models.client import Client
 from app.db.models.client_contact import ClientContact
 from app.db.models.client_profile import ClientProfile
@@ -55,6 +56,7 @@ __all__ = [
     "ApplicationNote",
     "ApplicationReview",
     "Area",
+    "CatalogDevice",
     "Client",
     "ClientContact",
     "ClientProfile",

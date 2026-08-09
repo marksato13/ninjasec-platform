@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.security import hash_password
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.area import Area
+from app.db.models.catalog_device import CatalogDevice
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
 from app.db.models.collaborator_profile import CollaboratorProfile
@@ -823,5 +824,54 @@ def seed_initial_data(db: Session) -> None:
                 assigned_at=utcnow(),
             )
         )
+
+    # 29-P1 -- seed mínimo del catálogo de equipos, solo para poder probar
+    # los filtros facetados. No pretende ser un catálogo real completo.
+    catalog_seed = [
+        dict(
+            slug="cisco-catalyst-2960x", brand="Cisco", model="Catalyst 2960-X",
+            category="switch", subcategory="access", osi_layer="L2", segment="enterprise",
+            port_count=24, port_speed="1G", poe=True, poe_budget_w=370,
+            stackable=True, rack_mountable=True, managed=True,
+            switching_capacity_gbps=88.0, power_consumption_w=64,
+            lifecycle_status="active", price_range_usd="1500-2500",
+            use_cases="Distribución de acceso en oficinas medianas",
+            tags="cisco,switch,poe,stackable",
+            datasheet_url="https://www.cisco.com/c/en/us/products/switches/catalyst-2960-x-series-switches/index.html",
+        ),
+        dict(
+            slug="mikrotik-ccr2004-1g", brand="MikroTik", model="CCR2004-1G-12S+2XS",
+            category="router", subcategory="core", osi_layer="L3", segment="smb",
+            port_count=14, port_speed="mixed", poe=False, stackable=False,
+            rack_mountable=True, managed=True, throughput_mbps=8000,
+            power_consumption_w=60, lifecycle_status="active",
+            price_range_usd="700-900", use_cases="Router de borde para ISP pequeños",
+            tags="mikrotik,router,routeros",
+            datasheet_url="https://mikrotik.com/product/ccr2004_1g_12s_2xs",
+        ),
+        dict(
+            slug="cisco-asa-5505", brand="Cisco", model="ASA 5505",
+            category="firewall", subcategory="edge", osi_layer="L3", segment="soho",
+            port_count=8, port_speed="100M", poe=False, stackable=False,
+            rack_mountable=False, managed=True, power_consumption_w=25,
+            lifecycle_status="eol", eos_date=date(2013, 9, 1), eol_date=date(2018, 9, 1),
+            price_range_usd="200-400",
+            use_cases="Firewall perimetral para oficinas pequeñas (descontinuado)",
+            tags="cisco,firewall,eol",
+            datasheet_url="https://www.cisco.com/c/en/us/support/security/asa-5505-adaptive-security-appliance/series.html",
+        ),
+        dict(
+            slug="ubiquiti-unifi-ap-ac-pro", brand="Ubiquiti", model="UniFi AP AC Pro",
+            category="access_point", subcategory="access", osi_layer="L2", segment="smb",
+            poe=True, poe_budget_w=15, managed=True, throughput_mbps=1300,
+            power_consumption_w=9, lifecycle_status="active",
+            price_range_usd="150-200", use_cases="Wi-Fi gestionado para pymes",
+            tags="ubiquiti,wifi,poe,unifi",
+            datasheet_url="https://store.ui.com/us/en/products/unifi-ap-ac-pro",
+        ),
+    ]
+    for entry in catalog_seed:
+        if not db.scalar(select(CatalogDevice).where(CatalogDevice.slug == entry["slug"])):
+            db.add(CatalogDevice(**entry))
 
     db.commit()
