@@ -29,7 +29,7 @@ Un pendiente resuelto se tacha en su archivo y se anota la evidencia — nunca s
 | 14 | Portal cliente | ✅ Operativo | 0 | – | |
 | 15 | Postulaciones | ✅ Operativo | 5 | 1 | Endpoint público ya con rate limiting |
 | 16 | Auditoría | ✅ Operativo | 6 | 1 | |
-| 17 | Aprobaciones | ✅ Operativo | 4 | 2 | |
+| 17 | Aprobaciones | ✅ Operativo | 2 | 0 | `17-P-01` y `17-P-02` cerrados el 2026-08-08 |
 | 18 | Alertas | ✅ Operativo | 7 | 2 | Umbrales hardcodeados |
 | 19 | Documentos | ✅ Operativo | 6 | 1 | Bloqueado por el storage |
 | 20 | Configuración | ✅ Operativo | 7 | 3 | Ya tiene escritura de catálogos |
@@ -44,7 +44,7 @@ Un pendiente resuelto se tacha en su archivo y se anota la evidencia — nunca s
 | 29 | Catálogo de equipos | ⏳ No iniciado | – | – | |
 | 30 | Integraciones open source | ⏳ No iniciado | – | – | P6 con puerta de seguridad |
 
-**Totales:** 22 módulos construidos · **52 pendientes abiertos** · **67 resueltos y documentados** · 8 módulos por empezar.
+**Totales:** 22 módulos construidos · **50 pendientes abiertos** · **69 resueltos y documentados** · 8 módulos por empezar.
 
 ---
 
@@ -95,13 +95,13 @@ Los seis huecos de integridad y aislamiento. **63 tests pasan** (26 previos + 37
 
 > El README llamaba a estos módulos "cerrados". Están **operativos**, que no es lo mismo: quedan 7 cabos sueltos, todos de baja consecuencia.
 
-### Módulos 15-22 — 45 abiertos, 11 de prioridad alta
+### Módulos 15-22 — 43 abiertos, 9 de prioridad alta
 
 | Módulo | 🔴 Alta | 🟡 Media | 🟢 Baja |
 |---|:---:|:---:|:---:|
 | 15 Postulaciones | `15-P-01` | `15-P-02` `15-P-03` `15-P-06` | `15-P-04` |
 | 16 Auditoría | `16-P-01` | `16-P-02` `16-P-03` `16-P-04` `16-P-06` | `16-P-05` |
-| 17 Aprobaciones | `17-P-01` `17-P-02` | `17-P-03` | `17-P-06` |
+| 17 Aprobaciones | — | `17-P-03` | `17-P-06` |
 | 18 Alertas | `18-P-02` `18-P-04` | `18-P-01` `18-P-03` `18-P-06` `18-P-07` | `18-P-05` |
 | 19 Documentos | `19-P-01` | `19-P-02` `19-P-03` `19-P-04` | `19-P-05` `19-P-06` |
 | 20 Configuración | `20-P-01` `20-P-02` `20-P-05` | `20-P-03` `20-P-04` `20-P-10` `20-P-11` | — |
