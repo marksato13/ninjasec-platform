@@ -48,7 +48,7 @@ def _topology_data(db, organization_id: int, prefix: str = "Principal"):
         device_type="firewall",
         vendor="Fortinet",
         model="FG-60F",
-        ip_address="[IP_REDACTED]",
+        ip_address="192.168.1.1",
         status="online",
         criticality="critical",
     )
@@ -59,7 +59,7 @@ def _topology_data(db, organization_id: int, prefix: str = "Principal"):
         device_type="switch",
         vendor="Cisco",
         model="CBS350",
-        ip_address="[IP_REDACTED]",
+        ip_address="192.168.1.2",
         status="online",
         criticality="high",
     )
@@ -67,7 +67,7 @@ def _topology_data(db, organization_id: int, prefix: str = "Principal"):
         integration_id=integration.id,
         hostname=f"ap-{prefix}",
         device_type="access_point",
-        ip_address="[IP_REDACTED]",
+        ip_address="192.168.1.3",
         status="offline",
         criticality="low",
     )
@@ -137,7 +137,7 @@ def test_topology_transforms_devices_links_and_site_clusters(
         "device_type": "firewall",
         "vendor": "Fortinet",
         "model": "FG-60F",
-        "ip_address": "[IP_REDACTED]",
+        "ip_address": "192.168.1.1",
         "status": "online",
         "criticality": "critical",
         "data_classification": None,
@@ -202,7 +202,7 @@ def test_client_topology_hides_ips_and_ports_and_cannot_select_other_client(
     assert {node["id"] for node in topology["nodes"]} == {firewall.id, switch.id, ap.id}
     assert all(node["ip_address"] is None for node in topology["nodes"])
     assert all(edge["port_source"] is None and edge["port_target"] is None for edge in topology["edges"])
-    assert "[IP_REDACTED]" not in response.text
+    assert "192.168.1.1" not in response.text
     assert "Gi1/0/24" not in response.text
 
     forbidden = http_client.get(
