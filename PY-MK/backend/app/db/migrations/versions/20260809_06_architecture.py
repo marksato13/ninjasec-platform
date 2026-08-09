@@ -1,13 +1,13 @@
 """Repositorio de arquitectura empresarial (27-P1).
 
-Revision ID: 20260809_05
-Revises: 20260809_04
+Revision ID: 20260809_06
+Revises: 20260809_05
 """
 import sqlalchemy as sa
 from alembic import op
 
-revision = "20260809_05"
-down_revision = "20260809_04"
+revision = "20260809_06"
+down_revision = "20260809_05"
 branch_labels = None
 depends_on = None
 
@@ -20,7 +20,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(160), nullable=False), sa.Column("version", sa.String(40), nullable=False, server_default="1.0"),
         sa.Column("state", sa.String(20), nullable=False), sa.Column("adm_phase", sa.String(20)),
         sa.Column("status", sa.String(20), nullable=False, server_default="draft"),
-        sa.Column("created_at", sa.DateTime(), server_default=sa.text("now()")), sa.Column("updated_at", sa.DateTime(), server_default=sa.text("now()")),
+        sa.Column("created_at", sa.DateTime(), nullable=False, server_default=sa.text("now()")), sa.Column("updated_at", sa.DateTime(), nullable=False, server_default=sa.text("now()")),
         sa.ForeignKeyConstraint(["organization_id"], ["organizations.id"]), sa.ForeignKeyConstraint(["client_id"], ["clients.id"]),
     )
     op.create_index("ix_architecture_models_organization_id", "architecture_models", ["organization_id"])

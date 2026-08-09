@@ -44,9 +44,10 @@ def _client(db, organization_id: int, suffix: str) -> Client:
     return client
 
 
-def _model(db, client_id: int, *, state: str = "baseline") -> ArchitectureModel:
+def _model(db, client_id: int, organization_id: int, *, state: str = "baseline") -> ArchitectureModel:
     model = ArchitectureModel(
         client_id=client_id,
+        organization_id=organization_id,
         name=f"Modelo {state}",
         version="1.0",
         state=state,
@@ -61,7 +62,7 @@ def _model(db, client_id: int, *, state: str = "baseline") -> ArchitectureModel:
 def test_model_crud_persists_each_architecture_state(db, seed_data):
     """Los tres estados se conservan y un modelo puede editarse y eliminarse."""
     client = _client(db, seed_data["org"].id, "Estados")
-    models = [_model(db, client.id, state=state) for state in ("baseline", "target", "transition")]
+    models = [_model(db, client.id, client.organization_id, state=state) for state in ("baseline", "target", "transition")]
     db.commit()
 
     db.expire_all()
@@ -88,7 +89,7 @@ def test_model_crud_persists_each_architecture_state(db, seed_data):
 def test_layer_filter_returns_only_requested_layer(db, seed_data, layer):
     """Cada consulta de capa es exclusiva aunque el modelo contenga las cinco."""
     client = _client(db, seed_data["org"].id, f"Capas {layer}")
-    model = _model(db, client.id)
+    model = _model(db, client.id, client.organization_id)
     elements = [
         ArchitectureElement(
             model_id=model.id,
@@ -115,7 +116,7 @@ def test_layer_filter_returns_only_requested_layer(db, seed_data, layer):
 def test_element_crud_preserves_source_traceability(db, seed_data):
     """La procedencia de un elemento derivado sobrevive a create, update y reload."""
     client = _client(db, seed_data["org"].id, "Trazabilidad")
-    model = _model(db, client.id)
+    model = _model(db, client.id, client.organization_id)
     element = ArchitectureElement(
         model_id=model.id,
         layer="technology",
@@ -123,7 +124,7 @@ def test_element_crud_preserves_source_traceability(db, seed_data):
         name="Firewall perimetral",
         description="Inventario sincronizado",
         source_module="devices",
-        source_id=42,
+        source_id="42",
         properties_json={"ip_address": "10.0.0.1"},
     )
     db.add(element)
@@ -131,7 +132,7 @@ def test_element_crud_preserves_source_traceability(db, seed_data):
 
     db.expire_all()
     persisted = db.get(ArchitectureElement, element.id)
-    assert (persisted.source_module, persisted.source_id) == ("devices", 42)
+    assert (persisted.source_module, persisted.source_id) == ("devices", "42")
     assert persisted.properties_json == {"ip_address": "10.0.0.1"}
 
     persisted.name = "Firewall principal"
@@ -139,7 +140,7 @@ def test_element_crud_preserves_source_traceability(db, seed_data):
     db.expire_all()
     updated = db.get(ArchitectureElement, element.id)
     assert updated.name == "Firewall principal"
-    assert (updated.source_module, updated.source_id) == ("devices", 42)
+    assert (updated.source_module, updated.source_id) == ("devices", "42")
 
     db.delete(updated)
     db.commit()
@@ -149,7 +150,7 @@ def test_element_crud_preserves_source_traceability(db, seed_data):
 def test_relationship_crud_preserves_actual_relationship_types(db, seed_data):
     """Los tipos definidos por P1 se almacenan literalmente, sin asumir validación P3."""
     client = _client(db, seed_data["org"].id, "Relaciones")
-    model = _model(db, client.id)
+    model = _model(db, client.id, client.organization_id)
     source = ArchitectureElement(
         model_id=model.id, layer="application", element_type="ApplicationComponent", name="Origen"
     )
@@ -160,6 +161,7 @@ def test_relationship_crud_preserves_actual_relationship_types(db, seed_data):
     db.flush()
     relationships = [
         ArchitectureRelationship(
+            model_id=model.id,
             source_element_id=source.id,
             target_element_id=target.id,
             relationship_type=relationship_type,

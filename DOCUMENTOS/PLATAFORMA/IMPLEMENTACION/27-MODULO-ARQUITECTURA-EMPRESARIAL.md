@@ -1,33 +1,34 @@
 # Implementación — Módulo Arquitectura Empresarial
 
 > Basado en: `PLANIFICACION/27-MODULO-ARQUITECTURA-EMPRESARIAL.md`
-> Creado: 2026-08-05 · Actualizado: 2026-08-09 · **Estado: no iniciado en código**
+> Creado: 2026-08-05 · Actualizado: 2026-08-09 · **Estado: P1 backend + vista mínima hechos**
 
 ---
 
-## ⏳ P1 — Repositorio de arquitectura
+## 🟡 P1 — Repositorio de arquitectura (backend + vista mínima, falta editor visual)
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
 | 1 | Modelo `ArchitectureModel` (baseline/target/transition) | ✅ | `app/db/models/architecture.py` |
-| 2 | Modelo `ArchitectureElement` con 5 capas | ✅ | Validación literal en schemas |
-| 3 | Modelo `ArchitectureRelationship` con 7 tipos | ✅ | Validación literal en schemas |
-| 4 | Migración Alembic | ✅ | `20260809_05_architecture.py` |
+| 2 | Modelo `ArchitectureElement` con 5 capas | ✅ | Validación `Literal` en schemas |
+| 3 | Modelo `ArchitectureRelationship` con 7 tipos | ✅ | Validación `Literal` en schemas — persistencia básica, **no** valida legalidad de pares según ArchiMate 3.2 (eso es P3) |
+| 4 | Migración Alembic | ✅ | `20260809_06_architecture.py` |
 | 5 | Campos `source_module` / `source_id` para trazabilidad | ✅ | Persistidos en elementos |
 | 6 | `GET/POST/PUT /architecture/models` | ✅ | Router `/architecture` |
 | 7 | CRUD de elementos y relaciones | ✅ | Router `/architecture` |
-| 8 | Página `/dashboard/architecture` con listado de modelos | ✅ | Vista administrativa |
+| 8 | Página `/dashboard/architecture` con listado de modelos | 🟡 | Selector de modelo existe; falta formulario de alta (solo se crea por API por ahora) |
 | 9 | Vista de listado por capa (tabla, sin lienzo aún) | ✅ | Selector exclusivo de cinco capas |
 | 10 | Versionado: `approved` es inmutable, se crea versión nueva | ✅ | Mutaciones devuelven 409; nueva versión vía POST |
 
-### Alcance entregado y evidencia — 2026-08-09
+### Evidencia verificada — 2026-08-09
 
-Esta actualización es **solo documental**. En este worktree no existe todavía un módulo `architecture` en backend ni frontend:
+- Migración corregida antes de mergear: colisionaba de ID con `20260809_05_audits.py` (issue #24, mergeado un rato antes) — renombrada a `20260809_06` y re-encadenada.
+- `created_at`/`updated_at` de `architecture_models` no tenían `nullable=False` en la migración pese a que el modelo los declara obligatorios — corregido; `alembic check` limpio contra un Postgres vacío.
+- Tests de persistencia de la propia flota tenían dos bugs reales: no pasaban `organization_id` al crear `ArchitectureModel` ni `model_id` al crear `ArchitectureRelationship` (ambos NOT NULL) — corregidos. Un tercer test comparaba `source_id` como `int` contra una columna `String` — corregido a `str`.
+- Verificado manualmente vía API real: crear modelo → aprobar → intentar mutar un modelo aprobado devuelve 409 (regla de inmutabilidad confirmada end-to-end, no solo a nivel de ORM).
+- `tsc --noEmit` limpio. Suite completa: 154 passed.
 
-- `rg -n "ArchitectureModel|ArchitectureElement|ArchitectureRelationship|relationship_type|sync-technology|architecture" PY-MK/backend PY-MK/frontend -S` no encuentra modelos, servicios, rutas, cliente API ni pantalla de arquitectura empresarial; el único resultado es una cadena genérica ajena al módulo en `compliance/iso27001_2022.py`.
-- `rg --files PY-MK/backend PY-MK/frontend | rg "architecture|Architecture|arquitectura"` no encuentra archivos propios del módulo.
-
-Por tanto, P1 queda **pendiente de implementación**. No se entrega CRUD, migración Alembic, pantalla `/dashboard/architecture`, versionado ni persistencia de elementos/relaciones.
+**Pendiente de una fase posterior (no P1):** el formulario de alta de modelos en la UI (fila 8) y el estilo del componente frontend usa clases Tailwind sueltas (`bg-slate-900`, etc.) en vez del sistema de tokens (`--primary`, `--surface`...) que usa el resto del dashboard — funciona pero no respeta el theming claro/oscuro existente.
 
 **Exclusiones explícitas:**
 
