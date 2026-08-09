@@ -21,6 +21,9 @@ def _has_table(table_name: str) -> bool:
 
 def upgrade() -> None:
     if not _has_table("project_tasks"):
+        status_enum = sa.Enum(
+            "PENDING", "IN_PROGRESS", "DONE", name="project_task_status_enum"
+        )
         op.create_table(
             "project_tasks",
             sa.Column("id", sa.Integer(), primary_key=True),
@@ -31,9 +34,9 @@ def upgrade() -> None:
             sa.Column("description", sa.String(length=500), nullable=True),
             sa.Column(
                 "status",
-                sa.String(length=20),
+                status_enum,
                 nullable=False,
-                server_default="pending",
+                server_default="PENDING",
             ),
             sa.Column(
                 "created_at", sa.DateTime(), nullable=False, server_default=sa.text("now()")
