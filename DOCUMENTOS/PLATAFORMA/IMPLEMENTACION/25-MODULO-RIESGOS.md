@@ -17,21 +17,29 @@
 | 6 | `GET/POST/PUT /risks` con guard por organización | ✅ | Incluye detalle y DELETE; acceso ajeno responde 404 |
 | 7 | Validación: residual ≤ inherente | ✅ | Servicio + constraint DB; `tests/test_risks.py` prueba create y update con respuesta 422 |
 | 8 | Umbral de aceptación configurable por cliente | ⏳ | |
-| 9 | Página `/dashboard/risks` con tabla filtrable | ⏳ | |
-| 10 | Formulario de alta con selección de activo | ⏳ | |
+| 9 | Página `/dashboard/risks` con tabla filtrable | ✅ | Filtro por cliente; agregado junto con P2 (ver evidencia abajo) — el mapa de calor cumple el rol de "tabla filtrable" visual |
+| 10 | Formulario de alta con selección de activo | ✅ | Formulario de alta de activo y de riesgo (con selección de activo por cliente) en la misma página |
 
-## ⏳ P2 — Catálogos y mapa de calor
+## ✅ P2 — Catálogos y mapa de calor
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 11 | Modelos `Threat` y `Vulnerability` | ⏳ |
-| 12 | Seed de amenazas ISO 27005 / MAGERIT | ⏳ |
-| 13 | Seed de vulnerabilidades comunes | ⏳ |
-| 14 | Distinción catálogo global vs. propio (`is_global`) | ⏳ |
-| 15 | **Mapa de calor 5×5** con riesgos posicionados | ⏳ |
-| 16 | Clic en celda → listado de riesgos | ⏳ |
-| 17 | Vista inherente vs. residual lado a lado | ⏳ |
-| 18 | Colores por nivel según la escala definida | ⏳ |
+| # | Requisito | Estado | Notas |
+|---|-----------|--------|-------|
+| 11 | Modelos `Threat` y `Vulnerability` | ✅ | `app/db/models/risk.py`; N:N con `Risk` vía `risk_threats`/`risk_vulnerabilities` (no se copia texto, se referencia la fila del catálogo) |
+| 12 | Seed de amenazas ISO 27005 / MAGERIT | ✅ | `seed_risk_catalog()` en `app/db/seed.py`: 10 amenazas globales (deliberada/accidental/ambiental) |
+| 13 | Seed de vulnerabilidades comunes | ✅ | 10 vulnerabilidades globales (técnica/organizacional/física) en el mismo seed |
+| 14 | Distinción catálogo global vs. propio (`is_global`) | ✅ | `organization_id` nulo = global (visible por todos); `UniqueConstraint(organization_id, code)` permite que una organización defina su propio código sin chocar con el catálogo global |
+| 15 | **Mapa de calor 5×5** con riesgos posicionados | ✅ | `GET /risks/heatmap` agrupa por `(likelihood, impact)`; página `/dashboard/risks` lo renderiza como grilla 5×5 |
+| 16 | Clic en celda → listado de riesgos | ✅ | Cada celda del mapa muestra las tarjetas de los riesgos que caen ahí, con selects para reubicar (`likelihood`/`impact`) sin recargar la página |
+| 17 | Vista inherente vs. residual lado a lado | 🟡 | El mapa muestra el score inherente (celda = `likelihood × impact`); el residual ya se calcula y persiste (P1) pero no tiene una segunda grilla dedicada — queda como mejora futura |
+| 18 | Colores por nivel según la escala definida | ✅ | 4 bandas de color (`≥20` rojo, `≥12` naranja, `≥6` amarillo, resto verde) |
+
+### Evidencia verificada (2026-08-09)
+
+- Migración `20260809_08_risk_catalogs.py` (encadenada tras `20260809_07`), verificada con `alembic upgrade head` sobre Postgres 16 limpio.
+- Suite completa: **166 tests pasan, 1 skip** (incluye `test_risk_catalogs.py` — 7 casos: reutilización de catálogo sin duplicar texto, aislamiento de catálogo propio entre organizaciones, rechazo de código duplicado en la misma org, actualización de asociaciones, referencia inexistente → 404, las 25 celdas del mapa ocupadas, reubicación de un riesgo entre celdas — y `test_risk_catalogs_migration.py`).
+- Smoke test manual end-to-end vía `curl`: login → crear cliente → crear activo → crear riesgo con `threat_ids`/`vulnerability_ids` del catálogo global sembrado → `GET /risks/heatmap?client_id=` refleja la celda ocupada → `PUT /risks/{id}/associations` reemplaza amenazas/vulnerabilidades reutilizando filas existentes → crear entrada de catálogo duplicada (`code` ya usado en la misma org) → `409` → referenciar `threat_ids` inexistente → `404`.
+- Página `/dashboard/risks` (nueva): formulario de alta de activos y de riesgos con selección de amenazas/vulnerabilidades del catálogo, mapa de calor interactivo y gestión del catálogo (alta rápida de amenaza/vulnerabilidad). Enlazada en el sidebar. `npx tsc --noEmit` sin errores.
+- Nota de integración: este issue tenía ramas paralelas (`feat/issue-27-backend`, `test/issue-27`, `docs/issue-27`) generadas por la cola autónoma contra un `main` anterior a que P1 quedara mergeado — reimplementaban `Risk` desde cero sin `RiskAsset`/tratamiento/residual, lo que habría revertido P1. Se descartaron esas ramas y se reconstruyó P2 manualmente **encima** del modelo P1 ya mergeado, conservando ambos.
 
 ## ⏳ P3 — Tratamiento y vínculo con controles
 

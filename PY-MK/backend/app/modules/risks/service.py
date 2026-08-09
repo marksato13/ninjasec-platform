@@ -6,9 +6,16 @@ from sqlalchemy.orm import Session
 
 from app.db.models.client import Client
 from app.db.models.device import Device
-from app.db.models.risk import Risk, RiskAsset
+from app.db.models.risk import Risk, RiskAsset, Threat, Vulnerability
 from app.modules.audit.services.audit_service import AuditService
-from app.modules.risks.schemas import RiskAssetCreate, RiskAssetUpdate, RiskCreate, RiskUpdate
+from app.modules.risks.schemas import (
+    CatalogEntryCreate,
+    RiskAssetCreate,
+    RiskAssetUpdate,
+    RiskAssociationsUpdate,
+    RiskCreate,
+    RiskUpdate,
+)
 
 
 class RiskService:
@@ -41,6 +48,20 @@ class RiskService:
         device = self.db.scalar(select(Device).join(Device.integration).where(Device.id == device_id))
         if not device or device.integration.client_id != client_id or device.integration.organization_id != self.current_user.organization_id:
             raise HTTPException(404, "Dispositivo no encontrado")
+
+    def _catalog_entries(self, model: type[Threat] | type[Vulnerability], ids: list[int]) -> list:
+        unique_ids = set(ids)
+        if not unique_ids:
+            return []
+        rows = list(self.db.scalars(
+            select(model).where(
+                model.id.in_(unique_ids),
+                (model.is_global.is_(True)) | (model.organization_id == self.current_user.organization_id),
+            )
+        ))
+        if len(rows) != len(unique_ids):
+            raise HTTPException(404, "Una entrada de catálogo no existe")
+        return rows
 
     @staticmethod
     def _scores(data: dict, current: Risk | None = None) -> tuple[int, int | None]:
@@ -93,8 +114,13 @@ class RiskService:
     def create_risk(self, payload: RiskCreate) -> Risk:
         self._client(payload.client_id); asset = self._asset(payload.asset_id)
         if asset.client_id != payload.client_id: raise HTTPException(422, "El activo no pertenece al cliente")
-        data = payload.model_dump(); data["inherent_score"], data["residual_score"] = self._scores(data)
-        risk = Risk(**data); self.db.add(risk); self.db.commit(); self.db.refresh(risk)
+        data = payload.model_dump()
+        threat_ids = data.pop("threat_ids"); vulnerability_ids = data.pop("vulnerability_ids")
+        data["inherent_score"], data["residual_score"] = self._scores(data)
+        risk = Risk(**data)
+        risk.threats = self._catalog_entries(Threat, threat_ids)
+        risk.vulnerabilities = self._catalog_entries(Vulnerability, vulnerability_ids)
+        self.db.add(risk); self.db.commit(); self.db.refresh(risk)
         self.audit.record(self.current_user.organization_id, "risk.created", "risks", str(risk.id), self.current_user.id)
         return risk
 
@@ -111,3 +137,33 @@ class RiskService:
     def delete_risk(self, risk_id: int) -> None:
         risk = self._risk(risk_id); self.db.delete(risk); self.db.commit()
         self.audit.record(self.current_user.organization_id, "risk.deleted", "risks", str(risk_id), self.current_user.id)
+
+    def update_associations(self, risk_id: int, payload: RiskAssociationsUpdate) -> Risk:
+        risk = self._risk(risk_id)
+        risk.threats = self._catalog_entries(Threat, payload.threat_ids)
+        risk.vulnerabilities = self._catalog_entries(Vulnerability, payload.vulnerability_ids)
+        self.db.commit(); self.db.refresh(risk)
+        self.audit.record(self.current_user.organization_id, "risk.associations_updated", "risks", str(risk.id), self.current_user.id)
+        return risk
+
+    def heatmap(self, client_id: int | None = None) -> list[dict]:
+        risks = self.list_risks(client_id)
+        cells: dict[tuple[int, int], list[Risk]] = {(l, i): [] for l in range(1, 6) for i in range(1, 6)}
+        for risk in risks:
+            cells[(risk.likelihood, risk.impact)].append(risk)
+        return [{"likelihood": l, "impact": i, "risks": r} for (l, i), r in cells.items()]
+
+    def list_catalog(self, model: type[Threat] | type[Vulnerability]) -> list:
+        stmt = select(model).where(
+            (model.is_global.is_(True)) | (model.organization_id == self.current_user.organization_id)
+        ).order_by(model.code)
+        return list(self.db.scalars(stmt))
+
+    def create_catalog_entry(self, model: type[Threat] | type[Vulnerability], payload: CatalogEntryCreate):
+        code = payload.code.strip().upper()
+        exists = self.db.scalar(select(model).where(model.organization_id == self.current_user.organization_id, model.code == code))
+        if exists:
+            raise HTTPException(409, "Ya existe una entrada con ese código en tu organización")
+        entry = model(**payload.model_dump(exclude={"code"}), code=code, organization_id=self.current_user.organization_id, is_global=False)
+        self.db.add(entry); self.db.commit(); self.db.refresh(entry)
+        return entry
