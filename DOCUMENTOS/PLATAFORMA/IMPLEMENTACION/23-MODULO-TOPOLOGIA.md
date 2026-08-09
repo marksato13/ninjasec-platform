@@ -102,16 +102,32 @@ Solo `super_admin`/`admin`/`collaborator` ven los controles de edición (`canEdi
 
 Los 3 agentes de la flota corrieron sin generar ningún commit (se quedaron explorando o terminaron sin mensaje final); se completó manualmente.
 
-## ⏳ P4 — Resumen, alertas y export
+## ✅ P4 — Resumen, alertas y export — Resuelto 2026-08-09
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 38 | Resumen ejecutivo en lenguaje natural | ⏳ |
-| 39 | Alertas de higiene (puerto sin descripción, VLAN no declarada, shutdown) | ⏳ |
-| 40 | Botón "Aplicar a la topología" → crea `device_connections` con `origen: auto` | ⏳ |
-| 41 | Export PNG / SVG | ⏳ |
-| 42 | Export PDF con diagrama + inventario (ReportLab existente) | ⏳ |
-| 43 | Vista degradada para rol `client` (sin IPs ni puertos) | ⏳ |
+| # | Requisito | Estado | Archivos |
+|---|-----------|--------|----------|
+| 38 | Resumen ejecutivo en lenguaje natural | ✅ | `lib/config-parser/analysis.ts` → `summarizeConfig()`; cuenta interfaces/activas, VLANs, troncales, accesos, rutas e interfaces de gestión sin IP |
+| 39 | Alertas de higiene (puerto sin descripción, VLAN no declarada, shutdown) | ✅ | `analysis.ts` → `hygieneAlerts()`, los 3 casos del criterio de aceptación |
+| 40 | Botón "Aplicar a la topología" → crea `device_connections` con revisión previa | ✅ | Backend: `TopologyService.deduce_connections()` (heurística de subred + next-hop, ver docstring) expuesto en `POST /devices/{id}/topology/deduce-connections`; Frontend: `config-visualizer.tsx` abre un modal con checkbox por candidato — nada se crea sin confirmación explícita |
+| 41 | Export PNG / SVG | ✅ | `lib/topology-export.ts` — layout propio (mismo criterio que `network-topology.tsx`, sin depender de React Flow), SVG nativo, PNG rasterizado vía `<canvas>` — sin dependencias nuevas |
+| 42 | Export PDF con diagrama + inventario (ReportLab existente) | ✅ | `modules/devices/services/topology_pdf.py` — `Drawing` de `reportlab.graphics.shapes` para el diagrama + `Table` para el inventario, mismo patrón que `reports/services/pdf_service.py`; endpoint `GET /devices/topology/export/pdf?client_id=` |
+| 43 | Vista degradada para rol `client` (sin IPs ni puertos) | ✅ | No aplica una vista degradada nueva porque el rol `client` no llega a esta pantalla: `Config Visualizer` vive en `/dashboard/devices`, dentro del layout `(admin)` que `DashboardGuard` restringe a `super_admin`/`admin`/`collaborator` — el portal cliente no tiene esta pestaña |
+
+### Heurística de "Aplicar a la topología" — límite honesto
+
+El parser (P3) no extrae vecinos (no hay CDP/LLDP en el alcance de Cisco IOS parseado). "Deducir" candidatos usa dos señales del propio parseo, cruzadas contra los demás dispositivos del mismo cliente:
+
+1. **Misma subred**: la IP de una interfaz local con máscara cae en la misma red que la IP de otro dispositivo.
+2. **Next-hop de ruta estática**: el next-hop de una ruta coincide exactamente con la IP de otro dispositivo.
+
+Ambos casos son señales de proximidad de red razonables, no una verdad topológica confirmada — por eso el endpoint devuelve candidatos con `reason` explicado y el frontend nunca crea nada sin que el usuario confirme cada uno en el modal.
+
+### Evidencia verificada (2026-08-09)
+
+- Suite completa: **171 tests pasan, 1 skip** (incluye 5 casos nuevos en `test_topology_export.py`: misma subred, next-hop, sin coincidencias, IP/máscara inválida no rompe el endpoint, aislamiento entre organizaciones, y export PDF genera un documento `%PDF-` válido).
+- Smoke test manual end-to-end vía `curl`: cliente → integración → 2 dispositivos en la misma subred → `POST .../deduce-connections` devuelve el candidato con motivo "misma subred" → `POST /device-connections/` con esos IDs crea la conexión real (201) → `GET .../topology/export/pdf` devuelve `200`, `content-type: application/pdf`, documento válido de 1 página verificado con `file`.
+- `npx tsc --noEmit` sin errores en el frontend.
+- Nota de integración: los 3 agentes de la flota (`feat/issue-17-backend`, `test/issue-17`, `docs/issue-17`) no produjeron ningún commit real — sus ramas quedaron en el mismo commit que su `main` base. La rama de docs (`docs/issue-17`) sí generó un commit, pero documentaba P4 como completo citando como evidencia dependencias preexistentes no relacionadas (`@xyflow/react`, el parser P3 ya mergeado) sin que el código de P4 existiera — se descartó sin mergear y P4 se implementó manualmente desde cero.
 
 ---
 

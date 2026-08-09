@@ -11,7 +11,14 @@ from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
 from app.db.models.enums import RoleCode
 from app.modules.audit.services.audit_service import AuditService
-from app.modules.devices.schemas import DeviceCreate, DeviceRead, DeviceUpdate, TopologyResponse
+from app.modules.devices.schemas import (
+    CandidateConnection,
+    DeduceConnectionsRequest,
+    DeviceCreate,
+    DeviceRead,
+    DeviceUpdate,
+    TopologyResponse,
+)
 from app.modules.devices.services.device_service import DeviceService
 from app.modules.devices.services.topology_service import TopologyService
 
@@ -75,6 +82,48 @@ def get_topology(
 ) -> TopologyResponse:
     """Devuelve nodes + edges + clusters para diagramar la topología del cliente."""
     return TopologyService(db, current_user).build(client_id)
+
+
+@router.get("/topology/export/pdf")
+def export_topology_pdf(
+    client_id: int,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    ),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    """23-P4: PDF combinando diagrama (ReportLab) + tabla de inventario."""
+    from app.modules.devices.services.topology_pdf import generate_topology_pdf
+
+    topology = TopologyService(db, current_user).build(client_id)
+    pdf_bytes = generate_topology_pdf(topology)
+    AuditService(db).record(
+        current_user.organization_id,
+        "topology.exported_pdf",
+        "devices",
+        f"client:{client_id}",
+        current_user.id,
+    )
+    filename = f"topologia_{client_id}_{utcnow().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.post("/{device_id}/topology/deduce-connections", response_model=list[CandidateConnection])
+def deduce_connections(
+    device_id: int,
+    payload: DeduceConnectionsRequest,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    ),
+    db: Session = Depends(get_db),
+) -> list[CandidateConnection]:
+    """23-P4: candidatos de `device_connections` deducidos de un parseo, para
+    revisión antes de aplicarlos (ver docstring de `TopologyService.deduce_connections`)."""
+    return TopologyService(db, current_user).deduce_connections(device_id, payload)
 
 
 # ---------------------------------------------------------------------------

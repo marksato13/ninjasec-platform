@@ -40,3 +40,31 @@ class TopologyResponse(ORMModel):
     nodes: list[TopologyNode]
     edges: list[TopologyEdge]
     clusters: list[TopologyCluster]
+
+
+class ParsedInterfaceInput(ORMModel):
+    """23-P4: subconjunto de ParsedInterface (frontend) relevante para deducir vecinos."""
+
+    name: str
+    ip_address: str | None = None
+    subnet_mask: str | None = None
+
+
+class ParsedStaticRouteInput(ORMModel):
+    destination: str
+    mask: str
+    next_hop: str
+
+
+class DeduceConnectionsRequest(ORMModel):
+    interfaces: list[ParsedInterfaceInput] = []
+    static_routes: list[ParsedStaticRouteInput] = []
+
+
+class CandidateConnection(ORMModel):
+    target_device_id: int
+    target_hostname: str
+    reason: str
+    link_type_guess: str = "ethernet"
+    source_ip: str | None = None
+    target_ip: str | None = None

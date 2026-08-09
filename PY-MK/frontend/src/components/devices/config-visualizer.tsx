@@ -1,20 +1,29 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { AlertTriangle, FileWarning, UploadCloud } from "lucide-react";
+import { AlertTriangle, FileWarning, ShieldAlert, UploadCloud } from "lucide-react";
 
-import { DeviceItem, saveDeviceConfig } from "@/lib/api";
-import { notifyError, notifySuccess } from "@/lib/alerts";
+import { CandidateConnection, DeviceItem, createConnection, deduceConnections, saveDeviceConfig } from "@/lib/api";
+import { notifyError, notifySuccess, notifyWarning } from "@/lib/alerts";
+import { Modal } from "@/components/ui/modal";
 import {
   detectVendor,
+  hygieneAlerts,
   parseCiscoIOS,
   ParseResult,
+  summarizeConfig,
   SUPPORTED_COMMANDS,
 } from "@/lib/config-parser";
+import {
+  downloadTopologyDrawio,
+  downloadTopologyPdf,
+  downloadTopologyPng,
+  downloadTopologySvg,
+} from "@/lib/topology-export";
 
-type Props = { devices: DeviceItem[] };
+type Props = { devices: DeviceItem[]; clientId?: number };
 
-export function ConfigVisualizer({ devices }: Props) {
+export function ConfigVisualizer({ devices, clientId }: Props) {
   const [deviceId, setDeviceId] = useState("");
   const [fileName, setFileName] = useState("");
   const [rawText, setRawText] = useState<string | null>(null);
@@ -22,12 +31,19 @@ export function ConfigVisualizer({ devices }: Props) {
   const [rejected, setRejected] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [wantsToSaveRaw, setWantsToSaveRaw] = useState(false);
+  const [candidates, setCandidates] = useState<CandidateConnection[] | null>(null);
+  const [selectedCandidates, setSelectedCandidates] = useState<Set<number>>(new Set());
+  const [deducing, setDeducing] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [exporting, setExporting] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleFile(file: File) {
     setFileName(file.name);
     setResult(null);
     setRejected(null);
+    setCandidates(null);
+    setSelectedCandidates(new Set());
     const reader = new FileReader();
     reader.onload = () => {
       const text = String(reader.result ?? "");
@@ -44,6 +60,74 @@ export function ConfigVisualizer({ devices }: Props) {
     };
     reader.onerror = () => notifyError("No se pudo leer el archivo");
     reader.readAsText(file);
+  }
+
+  async function handleDeduce() {
+    if (!result || !deviceId) return;
+    setDeducing(true);
+    try {
+      const found = await deduceConnections(Number(deviceId), {
+        interfaces: result.interfaces.map((i) => ({ name: i.name, ip_address: i.ipAddress, subnet_mask: i.subnetMask })),
+        static_routes: result.staticRoutes.map((r) => ({ destination: r.destination, mask: r.mask, next_hop: r.nextHop })),
+      });
+      setCandidates(found);
+      setSelectedCandidates(new Set(found.map((c) => c.target_device_id)));
+      if (found.length === 0) notifyWarning("No se dedujeron conexiones", "No hay coincidencias de subred o next-hop con otros dispositivos del cliente.");
+    } catch (err) {
+      notifyError("No se pudo deducir la topología", err instanceof Error ? err.message : undefined);
+    } finally {
+      setDeducing(false);
+    }
+  }
+
+  function toggleCandidate(targetId: number) {
+    setSelectedCandidates((old) => {
+      const next = new Set(old);
+      if (next.has(targetId)) next.delete(targetId); else next.add(targetId);
+      return next;
+    });
+  }
+
+  async function handleApply() {
+    if (!candidates || !deviceId) return;
+    setApplying(true);
+    let created = 0;
+    let failed = 0;
+    try {
+      for (const candidate of candidates) {
+        if (!selectedCandidates.has(candidate.target_device_id)) continue;
+        try {
+          await createConnection({
+            source_device_id: Number(deviceId),
+            target_device_id: candidate.target_device_id,
+            link_type: candidate.link_type_guess,
+          });
+          created += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+      if (created) notifySuccess(`${created} conexión${created === 1 ? "" : "es"} creada${created === 1 ? "" : "s"}`);
+      if (failed) notifyWarning(`${failed} no se pudieron crear`, "Puede que ya existieran.");
+      setCandidates(null);
+    } finally {
+      setApplying(false);
+    }
+  }
+
+  async function handleExport(format: "svg" | "png" | "pdf" | "drawio") {
+    if (!clientId) return;
+    setExporting(format);
+    try {
+      if (format === "svg") await downloadTopologySvg(clientId);
+      else if (format === "png") await downloadTopologyPng(clientId);
+      else if (format === "drawio") await downloadTopologyDrawio(clientId);
+      else await downloadTopologyPdf(clientId);
+    } catch (err) {
+      notifyError("No se pudo exportar", err instanceof Error ? err.message : undefined);
+    } finally {
+      setExporting(null);
+    }
   }
 
   async function handleSave() {
@@ -110,13 +194,20 @@ export function ConfigVisualizer({ devices }: Props) {
             <div className="panel-head">
               <div>
                 <p className="eyebrow">Resumen</p>
-                <h3>{result.interfaces.length} interfaces · {result.vlans.length} VLANs · {result.staticRoutes.length} rutas estáticas</h3>
+                <h3 style={{ fontWeight: 500, fontSize: "0.95rem" }}>{summarizeConfig(result)}</h3>
               </div>
-              {deviceId && (
-                <button type="button" className="button-primary" disabled={saving} onClick={handleSave}>
-                  {saving ? "Guardando…" : "Guardar en el dispositivo"}
-                </button>
-              )}
+              <div style={{ display: "flex", gap: 8 }}>
+                {deviceId && (
+                  <button type="button" className="button-secondary" disabled={deducing} onClick={handleDeduce}>
+                    {deducing ? "Analizando…" : "Aplicar a la topología"}
+                  </button>
+                )}
+                {deviceId && (
+                  <button type="button" className="button-primary" disabled={saving} onClick={handleSave}>
+                    {saving ? "Guardando…" : "Guardar en el dispositivo"}
+                  </button>
+                )}
+              </div>
             </div>
             {deviceId && (
               <label style={{ display: "flex", gap: 8, alignItems: "center", fontSize: "0.8rem", color: "var(--muted)" }}>
@@ -125,6 +216,17 @@ export function ConfigVisualizer({ devices }: Props) {
               </label>
             )}
           </article>
+
+          {hygieneAlerts(result).length > 0 && (
+            <article className="panel" style={{ borderColor: "var(--warning)" }}>
+              <p className="eyebrow" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <ShieldAlert size={16} /> Alertas de higiene ({hygieneAlerts(result).length})
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 20, fontSize: "0.82rem" }}>
+                {hygieneAlerts(result).map((a, i) => <li key={i}>{a.message}</li>)}
+              </ul>
+            </article>
+          )}
 
           {result.warnings.length > 0 && (
             <article className="panel" style={{ borderColor: "var(--warning)" }}>
@@ -197,6 +299,18 @@ export function ConfigVisualizer({ devices }: Props) {
         </>
       )}
 
+      {clientId && (
+        <article className="panel">
+          <p className="eyebrow">Exportar diagrama de topología</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button type="button" className="button-secondary" disabled={exporting === "svg"} onClick={() => handleExport("svg")}>{exporting === "svg" ? "Exportando…" : "SVG"}</button>
+            <button type="button" className="button-secondary" disabled={exporting === "png"} onClick={() => handleExport("png")}>{exporting === "png" ? "Exportando…" : "PNG"}</button>
+            <button type="button" className="button-secondary" disabled={exporting === "pdf"} onClick={() => handleExport("pdf")}>{exporting === "pdf" ? "Exportando…" : "PDF"}</button>
+            <button type="button" className="button-secondary" disabled={exporting === "drawio"} onClick={() => handleExport("drawio")}>{exporting === "drawio" ? "Exportando…" : "drawio"}</button>
+          </div>
+        </article>
+      )}
+
       <article className="panel" style={{ opacity: 0.75 }}>
         <p className="eyebrow">Comandos soportados</p>
         <p style={{ fontSize: "0.78rem", color: "var(--muted)" }}>
@@ -208,6 +322,33 @@ export function ConfigVisualizer({ devices }: Props) {
           {SUPPORTED_COMMANDS.map((c) => <li key={c}><code>{c}</code></li>)}
         </ul>
       </article>
+
+      <Modal
+        isOpen={candidates !== null}
+        title="Conexiones deducidas del parseo"
+        onClose={() => setCandidates(null)}
+        footer={
+          <button type="button" className="button-primary" disabled={applying || selectedCandidates.size === 0} onClick={handleApply}>
+            {applying ? "Aplicando…" : `Crear ${selectedCandidates.size} conexión${selectedCandidates.size === 1 ? "" : "es"}`}
+          </button>
+        }
+      >
+        <p style={{ fontSize: "0.82rem", color: "var(--muted)", marginBottom: 12 }}>
+          Deducidas por coincidencia de subred o next-hop de ruta estática contra los demás dispositivos
+          de este cliente. No hay descubrimiento de vecinos (CDP/LLDP) — revisa cada una antes de confirmar.
+        </p>
+        {candidates && candidates.length === 0 && <p>No se encontraron candidatos.</p>}
+        {candidates?.map((c) => (
+          <label key={c.target_device_id} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
+            <input type="checkbox" checked={selectedCandidates.has(c.target_device_id)} onChange={() => toggleCandidate(c.target_device_id)} style={{ marginTop: 3 }} />
+            <span>
+              <strong>{c.target_hostname}</strong>
+              <br />
+              <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{c.reason}</span>
+            </span>
+          </label>
+        ))}
+      </Modal>
     </div>
   );
 }
