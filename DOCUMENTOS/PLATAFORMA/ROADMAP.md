@@ -103,12 +103,18 @@ Sin deadline externo. Se ejecuta cuando la tanda 2 esté encaminada.
 |---|---|---|---|
 | 1 | **28-P1** Base de conocimiento NetDoctor + modo guiado | 2 sesiones | Alto — producto completo por sí solo |
 | 2 | **29-P1→P3** Catálogo de equipos + **alerta de EOL** | 3.5 sesiones | 🔥 Motor de oportunidades comerciales |
-| 3 | **30-P1** Conector Wazuh + esquema normalizado | 2 sesiones | Alto — amplía el stack open source |
-| 4 | **23-P3/P4** Config Visualizer (parser Cisco IOS) | 3 sesiones | Alto — muy demostrable |
-| 5 | **30-P3** Informe ejecutivo "SOC as a report" | 1.5 sesiones | Alto — el patrón que define el proyecto |
-| 6 | **28-P2** Cobertura Cisco + MikroTik | 1.5 sesiones | Medio |
+| 3 | **30-P1** Conector Wazuh + esquema normalizado (incluye normalización multi-fuente vs. Suricata/pfSense) | 2 sesiones | Alto — amplía el stack open source |
+| 4 | **23-P3/P4** Config Visualizer (parser Cisco IOS) | 3 sesiones | Alto — muy demostrable ✅ **Cerrado 2026-08-09** |
+| 5 | **30-P2** Scoring de riesgo por IP/host (AbuseIPDB + VirusTotal + GreyNoise cruzado con alertas de Wazuh) | 1.5 sesiones | Alto — prioriza qué atender primero |
+| 6 | **30-P3** Informe ejecutivo "SOC as a report" (incluye panel de salud de red tipo semáforo, no técnico) | 1.5 sesiones | Alto — el patrón que define el proyecto |
+| 7 | **28-P2** Cobertura Cisco + MikroTik | 1.5 sesiones | Medio |
+| 8 | **31-P1** Compliance automatizado: cruce Wazuh/pfSense vs. CIS Benchmarks / OpenSCAP | 2 sesiones | Alto — complementa el 24 (SoA manual) con verificación técnica automática |
+| 9 | **32-P1** Inventario de vulnerabilidades (NVD + EPSS) por dispositivo del cliente | 1.5 sesiones | Alto — prioriza parches por explotabilidad real, no solo CVSS |
+| 10 | **32-P2** Exposición pasiva vía Shodan (solo IP/rango del cliente, sin escaneo activo) | 0.5 sesión | Medio — bajo riesgo legal, alto valor de venta |
 
-**Total: ~13.5 sesiones.**
+**Total: ~15.5 sesiones.**
+
+**Nota sobre 2.5/2.6 de la propuesta original (`ideas-roadmap-networking.md`):** el "reporte de cumplimiento" y el "inventario de activos vulnerables" no son el mismo trabajo que el módulo 24 (SGSI ISO 27001). El 24 es la Declaración de Aplicabilidad que un consultor completa a mano sobre los 93 controles del Anexo A. Los módulos 31 y 32 son **verificación técnica automática** contra datos reales de Wazuh/pfSense/NVD — se complementan, no se pisan.
 
 ---
 
@@ -142,15 +148,25 @@ Si los requisitos no se pueden garantizar: **28 se queda en P2 y 30 en P5.** Amb
 
 Ideas válidas que pertenecen a un repo de portafolio en GitHub Pages, no a la plataforma:
 
-- Calculadora de VLSM / subnetting
+- Calculadora de VLSM / subnetting (y su variante IPv6)
 - Simulador visual de STP
 - Simulador de ACLs
 - Flashcards de troubleshooting para CCNA / Network+
 - Visualizador de tabla de enrutamiento
 - Analizador de logs syslog client-side
-- Consultor de CVEs vía API del NVD
+- Consultor de CVEs vía API del NVD (búsqueda genérica por producto, sin cliente asociado)
+- Wizard de diagnóstico interactivo genérico (árbol de decisión sin datos de un cliente real)
+- Cheat sheet / Rosetta Stone de comandos multi-vendor
+- Wiki estática de troubleshooting
+- Simulador educativo de ataques comunes (ARP spoofing, DDoS, DNS spoofing)
+- Generador genérico de topologías desde JSON a Mermaid/D3 (sin persistencia ni cliente)
+- Password/Hash analyzer client-side
+- Verificador de cabeceras de seguridad HTTP (tipo Mozilla Observatory)
+- Generador de diagramas de red desde un XML de Nmap pegado a mano
+- Generador de políticas de firewall multi-sintaxis (iptables/pfSense/ASA/MikroTik) sin cliente asociado
+- Verificador de DNS/MX vía DoH
 
-Son excelentes demos de portafolio. Dentro de NinjaSec serían ruido: no tienen cliente, ni rol, ni dato que persistir.
+Son excelentes demos de portafolio (revisado y ampliado 2026-08-09 contra `ideas-roadmap-networking.md`, la propuesta completa que dio origen a los módulos 23/24/25/26/27/28/29/30). Dentro de NinjaSec serían ruido: no tienen cliente, ni rol, ni dato que persistir. **Si en algún momento se decide que sí van dentro de la plataforma** (por ejemplo, como una sección pública `/herramientas` de lead-gen en el sitio de marketing), es una decisión de producto explícita — no asumirla por defecto.
 
 ---
 
