@@ -16,6 +16,7 @@ from app.modules.devices.routers.configs import router as device_configs_router
 from app.modules.catalogs.routers.router import router as catalogs_router
 from app.modules.device_catalog.routers.router import router as device_catalog_router
 from app.modules.compliance.routers.router import router as compliance_router
+from app.modules.audits.routers.router import router as audits_router
 from app.modules.docs.routers.router import router as docs_router
 from app.modules.integrations.routers.router import router as integrations_router
 from app.modules.leads.routers.router import router as leads_router
@@ -48,6 +49,7 @@ api_router.include_router(device_configs_router)
 api_router.include_router(catalogs_router)
 api_router.include_router(device_catalog_router)
 api_router.include_router(compliance_router)
+api_router.include_router(audits_router)
 api_router.include_router(skills_router)
 api_router.include_router(certifications_router)
 api_router.include_router(projects_router)

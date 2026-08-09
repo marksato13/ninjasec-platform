@@ -1,3 +1,4 @@
+from app.db.models.audit import Audit
 from app.db.models.audit_log import AuditLog
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.application_attachment import ApplicationAttachment
@@ -54,6 +55,7 @@ from app.db.models.user_certification import UserCertification
 from app.db.models.user_skill import UserSkill
 
 __all__ = [
+    "Audit",
     "AuditLog",
     "ApplicationAssignment",
     "ApplicationAttachment",

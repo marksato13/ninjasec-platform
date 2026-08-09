@@ -1,22 +1,24 @@
 # Implementación — Módulo Auditorías de Sistemas
 
 > Basado en: `PLANIFICACION/26-MODULO-AUDITORIAS-COBIT.md`
-> Creado: 2026-08-05 · **Estado: no iniciado**
+> Creado: 2026-08-05 · Actualizado: 2026-08-09 · **Estado: P1 backend hecho, falta UI**
 
 ---
 
-## ⏳ P1 — Encargo y plan de auditoría
+## 🟡 P1 — Encargo y plan de auditoría (backend hecho, falta UI)
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 1 | Modelo `Audit` con tipo, marco, cronograma y opinión | ⏳ | |
-| 2 | Migración Alembic | ⏳ | |
-| 3 | Correlativo automático `AUD-2026-NNN` | ⏳ | |
-| 4 | `GET/POST/PUT /audits` con guard por organización | ⏳ | |
-| 5 | **Validación de independencia del auditor** | ⏳ 🔴 | No puede auditar donde es responsable operativo |
-| 6 | Página `/dashboard/audits` con listado y filtros | ⏳ | |
-| 7 | Formulario de alta: objetivo, alcance, criterios, equipo | ⏳ | |
-| 8 | **Export del Plan de Auditoría a PDF** | ⏳ | Entregable 25% del curso |
+| 1 | Modelo `Audit` con tipo, marco, cronograma y opinión | ✅ | `db/models/audit.py` — no confundir con `AuditLog` (log técnico) |
+| 2 | Migración Alembic | ✅ | `20260809_05_audits.py` |
+| 3 | Correlativo automático `AUD-2026-NNN` | ✅ | Por organización y año — cuenta auditorías del año actual de esa org y suma 1, sin colisión entre organizaciones |
+| 4 | `GET/POST/PUT /audits` con guard por organización | ✅ | `modules/audits/routers/router.py` |
+| 5 | **Validación de independencia del auditor** | ✅ | Derivada de `ProjectMember`: si el auditor propuesto es miembro de algún proyecto del cliente auditado, se rechaza con 422. No existe un campo "responsable operativo" dedicado en `Client`, así que se usa la señal ya existente en el modelo de datos |
+| 6 | Página `/dashboard/audits` con listado y filtros | ⏳ | Fuera de alcance de este issue (backend-only) |
+| 7 | Formulario de alta: objetivo, alcance, criterios, equipo | ⏳ | Requiere la UI (#6) |
+| 8 | **Export del Plan de Auditoría a PDF** | ✅ | `GET /audits/{id}/plan-pdf` — objetivo, alcance, criterios, equipo, cronograma y recursos, motor ReportLab propio (no acoplado a `reports/services/pdf_service.py`) |
+
+Validado con `tests/test_audits.py`: correlativo incremental, auditor responsable operativo bloqueado (422), auditor sin conflicto permitido, PDF válido (`%PDF` + secciones), aislamiento cross-tenant, colaborador consulta pero no crea.
 
 ## ⏳ P2 — Programa de trabajo
 
