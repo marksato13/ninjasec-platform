@@ -5,6 +5,7 @@ from app.db.models.application_event import ApplicationEvent
 from app.db.models.application_note import ApplicationNote
 from app.db.models.application_review import ApplicationReview
 from app.db.models.area import Area
+from app.db.models.architecture import ArchitectureElement, ArchitectureModel, ArchitectureRelationship
 from app.db.models.catalog_device import CatalogDevice
 from app.db.models.client import Client
 from app.db.models.client_contact import ClientContact
@@ -61,6 +62,9 @@ __all__ = [
     "ApplicationNote",
     "ApplicationReview",
     "Area",
+    "ArchitectureElement",
+    "ArchitectureModel",
+    "ArchitectureRelationship",
     "CatalogDevice",
     "Client",
     "ClientContact",
