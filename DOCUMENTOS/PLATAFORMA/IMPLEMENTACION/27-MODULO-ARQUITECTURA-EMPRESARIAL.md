@@ -9,16 +9,16 @@
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 1 | Modelo `ArchitectureModel` (baseline/target/transition) | ⏳ | |
-| 2 | Modelo `ArchitectureElement` con 5 capas | ⏳ | Un modelo para todas las capas |
-| 3 | Modelo `ArchitectureRelationship` con 7 tipos | ⏳ | |
-| 4 | Migración Alembic | ⏳ | |
-| 5 | Campos `source_module` / `source_id` para trazabilidad | ⏳ | 🔴 clave del diferencial |
-| 6 | `GET/POST/PUT /architecture/models` | ⏳ | |
-| 7 | CRUD de elementos y relaciones | ⏳ | |
-| 8 | Página `/dashboard/architecture` con listado de modelos | ⏳ | |
-| 9 | Vista de listado por capa (tabla, sin lienzo aún) | ⏳ | |
-| 10 | Versionado: `approved` es inmutable, se crea versión nueva | ⏳ | 🔴 |
+| 1 | Modelo `ArchitectureModel` (baseline/target/transition) | ✅ | `app/db/models/architecture.py` |
+| 2 | Modelo `ArchitectureElement` con 5 capas | ✅ | Validación literal en schemas |
+| 3 | Modelo `ArchitectureRelationship` con 7 tipos | ✅ | Validación literal en schemas |
+| 4 | Migración Alembic | ✅ | `20260809_05_architecture.py` |
+| 5 | Campos `source_module` / `source_id` para trazabilidad | ✅ | Persistidos en elementos |
+| 6 | `GET/POST/PUT /architecture/models` | ✅ | Router `/architecture` |
+| 7 | CRUD de elementos y relaciones | ✅ | Router `/architecture` |
+| 8 | Página `/dashboard/architecture` con listado de modelos | ✅ | Vista administrativa |
+| 9 | Vista de listado por capa (tabla, sin lienzo aún) | ✅ | Selector exclusivo de cinco capas |
+| 10 | Versionado: `approved` es inmutable, se crea versión nueva | ✅ | Mutaciones devuelven 409; nueva versión vía POST |
 
 ## ⏳ P2 — Sincronización de la capa tecnológica
 

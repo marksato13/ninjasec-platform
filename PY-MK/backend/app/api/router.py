@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.modules.alerts.routers.router import router as alerts_router
 from app.modules.audit.routers.router import router as audit_router
+from app.modules.architecture.router import router as architecture_router
 from app.modules.auth.routers.router import router as auth_router
 from app.modules.dashboard.routers.router import router as dashboard_router
 from app.modules.clients.routers.router import router as clients_router
@@ -64,6 +65,7 @@ api_router.include_router(alerts_router)
 api_router.include_router(reports_router)
 api_router.include_router(docs_router)
 api_router.include_router(audit_router)
+api_router.include_router(architecture_router)
 
 
 @api_router.get("/")
