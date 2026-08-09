@@ -1,3 +1,5 @@
+"""Pruebas de integración de la conversión hired → colaborador (15-P-01)."""
+
 from sqlalchemy import func, select
 
 from app.db.models.collaborator_profile import CollaboratorProfile
@@ -24,6 +26,7 @@ def _application(email: str) -> JobApplication:
 def test_hired_creates_user_and_profile_from_application(
     http_client, db, admin_token, seed_data
 ):
+    """La contratación crea ambas entidades sin pasos manuales."""
     application = _application("  [EMAIL_REDACTED] ")
     db.add(application)
     db.commit()
@@ -35,6 +38,7 @@ def test_hired_creates_user_and_profile_from_application(
     )
 
     assert response.status_code == 200, response.text
+    assert response.json()["status"] == JobApplicationStatus.HIRED.value
     user = db.scalar(
         select(User).where(func.lower(User.email) == "[EMAIL_REDACTED]")
     )
@@ -59,6 +63,7 @@ def test_hired_creates_user_and_profile_from_application(
 def test_hired_with_existing_email_returns_conflict_without_side_effects(
     http_client, db, admin_token, seed_data
 ):
+    """Un email ya registrado deja la postulación intacta y no duplica datos."""
     application = _application(seed_data["collab"].email.upper())
     db.add(application)
     db.commit()
@@ -71,7 +76,7 @@ def test_hired_with_existing_email_returns_conflict_without_side_effects(
         headers={"Authorization": f"Bearer {admin_token}"},
     )
 
-    assert response.status_code == 409
+    assert response.status_code == 409, response.text
     assert "Ya existe un usuario con el email" in response.json()["detail"]
     db.expire_all()
     assert db.get(JobApplication, application.id).status == JobApplicationStatus.OFFER
