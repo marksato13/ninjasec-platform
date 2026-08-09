@@ -9,13 +9,13 @@
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 1 | Modelo `RiskAsset` con valoración CIA | ⏳ | Referencia opcional a `devices` |
-| 2 | Modelo `Risk` con cadena causal completa | ⏳ | activo→amenaza→vulnerabilidad |
-| 3 | Migración Alembic | ⏳ | |
-| 4 | Cálculo automático de `inherent_score` | ⏳ | 🔴 nunca editable a mano |
-| 5 | Cálculo de `business_value` = máx(C,I,A) | ⏳ | |
-| 6 | `GET/POST/PUT /risks` con guard por organización | ⏳ | |
-| 7 | Validación: residual ≤ inherente | ⏳ | 🔴 bloqueo duro |
+| 1 | Modelo `RiskAsset` con valoración CIA | ✅ | `app/db/models/risk.py`; FK opcional `device_id` sin duplicar inventario |
+| 2 | Modelo `Risk` con cadena causal completa | ✅ | `app/db/models/risk.py`; amenaza/vulnerabilidad descriptivas en P1 (catálogos quedan en P2) |
+| 3 | Migración Alembic | ✅ | `20260809_05_risks.py`; `alembic heads` → `20260809_05 (head)` |
+| 4 | Cálculo automático de `inherent_score` | ✅ | Servicio deriva `likelihood × impact`; prueba rechaza persistencia arbitraria |
+| 5 | Cálculo de `business_value` = máx(C,I,A) | ✅ | Recalculado al crear y editar |
+| 6 | `GET/POST/PUT /risks` con guard por organización | ✅ | Incluye detalle y DELETE; acceso ajeno responde 404 |
+| 7 | Validación: residual ≤ inherente | ✅ | Servicio + constraint DB; probado con respuesta 422 |
 | 8 | Umbral de aceptación configurable por cliente | ⏳ | |
 | 9 | Página `/dashboard/risks` con tabla filtrable | ⏳ | |
 | 10 | Formulario de alta con selección de activo | ⏳ | |
