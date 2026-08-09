@@ -55,15 +55,19 @@ Subconjunto real de Elastic Common Schema (ECS) — de ahí "ECS-lite". Lo que n
 | 18 | Consolidación multi-sede en un solo informe | ⏳ |
 | 19 | Vista para rol `client` | ⏳ |
 
-## ⏳ P4 — Reputación de IPs
+## ✅ P4 — Reputación de IPs — Resuelto 2026-08-09 (issue #62, referido como "30-P2" en ROADMAP.md)
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 20 | Modelo `IpReputation` | ⏳ |
-| 21 | Conector AbuseIPDB (respetando el límite gratuito) | ⏳ |
-| 22 | Cálculo de `risk_score` combinado | ⏳ |
-| 23 | Priorización de alertas por score | ⏳ |
-| 24 | Caché para no agotar la cuota de API | ⏳ |
+| # | Requisito | Estado | Notas |
+|---|-----------|--------|-------|
+| 20 | Modelo `IpReputation` | ✅ | `db/models/ip_reputation.py` → `IpReputationCache(ip_address, source, score, category, checked_at)`, único por `(ip_address, source)` |
+| 21 | Conector AbuseIPDB (respetando el límite gratuito) | ✅ | Más VirusTotal y GreyNoise (los tres mencionados en la propuesta original) — `services/reputation.py`. Sin API key configurada, degrada a un score simulado determinista (mismo hash → mismo score) en vez de fallar |
+| 22 | Cálculo de `risk_score` combinado | ✅ | `composite_score = round(0.6 × externo + 0.4 × interno)`; interno = suma de pesos por severidad de eventos ECS-lite (30-P1) con tope en 100 |
+| 23 | Priorización de alertas por score | ✅ | `GET /risk-scoring/hosts?client_id=` devuelve los hosts ordenados descendente por `composite_score`; panel "Prioridad de hosts" en `/dashboard/risks` |
+| 24 | Caché para no agotar la cuota de API | ✅ | TTL de 24h por `(ip, source)` en `IpReputationCache` — verificado con test que confirma que una segunda consulta no duplica ni vuelve a llamar a la fuente externa |
+
+**Fuente de datos internos**: reutiliza los eventos ECS-lite de `CollectionSnapshot` (30-P1) — agrupa por `source.ip` y pondera por `event.severity` (crítico=40, alto=25, medio=10, bajo=3, tope 100).
+
+**Verificado**: 180 tests pasan (1 skip, incluye 4 casos nuevos: cálculo combinado, hosts sin IP se ignoran, caché no se duplica, aislamiento entre organizaciones); migración `20260809_09_ip_reputation.py` verificada con `alembic upgrade head` sobre Postgres limpio; smoke test manual vía curl con datos reales de una integración Wazuh; `npx tsc --noEmit` sin errores.
 
 ## ⏳ P5 — Motor de playbooks (sin ejecución automática)
 

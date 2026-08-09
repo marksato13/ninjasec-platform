@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     storage_path: str = "./storage"
     storage_max_file_size: int = 10 * 1024 * 1024
 
+    # 30-P2: reputación externa de IPs -- vacío por defecto, degrada a modo
+    # simulado (nunca rompe) cuando no hay key configurada. Nunca loguear
+    # el valor de estos campos.
+    abuseipdb_api_key: str = ""
+    virustotal_api_key: str = ""
+    greynoise_api_key: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property

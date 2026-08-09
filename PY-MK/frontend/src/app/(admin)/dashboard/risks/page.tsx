@@ -3,6 +3,7 @@
 import { FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  HostScore,
   RiskAsset,
   RiskCatalogItem,
   RiskItem,
@@ -11,6 +12,7 @@ import {
   createRiskThreat,
   createRiskVulnerability,
   getClients,
+  getHostScores,
   getRiskAssets,
   getRiskHeatmap,
   getRiskThreats,
@@ -48,6 +50,11 @@ export default function RisksPage() {
   const { data: clients = [] } = useQuery({ queryKey: QK.clients(), queryFn: getClients });
   const { data: assets = [] } = useQuery({ queryKey: QK.riskAssets(activeClientId), queryFn: () => getRiskAssets(activeClientId) });
   const { data: heatmap = [], isLoading: loadingHeatmap } = useQuery({ queryKey: QK.riskHeatmap(activeClientId), queryFn: () => getRiskHeatmap(activeClientId) });
+  const { data: hostScores = [] } = useQuery({
+    queryKey: QK.hostScores(activeClientId),
+    queryFn: () => getHostScores(activeClientId as number),
+    enabled: activeClientId !== undefined,
+  });
   const { data: threats = [] } = useQuery({ queryKey: QK.riskThreats(), queryFn: getRiskThreats });
   const { data: vulnerabilities = [] } = useQuery({ queryKey: QK.riskVulnerabilities(), queryFn: getRiskVulnerabilities });
 
@@ -240,6 +247,29 @@ export default function RisksPage() {
           </div>
         )}
       </div>
+
+      {activeClientId !== undefined && hostScores.length > 0 && (
+        <div className="panel overflow-x-auto">
+          <h3>Prioridad de hosts (reputación externa + alertas internas)</h3>
+          <p style={{ fontSize: "0.8rem", color: "var(--muted)", marginBottom: 12 }}>
+            Combina AbuseIPDB/VirusTotal/GreyNoise con la frecuencia y severidad de eventos internos (30-P1/30-P2).
+          </p>
+          <div className="table-like">
+            <div className="table-row table-head" style={{ gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr" }}>
+              <span>IP</span><span>Alertas internas</span><span>Score interno</span><span>Score externo</span><span>Score compuesto</span>
+            </div>
+            {hostScores.map((host: HostScore) => (
+              <div className="table-row" key={host.ip_address} style={{ gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr" }}>
+                <span style={{ fontWeight: 600 }}>{host.ip_address}</span>
+                <span>{host.internal_alert_count}</span>
+                <span>{host.internal_score}</span>
+                <span>{host.external_score}</span>
+                <span className="badge" style={{ background: cellColor(host.composite_score / 4) }}>{host.composite_score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="panel">
