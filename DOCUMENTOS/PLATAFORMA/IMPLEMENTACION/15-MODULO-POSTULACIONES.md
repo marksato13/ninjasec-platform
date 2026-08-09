@@ -57,7 +57,7 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| 15-P-01 | **Conversión `hired` → Colaborador** | 🔴 Alta | Al marcar `hired` no se crea el usuario ni el `collaborator_profile`. Hoy es manual y se pierde la trazabilidad del origen |
+| ~~15-P-01~~ | ~~**Conversión `hired` → Colaborador**~~ | — | ✅ **Resuelto 2026-08-08**: la transición crea atómicamente un usuario `collaborator` y su perfil con nombre, contacto, CV, rol, skills y portafolio de la postulación. `source_application_id` conserva el origen; un email ya registrado responde `409` sin cambiar el estado ni crear duplicados. Evidencia: `tests/test_hired_application_conversion.py` (2) |
 | ~~15-P-02~~ | ~~Upload real de CV~~ | — | ✅ **Resuelto 2026-08-08**: endpoint multipart en `/{id}/attachments/upload`, listado y descarga autenticada. Un PDF actualiza `cv_url`; las URLs externas existentes y la creación de adjuntos por URL continúan válidas. Evidencia: `tests/test_file_storage.py` |
 | 15-P-03 | Score agregado por postulación | 🟡 Media | Hay reviews individuales pero no promedio ni consolidado en el listado |
 | 15-P-04 | Notificación por correo al candidato | 🟢 Baja | Los cambios de estado no notifican a nadie |

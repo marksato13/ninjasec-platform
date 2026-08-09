@@ -30,3 +30,6 @@ class JobApplication(Base):
     notes = relationship("ApplicationNote", back_populates="application")
     attachments = relationship("ApplicationAttachment", back_populates="application")
     events = relationship("ApplicationEvent", back_populates="application")
+    hired_collaborator_profile = relationship(
+        "CollaboratorProfile", back_populates="source_application", uselist=False
+    )

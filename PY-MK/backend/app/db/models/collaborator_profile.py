@@ -20,5 +20,13 @@ class CollaboratorProfile(Base):
     area: Mapped[str | None] = mapped_column(String(60), nullable=True)
     photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     photo_storage_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    cv_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    source_application_id: Mapped[int | None] = mapped_column(
+        ForeignKey("job_applications.id"), unique=True, nullable=True
+    )
 
     user = relationship("User", back_populates="collaborator_profile")
+    source_application = relationship(
+        "JobApplication", back_populates="hired_collaborator_profile"
+    )

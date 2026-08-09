@@ -93,4 +93,4 @@ Cada acción (cambio de estado, asignación, review, nota, adjunto) inserta una 
 2. Un colaborador sin asignación no puede saber si una postulación existe.
 3. Los eventos del timeline son **append-only** — nunca se editan ni borran.
 4. Las notas son `internal` por defecto; cambiar la visibilidad es una decisión explícita.
-5. Al pasar a `hired`, el candidato debe darse de alta en el módulo Colaboradores (hoy es manual — ver mejora en el checklist de implementación).
+5. Al pasar a `hired`, el candidato se da de alta automáticamente como usuario `collaborator` y perfil, conservando contacto, CV y una referencia explícita a la postulación de origen. Si el email ya pertenece a un usuario, la API responde `409` y no cambia el estado.

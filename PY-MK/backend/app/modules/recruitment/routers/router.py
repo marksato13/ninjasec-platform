@@ -39,6 +39,7 @@ from app.modules.recruitment.schemas import (
     JobApplicationRead,
     JobApplicationUpdate,
 )
+from app.modules.recruitment.services import HiringService
 
 router = APIRouter(prefix="/job-applications", tags=["job-applications"])
 
@@ -227,6 +228,11 @@ def update_job_application_status(
     old_status = application.status
     if new_status == old_status:
         return JobApplicationRead.model_validate(application)
+
+    if new_status == JobApplicationStatus.HIRED:
+        HiringService(db).convert_to_collaborator(
+            application, current_user.organization_id
+        )
 
     application.status = new_status
     _record_application_event(
