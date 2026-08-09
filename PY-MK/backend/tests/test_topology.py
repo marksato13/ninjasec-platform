@@ -223,3 +223,53 @@ def test_client_cannot_create_or_list_connections(db, http_client, seed_data):
     })
     assert listed.status_code == 403
     assert created.status_code == 403
+
+
+def test_conexion_duplicada_es_rechazada_con_mensaje_claro(
+    db, http_client, admin_token, seed_data
+):
+    # 23-P2: antes se devolvía la conexión existente en silencio (200/201),
+    # indistinguible de un alta real. Ahora debe rechazarse con 409.
+    _, _, firewall, switch, _ = _topology_data(db, seed_data["org"].id, "Duplicado")
+
+    first = http_client.post(f"{API}/device-connections/", headers=_auth(admin_token), json={
+        "source_device_id": firewall.id,
+        "target_device_id": switch.id,
+        "link_type": "wan",
+    })
+    assert first.status_code == 201, first.text
+
+    duplicate = http_client.post(f"{API}/device-connections/", headers=_auth(admin_token), json={
+        "source_device_id": firewall.id,
+        "target_device_id": switch.id,
+        "link_type": "wan",
+    })
+    assert duplicate.status_code == 409
+    assert "ya existe" in duplicate.text.lower()
+
+
+def test_auto_enlace_sigue_rechazado(db, http_client, admin_token, seed_data):
+    _, _, firewall, _, _ = _topology_data(db, seed_data["org"].id, "AutoEnlace")
+
+    response = http_client.post(f"{API}/device-connections/", headers=_auth(admin_token), json={
+        "source_device_id": firewall.id,
+        "target_device_id": firewall.id,
+        "link_type": "ethernet",
+    })
+    assert response.status_code == 400
+
+
+def test_admin_puede_eliminar_una_conexion(db, http_client, admin_token, seed_data):
+    _, _, firewall, switch, _ = _topology_data(db, seed_data["org"].id, "Eliminar")
+
+    created = http_client.post(f"{API}/device-connections/", headers=_auth(admin_token), json={
+        "source_device_id": firewall.id,
+        "target_device_id": switch.id,
+        "link_type": "mpls",
+    })
+    assert created.status_code == 201, created.text
+    connection_id = created.json()["id"]
+
+    deleted = http_client.delete(f"{API}/device-connections/{connection_id}", headers=_auth(admin_token))
+    assert deleted.status_code == 200, deleted.text
+    assert db.get(DeviceConnection, connection_id) is None
