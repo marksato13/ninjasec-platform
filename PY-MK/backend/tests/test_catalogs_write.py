@@ -153,6 +153,68 @@ def test_usage_reporta_cuantos_registros_dependen(db, http_client, admin_token, 
     assert res.json()["in_use_by"] == 1
 
 
+def test_desactivar_area_en_uso_exige_confirmacion_y_conserva_el_proyecto(
+    db, http_client, admin_token, seed_data
+):
+    creada = http_client.post(
+        f"{API}/areas", json={"name": "Area Historica"}, headers=_auth(admin_token)
+    ).json()
+    proyecto = Project(
+        organization_id=seed_data["org"].id,
+        name="Proyecto Historico",
+        area_id=creada["id"],
+    )
+    db.add(proyecto)
+    db.commit()
+    project_id = proyecto.id
+
+    rechazada = http_client.put(
+        f"{API}/areas/{creada['id']}",
+        json={"is_active": False},
+        headers=_auth(admin_token),
+    )
+    assert rechazada.status_code == 409
+    assert rechazada.json()["detail"]["in_use_by"] == 1
+    db.expire_all()
+    assert db.get(Area, creada["id"]).is_active is True
+
+    confirmada = http_client.put(
+        f"{API}/areas/{creada['id']}",
+        json={"is_active": False, "confirm_deactivation": True},
+        headers=_auth(admin_token),
+    )
+    assert confirmada.status_code == 200, confirmada.text
+    assert confirmada.json()["is_active"] is False
+    db.expire_all()
+    assert db.get(Project, project_id).area_id == creada["id"]
+
+
+def test_desactivar_tipo_de_proyecto_en_uso_exige_confirmacion(
+    db, http_client, admin_token, seed_data
+):
+    creado = http_client.post(
+        f"{API}/project-types",
+        json={"name": "Tipo Historico"},
+        headers=_auth(admin_token),
+    ).json()
+    db.add(
+        Project(
+            organization_id=seed_data["org"].id,
+            name="Proyecto Con Tipo",
+            project_type_id=creado["id"],
+        )
+    )
+    db.commit()
+
+    res = http_client.put(
+        f"{API}/project-types/{creado['id']}",
+        json={"is_active": False},
+        headers=_auth(admin_token),
+    )
+    assert res.status_code == 409
+    assert res.json()["detail"]["in_use_by"] == 1
+
+
 def test_usage_de_catalogo_sin_uso_es_cero(http_client, admin_token):
     creada = http_client.post(
         f"{API}/project-types", json={"name": "Tipo Sin Uso"}, headers=_auth(admin_token)

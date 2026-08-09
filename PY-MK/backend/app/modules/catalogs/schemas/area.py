@@ -23,3 +23,4 @@ class AreaCreate(ORMModel):
 class AreaUpdate(ORMModel):
     name: str | None = Field(default=None, min_length=2, max_length=120)
     is_active: bool | None = None
+    confirm_deactivation: bool = False
