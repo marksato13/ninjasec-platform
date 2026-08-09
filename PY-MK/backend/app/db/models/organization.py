@@ -27,3 +27,9 @@ class Organization(Base):
     reports = relationship("Report", back_populates="organization")
     audit_logs = relationship("AuditLog", back_populates="organization")
     products = relationship("Product", back_populates="organization")
+    alert_thresholds = relationship(
+        "OrganizationAlertThreshold",
+        back_populates="organization",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
