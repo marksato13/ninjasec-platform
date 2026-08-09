@@ -116,6 +116,10 @@ def test_crud_riesgos_calcula_y_recalcula_score_inherente(db, http_client, admin
     assert risk["inherent_score"] == 20
     assert risk["residual_score"] == 6
 
+    # Este valor no forma parte del contrato de escritura: el servicio debe
+    # derivarlo de likelihood e impact, incluso si un cliente lo envía.
+    assert risk["inherent_score"] != 1
+
     updated = http_client.put(
         f"{API}/risks/{risk['id']}",
         headers=_auth(admin_token),
@@ -130,6 +134,11 @@ def test_crud_riesgos_calcula_y_recalcula_score_inherente(db, http_client, admin
     assert updated.status_code == 200, updated.text
     assert updated.json()["inherent_score"] == 6
     assert updated.json()["residual_score"] == 2
+    assert updated.json()["inherent_score"] != 25
+
+    persisted = http_client.get(f"{API}/risks/{risk['id']}", headers=_auth(admin_token))
+    assert persisted.status_code == 200
+    assert persisted.json()["inherent_score"] == 6
 
     listed = http_client.get(
         f"{API}/risks/?client_id={client.id}", headers=_auth(admin_token)
