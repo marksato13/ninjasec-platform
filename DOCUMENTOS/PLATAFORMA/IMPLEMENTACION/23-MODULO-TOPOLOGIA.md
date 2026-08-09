@@ -75,14 +75,16 @@
 - Tarea pendiente: ejecutar el bucle visual con la rama de implementación servida localmente y adjuntar las capturas al PR. Esta rama de documentación no puede cerrar la validación visual porque no contiene el componente `NetworkTopology` ni `@xyflow/react`.
 - El bucle visual no queda marcado como completado en este checklist hasta que esas capturas estén adjuntas al PR o se registre una validación manual equivalente con navegador.
 
-## ⏳ P2 — Editor de conexiones
+## ✅ P2 — Editor de conexiones — Resuelto 2026-08-09
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 27 | Modal de alta de conexión (origen, destino, tipo, puertos, VLAN) | ⏳ |
-| 28 | Eliminar conexión con `confirmDelete` | ⏳ |
-| 29 | Crear conexión arrastrando entre nodos | ⏳ |
-| 30 | Validación: no auto-enlace, no duplicado | ⏳ |
+| # | Requisito | Estado | Archivos |
+|---|-----------|--------|----------|
+| 27 | Modal de alta de conexión (origen, destino, tipo, puertos, VLAN) | ✅ | `network-topology.tsx` — reutiliza `components/ui/modal.tsx`, el modal genérico |
+| 28 | Eliminar conexión con `confirmDelete` | ✅ | `onEdgeClick` → `confirmDelete()` → `deleteConnection()` |
+| 29 | Crear conexión arrastrando entre nodos | ✅ | `nodesConnectable={canEdit}` + `onConnect` — los `<Handle>` ya existían en `DeviceNode` desde P1, solo faltaba habilitar la interacción |
+| 30 | Validación: no auto-enlace, no duplicado | ✅ | Auto-enlace: rechazado en frontend antes de abrir el modal y en backend (400, ya existía). Duplicado: **antes se devolvía la conexión existente en silencio** (200, indistinguible de un alta real) — ahora `connection_service.py` responde 409 con mensaje claro |
+
+Solo `super_admin`/`admin`/`collaborator` ven los controles de edición (`canEdit`, mismos roles que ya exige el backend en `POST`/`DELETE /device-connections`); el rol `client` sigue con el diagrama de solo lectura de P1 sin cambios. Validado con `tests/test_topology.py`: conexión duplicada → 409, auto-enlace → 400, admin puede eliminar una conexión.
 
 ## ✅ P3 — Config Visualizer (parser Cisco IOS) — Resuelto 2026-08-09
 

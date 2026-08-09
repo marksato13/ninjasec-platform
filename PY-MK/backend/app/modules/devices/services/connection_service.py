@@ -50,6 +50,9 @@ class DeviceConnectionService:
         self._device_or_404(payload.source_device_id)
         self._device_or_404(payload.target_device_id)
 
+        # 23-P2: una conexión duplicada (mismo origen/destino/tipo) se
+        # rechaza con un mensaje claro -- antes se devolvía la existente en
+        # silencio, lo que en la UI se veía indistinguible de un éxito real.
         existing = self.db.scalar(
             select(DeviceConnection).where(
                 DeviceConnection.source_device_id == payload.source_device_id,
@@ -58,7 +61,10 @@ class DeviceConnectionService:
             )
         )
         if existing:
-            return existing
+            raise HTTPException(
+                status_code=409,
+                detail="Ya existe una conexión de este tipo entre estos dos dispositivos",
+            )
 
         conn = DeviceConnection(**payload.model_dump())
         self.db.add(conn)
