@@ -41,6 +41,12 @@
 |---|-----------|--------|----------|
 | 14 | `notifySuccess` / `notifyError` (nunca `alert()`) | ✅ | `lib/alerts.ts` |
 
+### Cobertura de regresión
+
+| Pendiente | Evidencia | Resultado |
+|-----------|-----------|-----------|
+| `17-P-01` / `17-P-02` | `backend/tests/test_approval_pending_count_and_rejection_reason.py` cubre conteo exacto de skills y certificaciones en `pending`, sus transiciones a `approved` / `rejected`, y denegación para `admin` y `collaborator`. También verifica que el motivo vacío devuelve `422`, se conserva y es visible para el solicitante. | Pendiente de ejecutar junto con la implementación backend de `17-P-01` / `17-P-02`. La imagen de trabajo no dispone de `pytest`; se validó sintaxis con `python3 -m py_compile`. |
+
 ---
 
 ## Pendientes detectados
