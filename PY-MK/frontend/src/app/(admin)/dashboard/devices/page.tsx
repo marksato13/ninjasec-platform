@@ -27,6 +27,7 @@ import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 import { NetworkTopology } from "@/components/devices/network-topology";
+import { ConfigVisualizer } from "@/components/devices/config-visualizer";
 import { QK } from "@/lib/query-keys";
 
 const DEVICE_TYPES = ["firewall", "switch", "server", "endpoint", "router", "ap", "camera", "other"];
@@ -85,7 +86,7 @@ export default function DashboardDevicesPage() {
   const queryClient    = useQueryClient();
 
   const [clientFilter, setClientFilter]          = useState("");
-  const [activeView, setActiveView]              = useState<"inventory" | "topology">("inventory");
+  const [activeView, setActiveView]              = useState<"inventory" | "topology" | "config">("inventory");
   const [integFilter, setIntegFilter]            = useState("");
   const [typeFilter, setTypeFilter]              = useState("");
   const [statusFilter, setStatusFilter]          = useState("");
@@ -269,6 +270,7 @@ export default function DashboardDevicesPage() {
       <div className="device-view-tabs" role="tablist" aria-label="Vista de dispositivos">
         <button type="button" role="tab" aria-selected={activeView === "inventory"} className={activeView === "inventory" ? "active" : ""} onClick={() => setActiveView("inventory")}>Inventario</button>
         <button type="button" role="tab" aria-selected={activeView === "topology"} className={activeView === "topology" ? "active" : ""} onClick={() => setActiveView("topology")}>Topología</button>
+        <button type="button" role="tab" aria-selected={activeView === "config"} className={activeView === "config" ? "active" : ""} onClick={() => setActiveView("config")}>Config Visualizer</button>
       </div>
 
       {activeView === "topology" ? (
@@ -282,6 +284,8 @@ export default function DashboardDevicesPage() {
           </article>
           <NetworkTopology clientId={clientFilter ? Number(clientFilter) : undefined} />
         </>
+      ) : activeView === "config" ? (
+        <ConfigVisualizer devices={rawDevices} />
       ) : (
       <>
 

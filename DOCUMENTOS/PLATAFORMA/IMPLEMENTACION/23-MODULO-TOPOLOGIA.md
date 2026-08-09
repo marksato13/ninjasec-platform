@@ -84,17 +84,21 @@
 | 29 | Crear conexión arrastrando entre nodos | ⏳ |
 | 30 | Validación: no auto-enlace, no duplicado | ⏳ |
 
-## ⏳ P3 — Config Visualizer (parser Cisco IOS)
+## ✅ P3 — Config Visualizer (parser Cisco IOS) — Resuelto 2026-08-09
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 31 | Tabla `device_configs` + migración | ⏳ |
-| 32 | Carga de archivo con File API — **parseo en el navegador** | ⏳ |
-| 33 | Detección de vendor por sintaxis | ⏳ |
-| 34 | Parser Cisco IOS: interfaces, VLANs, trunk/access, IP, rutas | ⏳ |
-| 35 | Tarjetas de especificación por interfaz | ⏳ |
-| 36 | `parse_warnings` para sintaxis no cubierta | ⏳ |
-| 37 | Documentar comandos soportados y no soportados | ⏳ |
+| # | Requisito | Estado | Archivos |
+|---|-----------|--------|----------|
+| 31 | Tabla `device_configs` + migración | ✅ | `db/models/device_config.py`, migración `20260809_02` |
+| 32 | Carga de archivo con File API — **parseo en el navegador** | ✅ | `components/devices/config-visualizer.tsx` — `FileReader`, nada viaja al servidor salvo guardado explícito |
+| 33 | Detección de vendor por sintaxis | ✅ | `lib/config-parser/detect-vendor.ts` — Cisco/MikroTik/pfSense/no reconocido |
+| 34 | Parser Cisco IOS: interfaces, VLANs, trunk/access, IP, rutas | ✅ | `lib/config-parser/cisco-ios.ts` |
+| 35 | Tarjetas de especificación por interfaz | ✅ | `config-visualizer.tsx` — tabla modo/VLAN/IP/descripción/estado |
+| 36 | `parse_warnings` para sintaxis no cubierta | ✅ | Sub-líneas no reconocidas *dentro* de un bloque `interface`/`vlan` se registran con contexto; secciones enteras fuera de alcance (aaa, crypto, ntp, banners, ACLs) se ignoran sin advertencia — están documentadas como no cubiertas, no son "sintaxis rota" |
+| 37 | Documentar comandos soportados y no soportados | ✅ | `config-visualizer.tsx` — panel "Comandos soportados" con la lista de `SUPPORTED_COMMANDS` |
+
+**Endpoint de persistencia opcional:** `POST/GET /device-configs` (`modules/devices/routers/configs.py`) — rechaza vendors no soportados con 400, exige pertenencia a la organización (404 si el dispositivo es de otra), y **nunca devuelve `raw_config`** en las respuestas (solo `has_raw_config: bool`) aunque se haya guardado. Validado con `tests/test_device_configs.py`.
+
+Los 3 agentes de la flota corrieron sin generar ningún commit (se quedaron explorando o terminaron sin mensaje final); se completó manualmente.
 
 ## ⏳ P4 — Resumen, alertas y export
 

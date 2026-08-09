@@ -13,6 +13,7 @@ from app.db.models.client_site import ClientSite
 from app.db.models.collection_snapshot import CollectionSnapshot
 from app.db.models.collaborator_profile import CollaboratorProfile
 from app.db.models.device import Device
+from app.db.models.device_config import DeviceConfig
 from app.db.models.device_connection import DeviceConnection
 from app.db.models.doc_type import DocType
 from app.db.models.integration import Integration
@@ -62,6 +63,7 @@ __all__ = [
     "CollectionSnapshot",
     "CollaboratorProfile",
     "Device",
+    "DeviceConfig",
     "DeviceConnection",
     "DocType",
     "Integration",
