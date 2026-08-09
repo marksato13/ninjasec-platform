@@ -193,3 +193,25 @@ def test_relationship_crud_preserves_actual_relationship_types(db, seed_data):
 
     # La validación legal de pares ArchiMate 3.2 es P3 y no existe en P1:
     # esta prueba sólo verifica los tipos que el modelo realmente persiste.
+
+
+def test_list_models_filters_by_client_id(db, http_client, admin_token, seed_data):
+    """GET /architecture/models?client_id= no debe devolver modelos de otros clientes.
+
+    Encontrado en issue #66: el endpoint ignoraba el query param `client_id`
+    por completo y devolvía todos los modelos de la organización.
+    """
+    client_a = _client(db, seed_data["org"].id, "FiltroA")
+    client_b = _client(db, seed_data["org"].id, "FiltroB")
+    _model(db, client_a.id, client_a.organization_id, state="baseline")
+    _model(db, client_b.id, client_b.organization_id, state="target")
+    db.commit()
+
+    response = http_client.get(
+        f"/api/v1/architecture/models?client_id={client_a.id}",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert response.status_code == 200, response.text
+    models = response.json()
+    assert len(models) == 1
+    assert models[0]["client_id"] == client_a.id
