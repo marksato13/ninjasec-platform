@@ -12,6 +12,9 @@ class CollaboratorRead(ORMModel):
     area: str | None = None
     photo_url: str | None = None
     portfolio_url: str | None = None
+    phone: str | None = None
+    cv_url: str | None = None
+    source_application_id: int | None = None
 
 
 class CollaboratorUpdate(ORMModel):
@@ -23,6 +26,8 @@ class CollaboratorUpdate(ORMModel):
     area: str | None = None
     photo_url: str | None = None
     portfolio_url: str | None = None
+    phone: str | None = None
+    cv_url: str | None = None
 
 
 class CollaboratorCreate(ORMModel):
