@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from pydantic import field_validator, model_validator
+
 from app.common.schemas.base import ORMModel
 
 
@@ -12,6 +14,7 @@ class UserSkillRead(ORMModel):
     status: str
     verified_by: int | None = None
     verified_at: datetime | None = None
+    rejection_reason: str | None = None
     created_at: datetime | None = None
 
 
@@ -27,3 +30,15 @@ class UserSkillUpdate(ORMModel):
 
 class UserSkillVerify(ORMModel):
     status: str
+    rejection_reason: str | None = None
+
+    @field_validator("rejection_reason")
+    @classmethod
+    def normalize_rejection_reason(cls, value: str | None) -> str | None:
+        return value.strip() if value is not None else None
+
+    @model_validator(mode="after")
+    def require_rejection_reason(self) -> "UserSkillVerify":
+        if self.status == "rejected" and not self.rejection_reason:
+            raise ValueError("El motivo de rechazo es obligatorio")
+        return self

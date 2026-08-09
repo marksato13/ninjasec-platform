@@ -31,6 +31,8 @@ def list_user_certifications(
 ) -> list[UserCertificationRead]:
     stmt = select(UserCertification).join(User, User.id == UserCertification.user_id)
     stmt = stmt.where(User.organization_id == current_user.organization_id)
+    if current_user.role not in (RoleCode.ADMIN.value, RoleCode.SUPER_ADMIN.value):
+        stmt = stmt.where(UserCertification.user_id == current_user.id)
     return [
         UserCertificationRead.model_validate(item) for item in db.scalars(stmt).all()
     ]
@@ -163,6 +165,11 @@ def verify_user_certification(
         raise HTTPException(status_code=400, detail="Invalid status") from exc
 
     certification.status = status_value
+    certification.rejection_reason = (
+        payload.rejection_reason
+        if status_value == CertificationStatus.REJECTED
+        else None
+    )
     certification.verified_by = current_user.id
     certification.verified_at = utcnow()
     db.add(certification)
@@ -176,7 +183,11 @@ def verify_user_certification(
         str(certification.id),
         current_user.id,
         metadata_json=json.dumps(
-            {"user_id": certification.user_id, "name": certification.name},
+            {
+                "user_id": certification.user_id,
+                "name": certification.name,
+                "rejection_reason": certification.rejection_reason,
+            },
             ensure_ascii=True,
         ),
     )

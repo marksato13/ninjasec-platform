@@ -26,10 +26,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { clearSession, getStoredUser } from "@/lib/auth";
 import { formatRoleLabel, getInitials } from "@/lib/role-utils";
+import { getPendingApprovalsCount } from "@/lib/api";
+import { QK } from "@/lib/query-keys";
 
 type NavItem = {
   label: string;
@@ -115,6 +118,11 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
   const isAdmin = role === "super_admin" || role === "admin";
   const isCollaborator = role === "collaborator";
   const isSuperAdmin = role === "super_admin";
+  const { data: pendingApprovals } = useQuery({
+    queryKey: QK.pendingApprovals(),
+    queryFn: getPendingApprovalsCount,
+    enabled: isSuperAdmin,
+  });
 
   const visibleGroups = navGroups.filter((g) =>
     isAdmin || (isCollaborator && g.staffAllowed)
@@ -198,6 +206,11 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
                     >
                       <span className="nav-item-icon-wrap">{item.icon}</span>
                       {!isCollapsed && <strong>{item.label}</strong>}
+                      {item.href === "/dashboard/approvals" && (pendingApprovals?.pending ?? 0) > 0 && (
+                        <span className="badge badge-pending" aria-label={`${pendingApprovals?.pending} aprobaciones pendientes`}>
+                          {pendingApprovals?.pending}
+                        </span>
+                      )}
                     </Link>
                   ))}
                 </div>
