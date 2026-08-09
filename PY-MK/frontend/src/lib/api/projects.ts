@@ -15,7 +15,15 @@ export async function updateProject(id: number, payload: { name?: string | null;
 export async function deleteProject(id: number): Promise<{ message: string }> { return request<{ message: string }>(`/projects/${id}`, { method: "DELETE" }); }
 
 export async function getAreas(): Promise<AreaItem[]> { return request<AreaItem[]>("/areas"); }
+export async function createArea(payload: { name: string; slug?: string | null }): Promise<AreaItem> { return request<AreaItem>("/areas", { method: "POST", body: JSON.stringify(payload) }); }
+export async function updateArea(id: number, payload: { name?: string | null; is_active?: boolean | null; confirm_deactivation?: boolean }): Promise<AreaItem> { return request<AreaItem>(`/areas/${id}`, { method: "PUT", body: JSON.stringify(payload) }); }
+export async function getAreaUsage(id: number): Promise<{ in_use_by: number }> { return request<{ in_use_by: number }>(`/areas/${id}/usage`); }
+
 export async function getProjectTypes(): Promise<ProjectTypeItem[]> { return request<ProjectTypeItem[]>("/project-types"); }
+export async function createProjectType(payload: { name: string; slug?: string | null }): Promise<ProjectTypeItem> { return request<ProjectTypeItem>("/project-types", { method: "POST", body: JSON.stringify(payload) }); }
+export async function updateProjectType(id: number, payload: { name?: string | null; is_active?: boolean | null; confirm_deactivation?: boolean }): Promise<ProjectTypeItem> { return request<ProjectTypeItem>(`/project-types/${id}`, { method: "PUT", body: JSON.stringify(payload) }); }
+export async function getProjectTypeUsage(id: number): Promise<{ in_use_by: number }> { return request<{ in_use_by: number }>(`/project-types/${id}/usage`); }
+
 export async function getProducts(): Promise<ProductItem[]> { return request<ProductItem[]>("/products"); }
 
 export async function getProjectMembers(projectId: number): Promise<ProjectMemberItem[]> { return request<ProjectMemberItem[]>(`/project-members?project_id=${projectId}`); }
