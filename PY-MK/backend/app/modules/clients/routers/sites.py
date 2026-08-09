@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.db.models.client_profile import ClientProfile
 from app.db.models.client_site import ClientSite
 from app.db.models.enums import RoleCode, SiteStatus
 from app.db.repositories.base import Repository
@@ -17,10 +18,26 @@ router = APIRouter(prefix="/client-sites", tags=["client-sites"])
 def list_client_sites(
     client_id: int | None = None,
     current_user: CurrentUser = Depends(
-        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+        require_roles(
+            RoleCode.SUPER_ADMIN.value,
+            RoleCode.ADMIN.value,
+            RoleCode.COLLABORATOR.value,
+            RoleCode.CLIENT.value,
+        )
     ),
     db: Session = Depends(get_db),
 ) -> list[ClientSiteRead]:
+    if current_user.role == RoleCode.CLIENT.value:
+        # 05-P-05: un cliente del portal solo ve las sedes de su propia
+        # empresa -- cualquier client_id que mande en la query se ignora.
+        profile = db.scalar(
+            select(ClientProfile).where(ClientProfile.user_id == current_user.id)
+        )
+        if not profile:
+            return []
+        stmt = select(ClientSite).where(ClientSite.client_id == profile.client_id)
+        return [ClientSiteRead.model_validate(s) for s in db.scalars(stmt).all()]
+
     stmt = select(ClientSite)
     if client_id:
         stmt = stmt.where(ClientSite.client_id == client_id)
