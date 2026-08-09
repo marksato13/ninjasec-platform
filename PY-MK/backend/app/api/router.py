@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from app.modules.alerts.routers.router import router as alerts_router
 from app.modules.audit.routers.router import router as audit_router
+from app.modules.architecture.router import router as architecture_router
 from app.modules.auth.routers.router import router as auth_router
 from app.modules.dashboard.routers.router import router as dashboard_router
 from app.modules.clients.routers.router import router as clients_router
@@ -16,6 +17,7 @@ from app.modules.devices.routers.configs import router as device_configs_router
 from app.modules.catalogs.routers.router import router as catalogs_router
 from app.modules.device_catalog.routers.router import router as device_catalog_router
 from app.modules.compliance.routers.router import router as compliance_router
+from app.modules.audits.routers.router import router as audits_router
 from app.modules.docs.routers.router import router as docs_router
 from app.modules.integrations.routers.router import router as integrations_router
 from app.modules.leads.routers.router import router as leads_router
@@ -49,6 +51,7 @@ api_router.include_router(device_configs_router)
 api_router.include_router(catalogs_router)
 api_router.include_router(device_catalog_router)
 api_router.include_router(compliance_router)
+api_router.include_router(audits_router)
 api_router.include_router(skills_router)
 api_router.include_router(certifications_router)
 api_router.include_router(projects_router)
@@ -66,6 +69,7 @@ api_router.include_router(reports_router)
 api_router.include_router(risks_router)
 api_router.include_router(docs_router)
 api_router.include_router(audit_router)
+api_router.include_router(architecture_router)
 
 
 @api_router.get("/")

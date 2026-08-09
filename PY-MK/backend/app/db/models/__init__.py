@@ -1,3 +1,4 @@
+from app.db.models.audit import Audit
 from app.db.models.audit_log import AuditLog
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.application_attachment import ApplicationAttachment
@@ -5,6 +6,7 @@ from app.db.models.application_event import ApplicationEvent
 from app.db.models.application_note import ApplicationNote
 from app.db.models.application_review import ApplicationReview
 from app.db.models.area import Area
+from app.db.models.architecture import ArchitectureElement, ArchitectureModel, ArchitectureRelationship
 from app.db.models.catalog_device import CatalogDevice
 from app.db.models.client import Client
 from app.db.models.client_contact import ClientContact
@@ -55,6 +57,7 @@ from app.db.models.user_certification import UserCertification
 from app.db.models.user_skill import UserSkill
 
 __all__ = [
+    "Audit",
     "AuditLog",
     "ApplicationAssignment",
     "ApplicationAttachment",
@@ -62,6 +65,9 @@ __all__ = [
     "ApplicationNote",
     "ApplicationReview",
     "Area",
+    "ArchitectureElement",
+    "ArchitectureModel",
+    "ArchitectureRelationship",
     "CatalogDevice",
     "Client",
     "ClientContact",
