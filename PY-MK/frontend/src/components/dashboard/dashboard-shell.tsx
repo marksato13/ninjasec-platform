@@ -21,6 +21,7 @@ import {
   refreshAlerts,
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
+import { useAlertsSocket } from "@/lib/hooks/use-alerts-socket";
 import { QK } from "@/lib/query-keys";
 import {
   CommercialView,
@@ -134,9 +135,15 @@ export function DashboardShell() {
   const { data: alertsRaw = [] } = useQuery<AlertItem[]>({
     queryKey: QK.alerts(alertFilters),
     queryFn: () => getAlerts(alertFilters),
+    // El WebSocket de abajo empuja actualizaciones cuando conecta; este
+    // polling sigue siendo la carga inicial y el respaldo si el socket
+    // no logra conectar (proxy/firewall) o se cae y no puede reconectar.
     refetchInterval: autoRefresh ? AUTO_REFRESH_INTERVAL_MS : false,
   });
-  const alerts = alertsRaw.length > 0 ? alertsRaw : MOCK_ALERTS_FALLBACK;
+  const { pushedAlerts, connected: alertsSocketConnected } = useAlertsSocket(
+    autoRefresh, alertFilters
+  );
+  const alerts = pushedAlerts ?? (alertsRaw.length > 0 ? alertsRaw : MOCK_ALERTS_FALLBACK);
 
   const { data: auditRaw = [] } = useQuery<AuditItem[]>({
     queryKey: QK.auditLogs(5),
@@ -196,10 +203,25 @@ export function DashboardShell() {
             className={`button button-sm ${autoRefresh ? "button-success" : "button-ghost"}`}
             type="button"
             onClick={() => setAutoRefresh((v) => !v)}
-            title={autoRefresh ? `Auto-refresh activo (cada ${AUTO_REFRESH_INTERVAL_MS / 1000}s)` : "Activar auto-refresh"}
+            title={
+              autoRefresh
+                ? alertsSocketConnected
+                  ? "Alertas en vivo por WebSocket -- el resto del dashboard sigue en polling"
+                  : `Auto-refresh activo (cada ${AUTO_REFRESH_INTERVAL_MS / 1000}s) -- reintentando WebSocket de alertas`
+                : "Activar auto-refresh"
+            }
           >
             <Zap size={14} className={autoRefresh ? "spin-slow" : ""} />
             {autoRefresh ? "Auto ON" : "Auto OFF"}
+            {autoRefresh && (
+              <span
+                style={{
+                  width: 6, height: 6, borderRadius: "50%", marginLeft: 4,
+                  background: alertsSocketConnected ? "var(--success)" : "var(--muted)",
+                  display: "inline-block",
+                }}
+              />
+            )}
           </button>
           <button className="button button-secondary" type="button" onClick={handleRefreshAlerts} disabled={refreshing}>
             <RefreshCw size={14} className={refreshing ? "spin" : ""} />

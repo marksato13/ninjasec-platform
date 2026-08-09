@@ -68,7 +68,7 @@ export default function LeadsPipelinePage() {
   const [dragLeadId, setDragLeadId] = useState<number | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
 
-  const { data: leads = [], isLoading } = useQuery({
+  const { data: leads = [], isLoading, error } = useQuery({
     queryKey: QK.leads(),
     queryFn: () => getLeads(),
   });
@@ -271,6 +271,7 @@ export default function LeadsPipelinePage() {
       </div>
 
       {/* Kanban board */}
+      {error && <p className="form-error">Error al cargar leads</p>}
       {isLoading ? (
         <div className="state-panel">Cargando pipeline...</div>
       ) : (
