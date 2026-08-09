@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 def test_migracion_riesgos_define_scores_derivados_y_residual_acotado():
-    migration = import_module("app.db.migrations.versions.20260809_05_risks")
+    migration = import_module("app.db.migrations.versions.20260809_07_risks")
     source = migration.__file__
     assert source is not None
     content = Path(source).read_text(encoding="utf-8")
