@@ -79,4 +79,5 @@ export const QK = {
   areas:           ()                          => ["areas"]                      as const,
   projectTypes:    ()                          => ["project-types"]              as const,
   products:        ()                          => ["products"]                   as const,
+  architectureModels: ()                       => ["architecture-models"]         as const,
 } as const;
