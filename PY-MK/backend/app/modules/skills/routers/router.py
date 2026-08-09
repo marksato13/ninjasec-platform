@@ -5,7 +5,7 @@ from app.core.time_utils import utcnow
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, get_current_user, require_roles
@@ -86,6 +86,7 @@ def list_user_skills(
                 status=item.status.value,
                 verified_by=item.verified_by,
                 verified_at=item.verified_at,
+                rejection_reason=item.rejection_reason,
                 created_at=item.created_at,
             )
         )
@@ -130,6 +131,7 @@ def create_user_skill(
             status=existing.status.value,
             verified_by=existing.verified_by,
             verified_at=existing.verified_at,
+            rejection_reason=existing.rejection_reason,
             created_at=existing.created_at,
         )
 
@@ -162,6 +164,7 @@ def create_user_skill(
         status=user_skill.status.value,
         verified_by=user_skill.verified_by,
         verified_at=user_skill.verified_at,
+        rejection_reason=user_skill.rejection_reason,
         created_at=user_skill.created_at,
     )
 
@@ -228,6 +231,7 @@ def update_user_skill(
         status=user_skill.status.value,
         verified_by=user_skill.verified_by,
         verified_at=user_skill.verified_at,
+        rejection_reason=user_skill.rejection_reason,
         created_at=user_skill.created_at,
     )
 
@@ -253,6 +257,9 @@ def verify_user_skill(
         raise HTTPException(status_code=400, detail="Invalid status") from exc
 
     user_skill.status = status_value
+    user_skill.rejection_reason = (
+        payload.rejection_reason if status_value == SkillStatus.REJECTED else None
+    )
     user_skill.verified_by = current_user.id
     user_skill.verified_at = utcnow()
     db.add(user_skill)
@@ -266,7 +273,11 @@ def verify_user_skill(
         str(user_skill.id),
         current_user.id,
         metadata_json=json.dumps(
-            {"user_id": user_skill.user_id, "skill_id": user_skill.skill_id},
+            {
+                "user_id": user_skill.user_id,
+                "skill_id": user_skill.skill_id,
+                "rejection_reason": user_skill.rejection_reason,
+            },
             ensure_ascii=True,
         ),
     )
@@ -281,5 +292,34 @@ def verify_user_skill(
         status=user_skill.status.value,
         verified_by=user_skill.verified_by,
         verified_at=user_skill.verified_at,
+        rejection_reason=user_skill.rejection_reason,
         created_at=user_skill.created_at,
     )
+
+
+@router.get("/approvals/pending-count", response_model=dict[str, int])
+def pending_approvals_count(
+    current_user: CurrentUser = Depends(require_roles(RoleCode.SUPER_ADMIN.value)),
+    db: Session = Depends(get_db),
+) -> dict[str, int]:
+    skill_count = db.scalar(
+        select(func.count(UserSkill.id))
+        .join(User, User.id == UserSkill.user_id)
+        .where(
+            User.organization_id == current_user.organization_id,
+            UserSkill.status == SkillStatus.PENDING,
+        )
+    ) or 0
+
+    from app.db.models.enums import CertificationStatus
+    from app.db.models.user_certification import UserCertification
+
+    certification_count = db.scalar(
+        select(func.count(UserCertification.id))
+        .join(User, User.id == UserCertification.user_id)
+        .where(
+            User.organization_id == current_user.organization_id,
+            UserCertification.status == CertificationStatus.PENDING,
+        )
+    ) or 0
+    return {"pending": skill_count + certification_count}

@@ -47,8 +47,8 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| 17-P-01 | **Contador de pendientes en el sidebar** | 🔴 Alta | Hoy hay que entrar a la bandeja para saber si hay algo. Un badge con el conteo de `pending` evitaría que se acumulen |
-| 17-P-02 | Rechazo con motivo obligatorio | 🔴 Alta | Se puede pasar a `rejected` sin explicar por qué. Sin motivo, el colaborador no sabe qué corregir |
+| ~~17-P-01~~ | ~~**Contador de pendientes en el sidebar**~~ | — | ✅ **Resuelto 2026-08-08** — endpoint tenant-aware `/skills/approvals/pending-count`, badge visible al aprobador e invalidación inmediata tras resolver |
+| ~~17-P-02~~ | ~~Rechazo con motivo obligatorio~~ | — | ✅ **Resuelto 2026-08-08** — validación backend/UI, persistencia en skills y certificaciones, migración `20260808_04` y motivo visible al solicitante en su perfil |
 | 17-P-03 | Aprobación en lote | 🟡 Media | Verificar 20 skills exige 20 clics |
 | ~~17-P-04~~ | ~~**Re-verificación al editar**~~ | — | ✅ **Resuelto 2026-08-06** junto con `21-P-01` — mismo fix, `app/common/verification.py` |
 | ~~17-P-05~~ | ~~**Expiración automática de certificaciones**~~ | — | ✅ **Resuelto 2026-08-06** junto con `21-P-02` — mismo fix, campos derivados en el schema |
