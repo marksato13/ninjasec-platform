@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Monitor, Network, Router, Server } from "lucide-react";
 
-import { DeviceItem, getDevices } from "@/lib/api";
+import { DeviceItem, getAllClientSites, getDevices } from "@/lib/api";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -51,10 +51,16 @@ function typeKey(deviceType?: string | null): string {
 export default function PortalInventoryPage() {
   const [filterType,   setFilterType]   = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterSite,   setFilterSite]   = useState("");
+
+  const { data: sites = [] } = useQuery({
+    queryKey: ["portal-inventory-sites"],
+    queryFn:  () => getAllClientSites(),
+  });
 
   const { data: allDevices = [], isLoading, error } = useQuery<DeviceItem[]>({
-    queryKey: ["portal-inventory"],
-    queryFn:  () => getDevices({}),
+    queryKey: ["portal-inventory", filterSite],
+    queryFn:  () => getDevices(filterSite ? { site_id: Number(filterSite) } : {}),
   });
 
   // ── All computed from one pass ────────────────────────────────────────────
@@ -195,8 +201,14 @@ export default function PortalInventoryPage() {
             <option value="">Todos los tipos</option>
             {typeOptions.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
-          {(filterStatus || filterType) && (
-            <button className="button button-ghost" type="button" onClick={() => { setFilterStatus(""); setFilterType(""); }}>
+          {sites.length > 1 && (
+            <select value={filterSite} onChange={(e) => setFilterSite(e.target.value)}>
+              <option value="">Todas las sedes</option>
+              {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          )}
+          {(filterStatus || filterType || filterSite) && (
+            <button className="button button-ghost" type="button" onClick={() => { setFilterStatus(""); setFilterType(""); setFilterSite(""); }}>
               Limpiar
             </button>
           )}
