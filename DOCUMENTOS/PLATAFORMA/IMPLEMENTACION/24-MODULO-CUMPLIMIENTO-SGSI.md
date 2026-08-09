@@ -1,26 +1,32 @@
 # Implementación — Módulo Cumplimiento y SGSI
 
 > Basado en: `PLANIFICACION/24-MODULO-CUMPLIMIENTO-SGSI.md`
-> Creado: 2026-08-05 · **Estado: no iniciado**
+> Creado: 2026-08-05 · Actualizado: 2026-08-09 · **Estado: P1 backend hecho, falta UI**
 
 ---
 
-## ⏳ P1 — Catálogo y Declaración de Aplicabilidad
+## 🟡 P1 — Catálogo y Declaración de Aplicabilidad (backend hecho, falta UI)
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
-| 1 | Modelo `ComplianceFramework` | ⏳ | |
-| 2 | Modelo `ComplianceControl` con jerarquía | ⏳ | `parent_code` |
-| 3 | Modelo `ClientControlStatus` | ⏳ | El núcleo de la SoA |
-| 4 | Migración Alembic | ⏳ | |
-| 5 | **Seed ISO 27001:2022 — 93 controles del Anexo A** | ⏳ | JSON, no a mano |
-| 6 | Categorización ISO 27002:2022 (4 categorías) | ⏳ | Organizacional/Personas/Físico/Tecnológico |
-| 7 | `GET/PUT /compliance/controls` | ⏳ | |
-| 8 | `GET /compliance/soa?client_id=` | ⏳ | |
-| 9 | Validación: `not_applicable` exige justificación | ⏳ | 🔴 requisito normativo |
-| 10 | Cálculo de % sobre controles aplicables | ⏳ | |
-| 11 | Página `/dashboard/compliance` con listado y filtros | ⏳ | |
-| 12 | Edición inline de estado y madurez | ⏳ | |
+| 1 | Modelo `ComplianceFramework` | ✅ | `db/models/compliance.py` — global, sin `organization_id` (catálogo, no dato de negocio) |
+| 2 | Modelo `ComplianceControl` con jerarquía | ✅ | `parent_code` derivado del código (`A.5.1` → `A.5`) |
+| 3 | Modelo `ClientControlStatus` | ✅ | El núcleo de la SoA, `UniqueConstraint(client_id, control_id)` |
+| 4 | Migración Alembic | ✅ | `20260809_04_compliance.py` |
+| 5 | **Seed ISO 27001:2022 — 93 controles del Anexo A** | ✅ | `modules/compliance/iso27001_2022.py` — 37 Organizacional + 8 Personas + 14 Físico + 34 Tecnológico. ⚠️ Cargado de memoria del modelo (no del texto oficial, que es de pago) — **verificar códigos y títulos contra el estándar comprado antes de un compromiso de auditoría real con un cliente**, la advertencia queda en el propio archivo |
+| 6 | Categorización ISO 27002:2022 (4 categorías) | ✅ | `category` en cada control: Organizational/People/Physical/Technological |
+| 7 | `GET/PUT /compliance/controls` | ✅ | `GET` lista con estado efectivo; `PUT /compliance/controls/{id}?client_id=` crea o actualiza la fila de la SoA |
+| 8 | `GET /compliance/soa?client_id=` | ✅ | Resumen + arreglo completo de controles con estado |
+| 9 | Validación: `not_applicable` exige justificación | ✅ | 422 si falta — validado ANTES de tocar la sesión de BD (ver nota de bug abajo) |
+| 10 | Cálculo de % sobre controles aplicables | ✅ | Excluye `not_applicable` del denominador |
+| 11 | Página `/dashboard/compliance` con listado y filtros | ⏳ | Fuera del alcance del issue de esta ronda (backend-only, mismo criterio que 29-P1) |
+| 12 | Edición inline de estado y madurez | ⏳ | Requiere la UI (#11) |
+
+Validado con `tests/test_compliance_soa.py`: seed carga exactamente 93 controles (vía la función real de seed, no datos insertados a mano en el test), defaults sin fila previa, persistencia de campos, `not_applicable` sin justificación → 422, cálculo de % excluyendo no aplicables, aislamiento cross-tenant, colaborador consulta pero no edita.
+
+**Bug encontrado y corregido en el camino:** la validación de `not_applicable`/`justification` originalmente ocurría *después* de mutar el objeto SQLAlchemy y hacer `db.add()`, así que un rechazo (422) dejaba la sesión con un registro pendiente sin commit — el siguiente request sobre esa misma sesión fallaba con 500. Se reordenó para validar antes de tocar la sesión.
+
+Los 3 agentes de la flota corrieron sobre este issue: backend y tests no generaron ningún commit, y docs generó documentación extremadamente detallada (migración, seed, 8 endpoints con ejemplos curl, tabla de tablas) que describía el módulo como completamente implementado — pero el diff real solo tocaba este .md y un archivo de test que se salta a sí mismo si el módulo no existe. Se cerró ese PR sin fusionar y se completó manualmente.
 
 ## ⏳ P2 — Evidencia derivada
 
