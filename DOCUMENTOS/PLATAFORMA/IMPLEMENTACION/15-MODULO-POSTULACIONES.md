@@ -27,6 +27,8 @@
 | 9 | `POST /job-applications/` **público** — fuerza estado `new` | ✅ | `router.py:152` |
 | 10 | `GET /{id}` con guard de acceso | ✅ | `router.py:167` |
 | 11 | `PATCH /{id}` cambio de estado | ✅ | `router.py:183` |
+| 11.1 | Cambio a `hired` crea `User` collaborator + `CollaboratorProfile` con `source_application_id` | ✅ | `modules/recruitment/routers/router.py` · `db/models/collaborator_profile.py` |
+| 11.2 | Email duplicado al contratar devuelve 409 y conserva la postulación sin cambiar | ✅ | `modules/recruitment/routers/router.py` · `tests/test_hired_application_conversion.py` |
 | 12 | `POST /{id}/assignments` — solo admin/super_admin | ✅ | `router.py:241` |
 | 13 | `GET /{id}/assignments` | ✅ | `router.py:303` |
 | 14 | `POST /{id}/reviews` + `GET /{id}/reviews` | ✅ | `router.py:329` / `:382` |
@@ -57,7 +59,7 @@
 
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
-| ~~15-P-01~~ | ~~**Conversión `hired` → Colaborador**~~ | — | ✅ **Resuelto 2026-08-08**: la transición crea atómicamente un usuario `collaborator` y su perfil con nombre, contacto, CV, rol, skills y portafolio de la postulación. `source_application_id` conserva el origen; un email ya registrado responde `409` sin cambiar el estado ni crear duplicados. Evidencia: `tests/test_hired_application_conversion.py` (2) |
+| ~~15-P-01~~ | ~~**Conversión `hired` → Colaborador**~~ | — | ✅ **Resuelto 2026-08-09**: al cambiar una postulación a `hired`, `update_job_application_status()` crea automáticamente el `User` con rol `collaborator` y su `CollaboratorProfile`; el perfil guarda `source_application_id` para trazabilidad con la postulación de origen. Si el email ya existe en `users`, responde 409 y no cambia el estado ni crea perfil. Evidencia: `modules/recruitment/routers/router.py`, `db/models/collaborator_profile.py`, migración de `source_application_id` y `tests/test_hired_application_conversion.py` |
 | ~~15-P-02~~ | ~~Upload real de CV~~ | — | ✅ **Resuelto 2026-08-08**: endpoint multipart en `/{id}/attachments/upload`, listado y descarga autenticada. Un PDF actualiza `cv_url`; las URLs externas existentes y la creación de adjuntos por URL continúan válidas. Evidencia: `tests/test_file_storage.py` |
 | 15-P-03 | Score agregado por postulación | 🟡 Media | Hay reviews individuales pero no promedio ni consolidado en el listado |
 | 15-P-04 | Notificación por correo al candidato | 🟢 Baja | Los cambios de estado no notifican a nadie |
