@@ -6,11 +6,11 @@ Plataforma de infraestructura y ciberseguridad para PYMEs, consultoras y MSPs. U
 
 ### 🔗 Vista previa en vivo
 
-**https://write-six-wishing-dominant.trycloudflare.com**
+**https://compression-solutions-encourages-specify.trycloudflare.com**
 
-Backend, frontend y base de datos reales, reconstruidos desde el `main` más reciente — no es una demo estática. Login con las credenciales del seed (`admin@ninjasec.local` / `change-me` para super_admin; el resto de roles en `PY-MK/CLAUDE.md`).
+Backend, frontend y base de datos reales — no es una demo estática. Un timer systemd reconstruye el stack automáticamente cada vez que `main` avanza (cada 5 min como máximo de retraso), así que este link siempre refleja el último merge. Login con las credenciales del seed (`admin@ninjasec.local` / `change-me` para super_admin; el resto de roles en `PY-MK/CLAUDE.md`).
 
-⚠️ **Es un túnel temporal**, no un despliegue: se corta si se reinicia el proceso que lo sirve. No usar como URL permanente ni compartir fuera de para mirar el avance.
+⚠️ **La URL puede cambiar.** Es un túnel gratuito de Cloudflare sin dominio propio (`trycloudflare.com`), y esos túneles no tienen hostname fijo: si el proceso se reinicia (crash, reboot), Cloudflare asigna una URL nueva al azar. El proceso se auto-reinicia solo (systemd), pero la URL de arriba puede quedar desactualizada — si no carga, avisa y se regenera el link.
 
 ---
 
