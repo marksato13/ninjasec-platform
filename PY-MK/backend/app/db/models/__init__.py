@@ -37,6 +37,7 @@ from app.db.models.project_task import ProjectTask
 from app.db.models.project_type import ProjectType
 from app.db.models.report import Report
 from app.db.models.report_run import ReportRun
+from app.db.models.risk import Risk, RiskAsset
 from app.db.models.role import Role
 from app.db.models.security_review import (
     ReviewAttachment,
@@ -91,6 +92,8 @@ __all__ = [
     "ProjectType",
     "Report",
     "ReportRun",
+    "Risk",
+    "RiskAsset",
     "ReviewAttachment",
     "ReviewChecklistItem",
     "ReviewFinding",
