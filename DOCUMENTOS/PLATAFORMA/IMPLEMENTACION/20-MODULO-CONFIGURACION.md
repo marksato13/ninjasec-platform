@@ -60,7 +60,7 @@
 | ~~20-P-08~~ | ~~**`GET /products` no filtra por organización**~~ | — | ✅ **Resuelto 2026-08-06**: filtro por `organization_id` en los tres catálogos. `Area`/`ProjectType` además admiten globales (`NULL`). Tests en `tests/test_catalogs_tenant_isolation.py` (5) — **verificado que fallan sin el fix** |
 | ~~20-P-09~~ | ~~**`unique` global en catálogos multi-tenant**~~ | — | ✅ **Resuelto 2026-08-06**: `UniqueConstraint(organization_id, name/slug)` en `Area`, `ProjectType` y `Product` + migración `20260806_01_catalog_tenant_unique.py`. Tests en `tests/test_catalogs_composite_unique.py` (5) |
 | 20-P-10 | `organization_id` nullable en `Area` y `ProjectType` | 🟡 Media | Un registro con `organization_id = NULL` es visible para todos sin que ninguna regla lo declare. Decidir: o es catálogo global explícito, o es `NOT NULL` |
-| 20-P-11 | Los catálogos los lee el rol `client` | 🟡 Media | `catalogs/routers/router.py` solo exige `get_current_user`. Un cliente no debería enumerar las áreas internas ni los productos de la consultora |
+| ~~20-P-11~~ | ~~Los catálogos los lee el rol `client`~~ | — | ✅ **Resuelto 2026-08-09**: investigado antes de asumir -- el frontend de `/portal` nunca llama a `getAreas()`/`getProjectTypes()`/`getProducts()` (solo `(admin)/dashboard`). Decisión: el rol `client` no necesita leerlos. `GET /areas`, `/project-types` y `/products` pasaron de `Depends(get_current_user)` (cualquier rol autenticado) a `require_roles(super_admin, admin, collaborator)`. Verificado en `tests/test_catalog_role_access.py`: client → 403 en los tres, admin/collaborator siguen en 200. |
 
 ---
 

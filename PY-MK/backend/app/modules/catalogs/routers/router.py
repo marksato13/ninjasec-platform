@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
-from app.common.deps.auth import CurrentUser, get_current_user, require_roles
+from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
 from app.db.models.area import Area
 from app.db.models.enums import RoleCode
@@ -28,6 +28,15 @@ from app.modules.catalogs.schemas import (
 router = APIRouter(prefix="", tags=["catalogs"])
 
 _ADMIN = require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)
+# 20-P-11: áreas, tipos de proyecto y productos son catálogos internos de
+# clasificación (para armar/cotizar proyectos), no datos que el portal
+# cliente necesite -- el frontend de /portal nunca los consume. Antes se
+# leían con solo estar autenticado (Depends(get_current_user)), sin
+# ninguna regla explícita que decidiera si el rol client debía verlos.
+# Decisión: no los necesita, se restringe.
+_CATALOG_READERS = require_roles(
+    RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value
+)
 
 
 def slugify(value: str) -> str:
@@ -53,7 +62,7 @@ def _visible_to(model, organization_id: int):
 
 @router.get("/areas", response_model=list[AreaRead])
 def list_areas(
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(_CATALOG_READERS),
     db: Session = Depends(get_db),
 ) -> list[AreaRead]:
     stmt = select(Area).where(
@@ -65,7 +74,7 @@ def list_areas(
 
 @router.get("/project-types", response_model=list[ProjectTypeRead])
 def list_project_types(
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(_CATALOG_READERS),
     db: Session = Depends(get_db),
 ) -> list[ProjectTypeRead]:
     stmt = select(ProjectType).where(
@@ -77,7 +86,7 @@ def list_project_types(
 
 @router.get("/products", response_model=list[ProductRead])
 def list_products(
-    current_user: CurrentUser = Depends(get_current_user),
+    current_user: CurrentUser = Depends(_CATALOG_READERS),
     db: Session = Depends(get_db),
 ) -> list[ProductRead]:
     # Product.organization_id es NOT NULL: es dato por tenant, nunca catalogo global.
