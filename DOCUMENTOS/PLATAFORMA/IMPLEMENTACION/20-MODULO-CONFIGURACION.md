@@ -50,7 +50,7 @@
 | 20-P-02 | **CRUD de tipos de proyecto desde la UI** | 🔴 Alta | Mismo caso que `20-P-01` |
 | 20-P-03 | CRUD de productos | 🟡 Media | El endpoint `GET` existe; no hay pestaña ni escritura |
 | 20-P-04 | Toggle `is_active` desde la UI | 🟡 Media | El campo existe en los tres catálogos y no se puede accionar |
-| 20-P-05 | **Pestaña de umbrales operativos** | 🔴 Alta | Backend listo 2026-08-08: tabla y `GET/PUT /alerts/thresholds` con aislamiento, auditoría y fallback 7/30. Falta conectar la pestaña UI |
+| ~~20-P-05~~ | ~~**Pestaña de umbrales operativos**~~ | — | ✅ **Resuelto 2026-08-09**: configuración persistida por organización para umbrales de alertas. Backend en commit `a1ac5e8`: tabla `organization_alert_thresholds`, modelo `OrganizationAlertThreshold`, servicio `get_alert_thresholds()` y `GET/PUT /alerts/thresholds`. El comportamiento mantiene valores por defecto `overdue_days = 7` y `no_review_days = 30` cuando la organización no tiene registro propio |
 | ~~20-P-06~~ | ~~Endpoints `POST`/`PUT` para areas y project-types~~ | — | ✅ **Resuelto 2026-08-06**: `catalogs/routers/router.py`. Slug derivado del nombre, unicidad validada con 409, catálogos globales protegidos. Tests en `tests/test_catalogs_write.py` (12) |
 | ~~20-P-07~~ | ~~Aviso de uso antes de desactivar~~ | — | ✅ **Resuelto 2026-08-06**: `GET /areas/{id}/usage` y `/project-types/{id}/usage` devuelven cuántos proyectos, servicios y productos dependen. El conteo queda también en el audit log al desactivar |
 | ~~20-P-08~~ | ~~**`GET /products` no filtra por organización**~~ | — | ✅ **Resuelto 2026-08-06**: filtro por `organization_id` en los tres catálogos. `Area`/`ProjectType` además admiten globales (`NULL`). Tests en `tests/test_catalogs_tenant_isolation.py` (5) — **verificado que fallan sin el fix** |
@@ -95,5 +95,35 @@ Era el módulo **menos completo** de los construidos: funcionaba como *visor*, n
 1. `20-P-01` y `20-P-02` — conectar la UI a los endpoints que ya existen
 2. `20-P-04` — toggle de `is_active` usando el endpoint `/usage` para el aviso
 3. `20-P-03` — CRUD de productos
-4. `20-P-05` — pestaña de umbrales (desbloquea `18-P-02`)
-5. `20-P-10` / `20-P-11` — decidir si `Area`/`ProjectType` son globales o por tenant, y si `client` debe leer catálogos
+4. `20-P-10` / `20-P-11` — decidir si `Area`/`ProjectType` son globales o por tenant, y si `client` debe leer catálogos
+
+---
+
+## ✅ Umbrales operativos por organización — 2026-08-09
+
+`20-P-05` queda cerrado por la implementación backend registrada en `a1ac5e8`.
+
+**Cambios verificables:**
+
+- Nueva tabla `organization_alert_thresholds` con clave primaria `organization_id`, `overdue_days` y `no_review_days`
+- Modelo `db/models/organization_alert_threshold.py` relacionado con `Organization`
+- Servicio `modules/alerts/services/threshold_service.py` con fallback explícito a `7` días para tickets vencidos y `30` días para dispositivos sin revisión
+- Endpoints `GET /alerts/thresholds` y `PUT /alerts/thresholds`, restringidos a `super_admin` y `admin`
+- Auditoría `alerts.thresholds.update` al guardar cambios
+
+**Comportamiento por organización:**
+
+| Caso | Resultado |
+|---|---|
+| Organización sin configuración propia | Usa defaults `overdue_days = 7` y `no_review_days = 30` |
+| Organización con configuración propia | El motor de alertas lee los valores persistidos sin reiniciar el servicio |
+| Otra organización tiene umbrales distintos | No se leen ni se mezclan; cada tenant consulta por su `organization_id` |
+| Colaborador intenta leer o cambiar umbrales | Respuesta 403 |
+
+**Prueba ejecutada:**
+
+```bash
+docker run --rm -v /home/m4rk/workspace/worktrees/issue-8-backend/PY-MK/backend:/app -w /app python:3.12-slim sh -c 'pip install -q -r requirements.txt && PYTHONPATH=. pytest -q tests/test_alert_thresholds.py'
+```
+
+**Resultado:** `6 passed, 28 warnings`.

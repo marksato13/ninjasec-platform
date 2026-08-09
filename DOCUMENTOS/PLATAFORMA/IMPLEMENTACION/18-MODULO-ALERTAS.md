@@ -47,7 +47,7 @@
 | # | Pendiente | Prioridad | Detalle |
 |---|-----------|-----------|---------|
 | 18-P-01 | **WebSocket en lugar de polling** | 🟡 Media | Hoy 60 s de latencia y una consulta completa por cliente conectado. Heredado de `02-P-05` |
-| ~~18-P-02~~ | ~~**Umbrales configurables por organización**~~ | — | ✅ **Resuelto 2026-08-08**: tabla `organization_alert_thresholds`, `GET/PUT /alerts/thresholds` restringidos a admin y motor de alertas con fallback 7/30. Tests en `tests/test_alert_thresholds.py` |
+| ~~18-P-02~~ | ~~**Umbrales configurables por organización**~~ | — | ✅ **Resuelto 2026-08-09**: el motor lee `organization_alert_thresholds` mediante `get_alert_thresholds()`. Si no hay fila para la organización, usa defaults `overdue_days = 7` y `no_review_days = 30`. Validado con `tests/test_alert_thresholds.py`: defaults, update por admin, 403 para colaborador, validación positiva, aplicación sin reinicio y aislamiento multi-tenant |
 | 18-P-03 | Alerta de certificación por vencer | 🟡 Media | `user_certifications.expires_at` existe y nadie lo vigila (conecta con `17-P-05`) |
 | 18-P-04 | Alerta de dispositivo crítico caído | 🔴 Alta | `Device.criticality` ya existe; un `critical` en `offline` debería ser alerta roja inmediata |
 | 18-P-05 | Alerta de garantía vencida | 🟢 Baja | Requiere el campo `warranty_expires_at`, aún no implementado |
@@ -61,3 +61,32 @@
 La decisión de **no persistir alertas** es acertada y hay que preservarla: elimina las alertas zombi y la necesidad de un flujo de "cerrar alerta". El costo es que no existe histórico — no se puede responder "¿cuántas alertas críticas tuvimos en julio?".
 
 Si se necesita esa métrica, la vía correcta es una tabla `alert_snapshots` que guarde el conteo diario por tipo y severidad, **sin** convertir las alertas en entidades gestionables.
+
+---
+
+## ✅ Umbrales configurables por organización — 2026-08-09
+
+`18-P-02` queda cerrado por la implementación backend registrada en `a1ac5e8`.
+
+**Cambios verificables:**
+
+- `modules/alerts/routers/router.py` ya no usa constantes hardcodeadas para tickets vencidos ni revisión de dispositivos; consulta los umbrales de la organización actual
+- `GET /alerts/thresholds` devuelve la configuración efectiva para la organización autenticada
+- `PUT /alerts/thresholds` persiste `overdue_days` y `no_review_days` por `organization_id`
+- El refresh batch usa `no_review_days`; `GET /alerts/active` usa `overdue_days`
+- Los cambios se auditan con `alerts.thresholds.update`
+
+**Comportamiento con valores por defecto:**
+
+| Configuración de la organización | Ticket vencido | Device sin revisión |
+|---|---:|---:|
+| Sin registro en `organization_alert_thresholds` | 7 días | 30 días |
+| Con registro propio | Valor `overdue_days` de la organización | Valor `no_review_days` de la organización |
+
+**Prueba ejecutada:**
+
+```bash
+docker run --rm -v /home/m4rk/workspace/worktrees/issue-8-backend/PY-MK/backend:/app -w /app python:3.12-slim sh -c 'pip install -q -r requirements.txt && PYTHONPATH=. pytest -q tests/test_alert_thresholds.py'
+```
+
+**Resultado:** `6 passed, 28 warnings`.
