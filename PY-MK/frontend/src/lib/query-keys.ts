@@ -65,6 +65,7 @@ export const QK = {
   skills:          ()                          => ["skills"]                     as const,
   userSkills:      ()                          => ["user-skills"]                as const,
   certifications:  ()                          => ["certifications"]             as const,
+  pendingApprovals: ()                          => ["approvals", "pending-count"] as const,
 
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,

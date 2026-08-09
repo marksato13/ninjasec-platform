@@ -22,6 +22,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { Modal } from "@/components/ui/modal";
+import { QK } from "@/lib/query-keys";
 
 const scopeOptions = ["public", "private", "both"];
 
@@ -39,6 +40,8 @@ export default function ApprovalsPage() {
   const [docTypeOpen, setDocTypeOpen] = useState(false);
 
   const [docProjectFilter, setDocProjectFilter] = useState("");
+  const [rejectionTarget, setRejectionTarget] = useState<{ type: "skill" | "cert"; item: UserSkillItem | UserCertificationItem } | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
   const queryClient = useQueryClient();
   const { data, isLoading, error: queryError } = useQuery({
@@ -81,23 +84,29 @@ export default function ApprovalsPage() {
     return map;
   }, [projects]);
 
-  async function handleVerifySkill(item: UserSkillItem, status: string) {
+  async function handleVerifySkill(item: UserSkillItem, status: string, reason?: string) {
     try {
-      const updated = await verifyUserSkill(item.id, status);
+      const updated = await verifyUserSkill(item.id, status, reason);
       setSkillItems((current) => current.map((skill) => (skill.id === updated.id ? updated : skill)));
       queryClient.invalidateQueries({ queryKey: ["approvals"] });
+      queryClient.invalidateQueries({ queryKey: QK.pendingApprovals() });
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo verificar el skill");
+      return false;
     }
   }
 
-  async function handleVerifyCert(item: UserCertificationItem, status: string) {
+  async function handleVerifyCert(item: UserCertificationItem, status: string, reason?: string) {
     try {
-      const updated = await verifyUserCertification(item.id, status);
+      const updated = await verifyUserCertification(item.id, status, reason);
       setCertItems((current) => current.map((cert) => (cert.id === updated.id ? updated : cert)));
       queryClient.invalidateQueries({ queryKey: ["approvals"] });
+      queryClient.invalidateQueries({ queryKey: QK.pendingApprovals() });
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo verificar la certificacion");
+      return false;
     }
   }
 
@@ -184,7 +193,7 @@ export default function ApprovalsPage() {
                     <button className="button button-secondary" type="button" onClick={() => handleVerifySkill(item, "approved")}>
                       Aprobar
                     </button>
-                    <button className="button button-destructive" type="button" onClick={() => handleVerifySkill(item, "rejected")}>
+                    <button className="button button-destructive" type="button" onClick={() => { setRejectionTarget({ type: "skill", item }); setRejectionReason(""); }}>
                       Rechazar
                     </button>
                   </span>
@@ -220,7 +229,7 @@ export default function ApprovalsPage() {
                     <button className="button button-secondary" type="button" onClick={() => handleVerifyCert(item, "approved")}>
                       Aprobar
                     </button>
-                    <button className="button button-destructive" type="button" onClick={() => handleVerifyCert(item, "rejected")}>
+                    <button className="button button-destructive" type="button" onClick={() => { setRejectionTarget({ type: "cert", item }); setRejectionReason(""); }}>
                       Rechazar
                     </button>
                   </span>
@@ -230,6 +239,28 @@ export default function ApprovalsPage() {
           )}
         </article>
       </div>
+
+      <Modal isOpen={rejectionTarget !== null} title="Motivo del rechazo" onClose={() => setRejectionTarget(null)}>
+        <form className="entity-form" onSubmit={async (event) => {
+          event.preventDefault();
+          const reason = rejectionReason.trim();
+          if (!reason) {
+            notifyError("El motivo de rechazo es obligatorio");
+            return;
+          }
+          if (!rejectionTarget) return;
+          const succeeded = rejectionTarget.type === "skill"
+            ? await handleVerifySkill(rejectionTarget.item as UserSkillItem, "rejected", reason)
+            : await handleVerifyCert(rejectionTarget.item as UserCertificationItem, "rejected", reason);
+          if (succeeded) setRejectionTarget(null);
+        }}>
+          <textarea rows={4} value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} placeholder="Explica qué debe corregir el solicitante" required />
+          <div className="panel-actions">
+            <button className="button button-destructive" type="submit">Confirmar rechazo</button>
+            <button className="button button-ghost" type="button" onClick={() => setRejectionTarget(null)}>Cancelar</button>
+          </div>
+        </form>
+      </Modal>
 
       <div className="split-grid">
         <article className="panel">

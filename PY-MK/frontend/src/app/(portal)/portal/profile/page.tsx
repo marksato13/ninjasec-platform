@@ -347,6 +347,9 @@ export default function PortalProfilePage() {
                   <strong>{item.skill_name || `Skill #${item.skill_id}`}</strong>
                   {item.level ? ` · ${item.level}` : ""}
                   <span className={`badge badge-${item.status}`}>{item.status}</span>
+                  {item.status === "rejected" && item.rejection_reason && (
+                    <p className="form-error" style={{ margin: "6px 0 0" }}><strong>Motivo:</strong> {item.rejection_reason}</p>
+                  )}
                 </li>
               ))}
             </ul>
@@ -413,6 +416,9 @@ export default function PortalProfilePage() {
                   <span className={`badge badge-${cert.effective_status}`}>
                     {cert.effective_status === "expired" ? "vencida" : cert.effective_status}
                   </span>
+                  {cert.status === "rejected" && cert.rejection_reason && (
+                    <p className="form-error" style={{ margin: "6px 0 0" }}><strong>Motivo:</strong> {cert.rejection_reason}</p>
+                  )}
                   {cert.is_expired && cert.expires_at && (
                     <span style={{ color: "var(--muted)", fontSize: 12, marginLeft: 8 }}>
                       caducó el {cert.expires_at.slice(0, 10)} · renuévala para que vuelva a contar
