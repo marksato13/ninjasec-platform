@@ -184,6 +184,7 @@ def _crear(db, model, schema_read, payload, current_user, entidad: str):
 def _actualizar(db, model, schema_read, item_id, payload, current_user, entidad: str):
     item = _get_editable(db, model, item_id, current_user.organization_id)
     data = payload.model_dump(exclude_unset=True)
+    confirm_deactivation = data.pop("confirm_deactivation", False)
 
     if "name" in data and data["name"]:
         nuevo = data["name"].strip()
@@ -195,10 +196,15 @@ def _actualizar(db, model, schema_read, item_id, payload, current_user, entidad:
 
     en_uso = 0
     if data.get("is_active") is False and item.is_active:
-        # 20-P-07: desactivar un area usada por 12 proyectos no puede ser
-        # silencioso. No se bloquea (el historico sigue siendo valido),
-        # pero queda registrado cuanto arrastra.
         en_uso = _contar_uso(db, model, item.id)
+        if en_uso and not confirm_deactivation:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail={
+                    "message": "El catalogo esta en uso; confirme explicitamente la desactivacion",
+                    "in_use_by": en_uso,
+                },
+            )
     if "is_active" in data and data["is_active"] is not None:
         item.is_active = data["is_active"]
 
