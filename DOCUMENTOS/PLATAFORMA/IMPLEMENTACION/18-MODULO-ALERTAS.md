@@ -14,6 +14,7 @@
 | 1 | `GET /alerts/active` con filtro opcional `client_id` | ✅ | `modules/alerts/routers/router.py:31` |
 | 2 | Alerta `license_expired` (integración con licencia vencida) | ✅ | `router.py:_license_expired_alerts` |
 | 3 | Alerta `critical_finding_open` | ✅ | `router.py:_critical_finding_alerts` |
+| 3b | Alerta `critical_device_offline` | ✅ | `router.py:_critical_device_offline_alerts` |
 | 4 | Alerta `ticket_overdue` (>7 días) | ✅ | `router.py:_ticket_overdue_alerts` |
 | 5 | Supresión: hallazgo con ticket **o** recomendación no alerta | ✅ | `router.py` → sets `ticketed` / `recommended` |
 | 6 | Orden critical → warning → info impuesto por el backend | ✅ | `router.py:53-55` |
@@ -49,7 +50,7 @@
 | 18-P-01 | **WebSocket en lugar de polling** | 🟡 Media | Hoy 60 s de latencia y una consulta completa por cliente conectado. Heredado de `02-P-05` |
 | ~~18-P-02~~ | ~~**Umbrales configurables por organización**~~ | — | ✅ **Resuelto 2026-08-09**: el motor lee `organization_alert_thresholds` mediante `get_alert_thresholds()`. Si no hay fila para la organización, usa defaults `overdue_days = 7` y `no_review_days = 30`. Validado con `tests/test_alert_thresholds.py`: defaults, update por admin, 403 para colaborador, validación positiva, aplicación sin reinicio y aislamiento multi-tenant |
 | 18-P-03 | Alerta de certificación por vencer | 🟡 Media | `user_certifications.expires_at` existe y nadie lo vigila (conecta con `17-P-05`) |
-| 18-P-04 | Alerta de dispositivo crítico caído | 🔴 Alta | `Device.criticality` ya existe; un `critical` en `offline` debería ser alerta roja inmediata |
+| ~~18-P-04~~ | ~~**Alerta de dispositivo crítico caído**~~ | — | ✅ **Resuelto 2026-08-09**: nuevo helper derivado `_critical_device_offline_alerts()` (mismo patrón sin tabla `alerts` que el resto del motor) — dispositivos con `criticality == "critical"` y `status == "offline"` aparecen en `GET /alerts/active` con `severity: "critical"` en la siguiente lectura, sin esperar `/alerts/refresh`. No se toca `_INACTIVE_DEVICE` ni el mecanismo de refresh en batch. Validado con `tests/test_critical_device_alerts.py`: dispositivo crítico offline dispara la alerta, no crítico offline no la dispara, crítico pero online tampoco |
 | 18-P-05 | Alerta de garantía vencida | 🟢 Baja | Requiere el campo `warranty_expires_at`, aún no implementado |
 | 18-P-06 | Notificación por correo de alertas críticas | 🟡 Media | Hoy solo se ven entrando al dashboard. Conecta con la idea "SOC as a report" |
 | 18-P-07 | Job programado para `refresh` | 🟡 Media | Requiere ejecución manual por super_admin; debería correr por cron nocturno |

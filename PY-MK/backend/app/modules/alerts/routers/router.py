@@ -3,11 +3,12 @@ from datetime import date, datetime, timedelta
 from app.core.time_utils import utcnow
 
 from fastapi import APIRouter, Depends
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.db.models.client_site import ClientSite
 from app.db.models.device import Device
 from app.db.models.enums import FindingSeverity, FindingStatus, RoleCode, TicketStatus
 from app.db.models.integration import Integration
@@ -102,6 +103,7 @@ def get_active_alerts(
 
     alerts.extend(_license_expired_alerts(db, org_id, client_id, now))
     alerts.extend(_critical_finding_alerts(db, org_id, client_id, now))
+    alerts.extend(_critical_device_offline_alerts(db, org_id, client_id, now))
     alerts.extend(
         _ticket_overdue_alerts(
             db, org_id, client_id, now, thresholds.overdue_days
@@ -275,6 +277,49 @@ def _critical_finding_alerts(
                 message=f"[{sev_label}] Hallazgo '{f.title}' sin ticket ni recomendación asociada",
                 created_at=now,
             ))
+    return alerts
+
+
+def _critical_device_offline_alerts(
+    db: Session,
+    org_id: int,
+    client_id: int | None,
+    now: datetime,
+) -> list[AlertItem]:
+    # 18-P-04: un dispositivo crítico caído es una alerta inmediata, no una
+    # que espere el ciclo de /alerts/refresh — se deriva en cada lectura,
+    # igual que el resto de alertas de este endpoint.
+    stmt = (
+        select(Device)
+        .outerjoin(Integration, Device.integration_id == Integration.id)
+        .outerjoin(ClientSite, Device.site_id == ClientSite.id)
+        .where(
+            Device.status == "offline",
+            Device.criticality == "critical",
+            or_(
+                Integration.organization_id == org_id,
+                ClientSite.client.has(organization_id=org_id),
+            ),
+        )
+    )
+    if client_id:
+        stmt = stmt.where(
+            or_(
+                Integration.client_id == client_id,
+                ClientSite.client_id == client_id,
+            )
+        )
+
+    alerts = []
+    for d in db.scalars(stmt).all():
+        alerts.append(AlertItem(
+            type="critical_device_offline",
+            severity="critical",
+            entity_type="device",
+            entity_id=d.id,
+            message=f"Dispositivo crítico '{d.hostname}' está offline",
+            created_at=now,
+        ))
     return alerts
 
 
