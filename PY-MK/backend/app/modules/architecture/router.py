@@ -30,8 +30,10 @@ def _commit(db: Session, user: CurrentUser, entity: object, action: str) -> None
 
 
 @router.get("/models", response_model=list[ModelRead])
-def list_models(current_user: CurrentUser = Depends(require_roles(*READ_ROLES)), db: Session = Depends(get_db)):
+def list_models(client_id: int | None = None, current_user: CurrentUser = Depends(require_roles(*READ_ROLES)), db: Session = Depends(get_db)):
     stmt = select(ArchitectureModel).options(selectinload(ArchitectureModel.elements), selectinload(ArchitectureModel.relationships)).where(ArchitectureModel.organization_id == current_user.organization_id)
+    if client_id is not None:
+        stmt = stmt.where(ArchitectureModel.client_id == client_id)
     return db.scalars(stmt).all()
 
 

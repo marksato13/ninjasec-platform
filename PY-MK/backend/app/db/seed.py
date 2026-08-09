@@ -9,8 +9,10 @@ from app.core.security import hash_password
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.area import Area
 from app.db.models.catalog_device import CatalogDevice
-from app.db.models.compliance import ComplianceControl, ComplianceFramework
-from app.db.models.risk import Threat, Vulnerability
+from app.db.models.architecture import ArchitectureElement, ArchitectureModel, ArchitectureRelationship
+from app.db.models.audit import Audit
+from app.db.models.compliance import ClientControlStatus, ComplianceControl, ComplianceFramework
+from app.db.models.risk import Risk, RiskAsset, Threat, Vulnerability
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
 from app.db.models.collaborator_profile import CollaboratorProfile
@@ -880,6 +882,7 @@ def seed_initial_data(db: Session) -> None:
 
     seed_compliance_catalog(db)
     seed_risk_catalog(db)
+    seed_module_demo_records(db)
 
 
 def seed_compliance_catalog(db: Session) -> None:
@@ -961,5 +964,123 @@ def seed_risk_catalog(db: Session) -> None:
         if code in existing_vulns:
             continue
         db.add(Vulnerability(code=code, name=name, category=category, description=description, is_global=True, organization_id=None))
+
+    db.commit()
+
+
+def seed_module_demo_records(db: Session) -> None:
+    """Issue #66 -- los módulos 24/25/26/27 (compliance, riesgos, auditorías,
+    arquitectura) solo tenían catálogo global sembrado; ningún cliente de
+    demo tenía registros propios, así que las cuatro pantallas se veían
+    vacías. Agrega datos reales para los 3 clientes base (Blue Shield Tech,
+    Orion Logistics, Nova Retail) creados más arriba en este mismo archivo.
+    Idempotente: cada bloque comprueba si el cliente ya tiene datos antes
+    de insertar."""
+    organization = db.scalar(select(Organization).where(Organization.slug == "ninjasec-internal"))
+    if not organization:
+        return
+    admin_ops = db.scalar(select(User).where(User.email == "ops@ninjasec.local"))
+    clients = {
+        c.company_name: c
+        for c in db.scalars(
+            select(Client).where(Client.company_name.in_(["Blue Shield Tech", "Orion Logistics", "Nova Retail"]))
+        ).all()
+    }
+    if not admin_ops or not clients:
+        return
+
+    # ── Compliance (24): estado de una docena de controles por cliente ──
+    framework = db.scalar(select(ComplianceFramework).where(ComplianceFramework.slug == "iso-27001-2022"))
+    if framework:
+        control_codes = ["A.5.1", "A.5.9", "A.5.15", "A.5.23", "A.6.3", "A.7.4", "A.8.8", "A.8.16", "A.8.24"]
+        controls = {
+            c.code: c
+            for c in db.scalars(
+                select(ComplianceControl).where(ComplianceControl.framework_id == framework.id, ComplianceControl.code.in_(control_codes))
+            ).all()
+        }
+        demo_status = [
+            ("implemented", "applicable", 4, None),
+            ("implemented", "applicable", 3, None),
+            ("partial", "applicable", 2, "En progreso: falta cobertura en sedes remotas"),
+            ("not_implemented", "applicable", 0, None),
+            ("not_applicable", "not_applicable", 0, "Cliente no usa proveedores cloud externos"),
+        ]
+        for client in clients.values():
+            if db.scalar(select(ClientControlStatus).where(ClientControlStatus.client_id == client.id)):
+                continue
+            for i, code in enumerate(control_codes):
+                control = controls.get(code)
+                if not control:
+                    continue
+                status, applicability, maturity, justification = demo_status[i % len(demo_status)]
+                db.add(ClientControlStatus(
+                    client_id=client.id, control_id=control.id,
+                    applicability=applicability, implementation_status=status,
+                    maturity_level=maturity, justification=justification,
+                    responsible_user_id=admin_ops.id,
+                ))
+
+    # ── Riesgos (25): un activo y varios riesgos repartidos en el mapa de calor ──
+    threats = list(db.scalars(select(Threat).where(Threat.is_global.is_(True)).order_by(Threat.code)).all())
+    vulns = list(db.scalars(select(Vulnerability).where(Vulnerability.is_global.is_(True)).order_by(Vulnerability.code)).all())
+    risk_positions = [(4, 5, "Exposición de datos de clientes"), (2, 3, "Configuración por defecto en switch de borde"), (5, 2, "Dependencia de proveedor único de conectividad")]
+    for idx, client in enumerate(clients.values()):
+        if db.scalar(select(Risk).where(Risk.client_id == client.id)):
+            continue
+        asset = RiskAsset(
+            client_id=client.id, name="Servidor de aplicaciones principal", asset_type="hardware",
+            confidentiality=4, integrity=4, availability=3, business_value=4,
+        )
+        db.add(asset)
+        db.flush()
+        for j, (likelihood, impact, title) in enumerate(risk_positions):
+            risk = Risk(
+                client_id=client.id, asset_id=asset.id, title=title,
+                likelihood=likelihood, impact=impact, inherent_score=likelihood * impact,
+                status="identified" if j else "assessed",
+            )
+            if threats:
+                risk.threats = [threats[(idx + j) % len(threats)]]
+            if vulns:
+                risk.vulnerabilities = [vulns[(idx + j) % len(vulns)]]
+            db.add(risk)
+
+    # ── Auditorías (26): un encargo por cliente ──
+    audit_seed = [
+        ("Blue Shield Tech", "AUD-DEMO-BST-01", "Auditoría interna SGSI 2026", "iso_27001", "internal", "in_progress"),
+        ("Orion Logistics", "AUD-DEMO-ORN-01", "Auditoría de controles de acceso", "cobit_2019", "internal", "planned"),
+        ("Nova Retail", "AUD-DEMO-NVA-01", "Auditoría de cumplimiento PCI-adyacente", "custom", "external", "planned"),
+    ]
+    for company, code, title, framework_code, audit_type, status in audit_seed:
+        client = clients.get(company)
+        if not client or db.scalar(select(Audit).where(Audit.organization_id == organization.id, Audit.code == code)):
+            continue
+        db.add(Audit(
+            organization_id=organization.id, client_id=client.id, code=code, title=title,
+            objective="Evaluar el nivel de cumplimiento y la efectividad de los controles vigentes.",
+            scope="Sedes principales y activos críticos del cliente.",
+            framework=framework_code, audit_type=audit_type, lead_auditor_id=admin_ops.id, status=status,
+        ))
+
+    # ── Arquitectura (27): un modelo simple por cliente ──
+    for client in clients.values():
+        if db.scalar(select(ArchitectureModel).where(ArchitectureModel.client_id == client.id)):
+            continue
+        model = ArchitectureModel(
+            organization_id=organization.id, client_id=client.id, name=f"Arquitectura actual — {client.company_name}",
+            version="1.0", state="baseline", adm_phase="B", status="draft",
+        )
+        db.add(model)
+        db.flush()
+        firewall = ArchitectureElement(model_id=model.id, layer="technology", element_type="node", name="Firewall perimetral")
+        app_server = ArchitectureElement(model_id=model.id, layer="application", element_type="application_component", name="Sistema de gestión interno")
+        business_process = ArchitectureElement(model_id=model.id, layer="business", element_type="business_process", name="Operación diaria del cliente")
+        db.add_all([firewall, app_server, business_process])
+        db.flush()
+        db.add_all([
+            ArchitectureRelationship(model_id=model.id, source_element_id=firewall.id, target_element_id=app_server.id, relationship_type="serving", label="protege"),
+            ArchitectureRelationship(model_id=model.id, source_element_id=app_server.id, target_element_id=business_process.id, relationship_type="serving", label="soporta"),
+        ])
 
     db.commit()
