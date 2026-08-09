@@ -50,3 +50,4 @@ class Project(Base):
     docs = relationship("ProjectDoc", back_populates="project")
     requirements = relationship("ProjectRequirement", back_populates="project")
     recommendations = relationship("ProjectRecommendation", back_populates="project")
+    tasks = relationship("ProjectTask", back_populates="project")

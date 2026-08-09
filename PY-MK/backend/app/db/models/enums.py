@@ -26,6 +26,12 @@ class ProjectStatus(StrEnum):
     COMPLETED = "completed"
 
 
+class ProjectTaskStatus(StrEnum):
+    PENDING = "pending"
+    IN_PROGRESS = "in_progress"
+    DONE = "done"
+
+
 class ServiceRequestStatus(StrEnum):
     NEW    = "NEW"
     REVIEW = "REVIEW"
