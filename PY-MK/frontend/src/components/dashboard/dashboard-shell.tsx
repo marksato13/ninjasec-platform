@@ -27,13 +27,13 @@ import {
   CommercialView,
   InfrastructureView,
   KpiCard,
-  ListRow,
   OperationsView,
   QuickLinks,
   SecurityView,
   SparkBar,
   MOCK_TREND_FINDINGS,
 } from "./dashboard-widgets";
+import { AlertsWidget } from "./alerts-widget";
 
 // ── Empty summary fallback — para que la UI no se rompa si el backend tarda ────
 const EMPTY_SUMMARY: DashboardSummaryItem = {
@@ -433,32 +433,7 @@ function GeneralView({
       <QuickLinks />
 
       {/* Alertas */}
-      <article className="panel">
-        <div className="panel-head">
-          <div><p className="eyebrow">Alertas activas</p><h3>Licencias, tickets y hallazgos</h3></div>
-          <span className="muted-small">{alerts.length} alerta{alerts.length !== 1 ? "s" : ""}</span>
-        </div>
-        {alerts.length === 0 ? (
-          <div className="empty-state" style={{ color: "var(--success)" }}>✓ Sin alertas activas — todo en orden</div>
-        ) : (
-          <div className="stack-gap-sm">
-            {alerts.map((alert) => (
-              <ListRow
-                key={`${alert.type}-${alert.entity_id}`}
-                icon={<AlertTriangle size={16} />}
-                iconColor={alert.severity === "critical" ? "var(--danger)" : alert.severity === "high" ? "#F59E0B" : alert.severity === "medium" ? "var(--warning)" : "var(--success)"}
-                title={alert.message}
-                subtitle={alert.entity_type}
-                meta={formatRelativeDate(alert.created_at)}
-                badge={{
-                  label: SEVERITY_LABEL[alert.severity] ?? alert.severity,
-                  color: alert.severity === "critical" ? "var(--danger)" : alert.severity === "high" ? "#F59E0B" : alert.severity === "medium" ? "var(--warning)" : "var(--success)",
-                }}
-              />
-            ))}
-          </div>
-        )}
-      </article>
+      <AlertsWidget alerts={alerts} />
     </>
   );
 }

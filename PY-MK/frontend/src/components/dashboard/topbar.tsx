@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getInitials } from "@/lib/role-utils";
+import { NotificationCenter } from "./alerts-widget";
 
 type TopbarProps = {
   user: { name: string; role: string; email: string } | null;
@@ -59,6 +60,7 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
       </div>
 
       <div className="topbar-actions">
+        <NotificationCenter />
         <ThemeToggle />
         {user && (
           <div className="user-chip">
