@@ -168,6 +168,8 @@ Documentación y comentarios en **español**. Identificadores de código en **in
 | `NEXT_PUBLIC_API_URL` | `/api/v1` — inyectada al build del frontend |
 | `DATABASE_URL` | `postgresql+psycopg://postgres:123456@postgres:5432/ninjasec` |
 | `CORS_ORIGINS` | Lista explícita en docker-compose.yml — incluye IPs LAN |
+| `REDIS_URL` | Opcional (G-06) — backend distribuido del rate limiter. Vacío = limitador en memoria (default) |
+| `GOOGLE_CLIENT_ID` | Opcional (issue #83) — login con Google. Vacío = el botón no aparece en el frontend, login normal intacto |
 
 ---
 
@@ -277,15 +279,7 @@ Los seis huecos de integridad y aislamiento. **63 tests pasan** (26 previos + 37
 
 ✅ **G-06 (resuelto 2026-08-10): `app/common/rate_limit.py` ahora soporta un backend Redis** compartido entre workers/replicas, seleccionado automáticamente cuando `REDIS_URL` está configurado y Redis responde al arrancar. Sin `REDIS_URL` (default en dev/CI) sigue usando el limitador en memoria de siempre — mismo comportamiento que antes, cero cambios para el caso sin Redis. Si Redis se cae después de arrancar, el limitador falla abierto (deja pasar) en vez de tumbar el endpoint que protege. Ver el docstring del módulo para el detalle completo.
 
-### 🧱 Deuda de esquema — **bloqueante de FASE 2.8**
-
-**Alembic no es la fuente de verdad del esquema.** Lo construye `Base.metadata.create_all()` en `app/main.py:19`; `migrations/versions/` solo tiene dos parches incrementales.
-
-⚠️ **`create_all` crea las tablas que faltan pero NUNCA altera las existentes.** Toda columna nueva de un modelo se aplica en una base vacía y **se ignora sin error** en una base con datos — justo el escenario de una actualización en producción.
-
-Además, `alembic upgrade head` no levanta una base desde cero: la primera migración hace `add_column` sobre tablas que aún no existen (`down_revision = None` sin `create_table`).
-
-**Fix (~0.5 sesión):** migración base con `--autogenerate` sobre base vacía → encadenarla antes de `20260522_01` → retirar `create_all()` de `main.py`. **Antes** del deploy self-hosted, no después.
+✅ **Deuda de esquema (resuelta 2026-08-07, issue #2 / G-01, G-02):** Alembic ya es la fuente de verdad del esquema — migración base `20260807_00_esquema_base_completo.py` (generada con `--autogenerate` sobre una base vacía), `create_all()` retirado de `app/main.py`. `app/db/migrate.py` corre `alembic upgrade head` automáticamente al arrancar el contenedor backend (`backend/Dockerfile`), verificado además contra un Postgres real vacío en cada PR que toca el esquema (`tests/test_alembic_bootstrap.py -m integration`). Runbook completo de despliegue en `DOCUMENTOS/PLATAFORMA/FLUJOS/DESPLIEGUE-PRODUCCION.md` (issue #87).
 
 ### 🔐 Multi-tenancy — regla permanente
 

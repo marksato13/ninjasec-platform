@@ -23,6 +23,17 @@ class Settings(BaseSettings):
     # falla abierto -- ver el docstring del modulo.
     redis_url: str = ""
 
+    # Login con Google (issue #83). Vacio por defecto -> el boton de Google
+    # no aparece en el frontend (GET /auth/google/config reporta enabled=false)
+    # y POST /auth/google responde 503. El client_id NO es secreto -- viaja
+    # al frontend via ese mismo endpoint publico, es el mismo valor que
+    # cualquier pagina "Iniciar sesion con Google" expone en su HTML. No hay
+    # client_secret ni redirect_uri configurables porque el flujo verifica el
+    # ID token que entrega Google Identity Services directo en el navegador
+    # (ver docstring de AuthService.authenticate_google) -- no hace el
+    # intercambio de codigo de autorizacion contra el backend de Google.
+    google_client_id: str = ""
+
     # 30-P2: reputación externa de IPs -- vacío por defecto, degrada a modo
     # simulado (nunca rompe) cuando no hay key configurada. Nunca loguear
     # el valor de estos campos.

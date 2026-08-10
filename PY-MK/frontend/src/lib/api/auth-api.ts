@@ -1,4 +1,4 @@
-import { request } from "./client";
+import { request, requestPublic } from "./client";
 import type { AuthUser } from "@/lib/auth";
 
 export type { AuthUser }; // re-export so @/lib/api consumers still get the type
@@ -14,6 +14,19 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return request<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
+  });
+}
+
+export type GoogleLoginConfig = { enabled: boolean; client_id: string };
+
+export async function getGoogleLoginConfig(): Promise<GoogleLoginConfig> {
+  return requestPublic<GoogleLoginConfig>("/auth/google/config");
+}
+
+export async function loginWithGoogle(credential: string): Promise<LoginResponse> {
+  return requestPublic<LoginResponse>("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
   });
 }
 

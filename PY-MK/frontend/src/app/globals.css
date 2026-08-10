@@ -2170,6 +2170,34 @@ a {
   gap: 8px;
 }
 
+.google-signin-block {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.google-signin-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.google-signin-divider::before,
+.google-signin-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.google-signin-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
 .state-panel {
   border: 1px solid var(--line);
   border-radius: 24px;
