@@ -93,4 +93,7 @@ export const QK = {
   hardeningRules:  ()                          => ["hardening-rules"]             as const,
   hardeningEval:   (clientId?: number)         => ["hardening-eval", clientId]    as const,
   hardeningSummary: (clientId?: number)        => ["hardening-summary", clientId] as const,
+
+  // Vulnerability inventory
+  deviceCves:      (clientId?: number)         => ["device-cves", clientId]       as const,
 } as const;

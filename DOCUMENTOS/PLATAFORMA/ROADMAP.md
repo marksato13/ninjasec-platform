@@ -109,7 +109,7 @@ Sin deadline externo. Se ejecuta cuando la tanda 2 esté encaminada.
 | 6 | **30-P3** Informe ejecutivo "SOC as a report" (incluye panel de salud de red tipo semáforo, no técnico) | 1.5 sesiones | Alto — el patrón que define el proyecto |
 | 7 | **28-P2** Cobertura Cisco + MikroTik | 1.5 sesiones | Medio |
 | 8 | **31-P1** Compliance automatizado: cruce Wazuh/pfSense vs. CIS Benchmarks / OpenSCAP | 2 sesiones | Alto — complementa el 24 (SoA manual) con verificación técnica automática ✅ **Cerrado 2026-08-10** |
-| 9 | **32-P1** Inventario de vulnerabilidades (NVD + EPSS) por dispositivo del cliente | 1.5 sesiones | Alto — prioriza parches por explotabilidad real, no solo CVSS |
+| 9 | **32-P1** Inventario de vulnerabilidades (CIRCL + EPSS) por dispositivo del cliente | 1.5 sesiones | Alto — prioriza parches por explotabilidad real, no solo CVSS ✅ **Cerrado 2026-08-10** |
 | 10 | **32-P2** Exposición pasiva vía Shodan (solo IP/rango del cliente, sin escaneo activo) | 0.5 sesión | Medio — bajo riesgo legal, alto valor de venta |
 
 **Total: ~15.5 sesiones.**

@@ -32,6 +32,7 @@ from app.modules.reports.routers.router import router as reports_router
 from app.modules.risks.router import router as risks_router
 from app.modules.risk_scoring.routers.router import router as risk_scoring_router
 from app.modules.hardening.routers.router import router as hardening_router
+from app.modules.vulnerability_inventory.routers.router import router as vulnerability_inventory_router
 from app.modules.services.routers.router import router as services_router
 from app.modules.support_tickets.routers.router import router as support_tickets_router
 from app.modules.users.routers.router import router as users_router
@@ -71,6 +72,7 @@ api_router.include_router(reports_router)
 api_router.include_router(risks_router)
 api_router.include_router(risk_scoring_router)
 api_router.include_router(hardening_router)
+api_router.include_router(vulnerability_inventory_router)
 api_router.include_router(docs_router)
 api_router.include_router(audit_router)
 api_router.include_router(architecture_router)

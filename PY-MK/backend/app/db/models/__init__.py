@@ -57,6 +57,7 @@ from app.db.models.support_ticket import SupportTicket, SupportTicketEvent, Tick
 from app.db.models.user import User
 from app.db.models.user_certification import UserCertification
 from app.db.models.user_skill import UserSkill
+from app.db.models.vulnerability_inventory import CveInventoryCache
 
 __all__ = [
     "Audit",
@@ -119,4 +120,5 @@ __all__ = [
     "User",
     "UserCertification",
     "UserSkill",
+    "CveInventoryCache",
 ]
