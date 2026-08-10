@@ -100,4 +100,7 @@ export const QK = {
   // NetDoctor
   netdoctorIssues: (category?: string)         => ["netdoctor-issues", category]  as const,
   netdoctorTree:   ()                          => ["netdoctor-tree"]              as const,
+
+  // Health score
+  healthScore:     (clientId?: number)         => ["health-score", clientId]      as const,
 } as const;

@@ -25,3 +25,4 @@ export * from "./risk-scoring";
 export * from "./hardening";
 export * from "./vulnerability-inventory";
 export * from "./netdoctor";
+export * from "./health-score";

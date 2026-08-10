@@ -106,7 +106,7 @@ Sin deadline externo. Se ejecuta cuando la tanda 2 esté encaminada.
 | 3 | **30-P1** Conector Wazuh + esquema normalizado (incluye normalización multi-fuente vs. Suricata/pfSense) | 2 sesiones | Alto — amplía el stack open source |
 | 4 | **23-P3/P4** Config Visualizer (parser Cisco IOS) | 3 sesiones | Alto — muy demostrable ✅ **Cerrado 2026-08-09** |
 | 5 | **30-P2** Scoring de riesgo por IP/host (AbuseIPDB + VirusTotal + GreyNoise cruzado con alertas de Wazuh) | 1.5 sesiones | Alto — prioriza qué atender primero |
-| 6 | **30-P3** Informe ejecutivo "SOC as a report" (incluye panel de salud de red tipo semáforo, no técnico) | 1.5 sesiones | Alto — el patrón que define el proyecto |
+| 6 | **30-P3** Informe ejecutivo "SOC as a report" (incluye panel de salud de red tipo semáforo, no técnico) | 1.5 sesiones | Alto — el patrón que define el proyecto ✅ **Cerrado 2026-08-10** (parcial — envío por correo y multi-sede quedan pendientes) |
 | 7 | **28-P2** Cobertura Cisco + MikroTik | 1.5 sesiones | Medio |
 | 8 | **31-P1** Compliance automatizado: cruce Wazuh/pfSense vs. CIS Benchmarks / OpenSCAP | 2 sesiones | Alto — complementa el 24 (SoA manual) con verificación técnica automática ✅ **Cerrado 2026-08-10** |
 | 9 | **32-P1** Inventario de vulnerabilidades (CIRCL + EPSS) por dispositivo del cliente | 1.5 sesiones | Alto — prioriza parches por explotabilidad real, no solo CVSS ✅ **Cerrado 2026-08-10** |
