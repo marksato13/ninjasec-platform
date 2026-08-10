@@ -135,30 +135,30 @@ export default function SecurityReviewsPage() {
       {/* KPI strip */}
       <div className="metrics-grid">
         <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setStatus("scheduled")}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <Clock size={16} style={{ color: "var(--warning)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Programadas</span>
+            <span className="eyebrow m-0">Programadas</span>
           </div>
           <strong style={{ fontSize: "2rem", color: scheduled > 0 ? "var(--warning)" : "var(--muted)" }}>{scheduled}</strong>
         </article>
         <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setStatus("in_progress")}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <ShieldAlert size={16} style={{ color: "var(--primary)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>En progreso</span>
+            <span className="eyebrow m-0">En progreso</span>
           </div>
           <strong style={{ fontSize: "2rem", color: inProgress > 0 ? "var(--primary)" : "var(--muted)" }}>{inProgress}</strong>
         </article>
         <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setStatus("closed")}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <CheckCircle size={16} style={{ color: "var(--success)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Cerradas</span>
+            <span className="eyebrow m-0">Cerradas</span>
           </div>
           <strong style={{ fontSize: "2rem", color: "var(--success)" }}>{closed}</strong>
         </article>
         <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setStatus("")}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <CalendarCheck size={16} style={{ color: "var(--security)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Total</span>
+            <span className="eyebrow m-0">Total</span>
           </div>
           <strong style={{ fontSize: "2rem" }}>{reviews.length}</strong>
         </article>
@@ -251,7 +251,7 @@ export default function SecurityReviewsPage() {
             {integrations.filter((i) => !form.client_id || i.client_id === Number(form.client_id)).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
           </select>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <label style={{ color: "var(--muted)", fontSize: "0.78rem" }}>Fecha programada</label>
+            <label className="muted-small">Fecha programada</label>
             <input type="datetime-local" value={form.scheduled_at} onChange={(e) => setForm((f) => ({ ...f, scheduled_at: e.target.value }))} />
           </div>
           <select value={form.reviewer_user_id} onChange={(e) => setForm((f) => ({ ...f, reviewer_user_id: e.target.value }))}>

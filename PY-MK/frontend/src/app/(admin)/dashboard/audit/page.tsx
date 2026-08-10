@@ -176,8 +176,8 @@ function AuditPageInner() {
                     {item.action}
                   </span>
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{item.entity_type || "—"}</span>
-                <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>{item.entity_id || "—"}</span>
+                <span className="muted-small">{item.entity_type || "—"}</span>
+                <span className="muted-small">{item.entity_id || "—"}</span>
                 <span style={{ fontSize: "0.82rem" }}>{userName(item.user_id)}</span>
               </div>
             ))}

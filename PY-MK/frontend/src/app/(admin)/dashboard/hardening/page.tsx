@@ -55,7 +55,7 @@ export default function HardeningPage() {
         </div>
       </div>
 
-      <p style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+      <p className="muted-small">
         Verificación técnica automática cruzando integraciones y eventos reales del cliente (30-P1) contra un catálogo
         de reglas estilo CIS Benchmarks. No confundir con el módulo 24 (Declaración de Aplicabilidad ISO 27001,
         manual) — se complementan.
@@ -83,9 +83,9 @@ export default function HardeningPage() {
               <div className="table-row" key={evaluation.rule.id} style={{ gridTemplateColumns: "0.8fr 2fr 1fr 1fr 3fr" }}>
                 <span style={{ fontWeight: 600 }}>{evaluation.rule.code}</span>
                 <span>{evaluation.rule.title}</span>
-                <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{evaluation.rule.category}</span>
+                <span className="muted-small">{evaluation.rule.category}</span>
                 <span className="badge" style={{ background: RESULT_COLOR[evaluation.result] }}>{RESULT_LABEL[evaluation.result]}</span>
-                <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{evaluation.evidence}</span>
+                <span className="muted-small">{evaluation.evidence}</span>
               </div>
             ))}
           </div>

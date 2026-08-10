@@ -173,7 +173,7 @@ export default function DashboardServicesPage() {
       <article className="panel">
         <div className="panel-head">
           <div><p className="eyebrow">Catálogo</p><h3>Servicios disponibles</h3></div>
-          <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{services.filter((s) => s.active).length} activos</span>
+          <span className="muted-small">{services.filter((s) => s.active).length} activos</span>
         </div>
 
         {services.length === 0 ? (
@@ -300,7 +300,7 @@ export default function DashboardServicesPage() {
                       <div style={{ color: "var(--muted)", fontSize: "0.73rem" }}>{req.requester_email}</div>
                     </span>
                     <span style={{ fontSize: "0.82rem" }}>{serviceMap[req.service_id] ?? `#${req.service_id}`}</span>
-                    <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>
+                    <span className="muted-small">
                       {req.message ? req.message.slice(0, 60) + (req.message.length > 60 ? "…" : "") : "—"}
                     </span>
                     <span><span className={`badge ${cfg.cls}`}>{cfg.label}</span></span>

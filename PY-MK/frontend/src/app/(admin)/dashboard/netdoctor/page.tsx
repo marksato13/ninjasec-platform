@@ -106,7 +106,7 @@ export default function NetdoctorPage() {
         </div>
       </div>
 
-      <p style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+      <p className="muted-small">
         Sin conexión SSH real — el comando se muestra como texto para ejecutarlo manualmente. La conexión directa a
         dispositivos (28-P3) requiere credenciales cifradas y autorización escrita del cliente, todavía no implementada.
       </p>

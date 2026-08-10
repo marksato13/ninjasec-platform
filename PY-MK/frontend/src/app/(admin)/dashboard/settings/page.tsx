@@ -313,7 +313,7 @@ export default function DashboardSettingsPage() {
                 {docTypes.map((item) => (
                   <div className="table-row" key={item.id} style={{ gridTemplateColumns: "1fr auto auto" }}>
                     <span>{item.name}</span>
-                    <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{item.scope}</span>
+                    <span className="muted-small">{item.scope}</span>
                     <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
                       {item.is_active ? "Activo" : "Inactivo"}
                     </span>
@@ -344,7 +344,7 @@ export default function DashboardSettingsPage() {
             ].map((item) => (
               <div className="table-row" key={item.key} style={{ gridTemplateColumns: "1fr 2fr" }}>
                 <code style={{ fontSize: "0.82rem", color: "var(--primary)" }}>{item.key}</code>
-                <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{item.value}</span>
+                <span className="muted-small">{item.value}</span>
               </div>
             ))}
           </div>

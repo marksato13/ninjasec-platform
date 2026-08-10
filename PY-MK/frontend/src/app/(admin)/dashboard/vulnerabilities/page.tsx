@@ -37,7 +37,7 @@ export default function VulnerabilitiesPage() {
         </select>
       </div>
 
-      <p style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+      <p className="muted-small">
         Cruza el vendor/modelo de cada dispositivo con CVEs conocidos (CIRCL) y los prioriza por EPSS —
         probabilidad real de explotación (FIRST.org) — en vez de solo por severidad CVSS. Un CVE con CVSS
         alto pero EPSS bajo puede quedar por debajo de uno con CVSS medio pero EPSS alto.
@@ -57,7 +57,7 @@ export default function VulnerabilitiesPage() {
             {device.cves.map((cve) => (
               <div className="table-row" key={cve.cve_id} style={{ gridTemplateColumns: "1fr 3fr 0.8fr 0.8fr 0.8fr" }}>
                 <span style={{ fontWeight: 600 }}>{cve.cve_id}</span>
-                <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{cve.description}</span>
+                <span className="muted-small">{cve.description}</span>
                 <span>{cve.cvss_score.toFixed(1)}</span>
                 <span className="badge" style={{ background: SEVERITY_COLOR[cve.severity] ?? SEVERITY_COLOR.unknown }}>{cve.severity}</span>
                 <span className="badge" style={{ background: epssBadge(cve.epss_score) }}>{(cve.epss_score * 100).toFixed(2)}%</span>

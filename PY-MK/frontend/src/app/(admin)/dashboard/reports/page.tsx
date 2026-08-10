@@ -229,11 +229,11 @@ export default function DashboardReportsPage() {
             </select>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <label style={{ color: "var(--muted)", fontSize: "0.78rem" }}>Desde</label>
+            <label className="muted-small">Desde</label>
             <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} style={{ width: 140 }} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <label style={{ color: "var(--muted)", fontSize: "0.78rem" }}>Hasta</label>
+            <label className="muted-small">Hasta</label>
             <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} style={{ width: 140 }} />
           </div>
           {(clientId || dateFrom || dateTo) && (
@@ -424,7 +424,7 @@ export default function DashboardReportsPage() {
         <article className="panel">
           <div className="panel-head">
             <div><p className="eyebrow">Vista previa</p><h3>Hallazgos que incluirá el reporte consolidado</h3></div>
-            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{summary.findings.total} total</span>
+            <span className="muted-small">{summary.findings.total} total</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {(["critical", "high", "medium", "low", "info"] as const)
