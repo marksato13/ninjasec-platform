@@ -21,8 +21,10 @@ import {
   getStatusBadgeClass,
 } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { userEditFormSchema, type UserEditFormValues } from "@/lib/validation";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Trash2 } from "lucide-react";
 
 function lastLoginLabel(iso?: string | null) {
   if (!iso) return null;
@@ -143,6 +145,8 @@ export default function UsersPage() {
     return matchesQuery && matchesRole && matchesStatus && matchesCreated && matchesUpdated;
   });
 
+  const bulk = useBulkSelection(filteredUsers.map((u) => u.id));
+
   const activeCount   = users.filter((u) => u.is_active).length;
   const filteredCount = filteredUsers.length;
   const roleCounts    = useMemo(() => {
@@ -229,6 +233,25 @@ export default function UsersPage() {
       setError(message);
       notifyError("No se pudo eliminar el usuario", message);
     }
+  }
+
+  async function handleBulkDelete() {
+    const ids = [...bulk.selected];
+    const confirmed = await confirmDeleteStrict({
+      title: `¿Eliminar ${ids.length} usuario${ids.length === 1 ? "" : "s"}?`,
+      text: "Esta acción eliminará las cuentas seleccionadas de forma permanente y no se puede deshacer.",
+      expected: "ELIMINAR",
+      inputLabel: "Escribe ELIMINAR para confirmar:",
+    });
+    if (!confirmed) return;
+    const results = await Promise.allSettled(ids.map((id) => deleteUser(id)));
+    const failed = results.filter((r) => r.status === "rejected").length;
+    queryClient.setQueryData(QK.users(), (current?: DashboardUser[]) =>
+      current ? current.filter((item) => !ids.includes(item.id)) : []
+    );
+    bulk.clear();
+    if (failed > 0) notifyError("Algunos usuarios no se pudieron eliminar", `${failed} de ${ids.length} fallaron`);
+    else notifySuccess("Usuarios eliminados");
   }
 
   function resetFilters() {
@@ -394,11 +417,25 @@ export default function UsersPage() {
           ) : (
             /* Table view */
             <div className="table-like">
-              <div className="table-row table-head" style={{ gridTemplateColumns: "32px 1fr 160px 120px 90px 130px auto" }}>
+              {isSuperAdmin && (
+                <BulkActionBar
+                  count={bulk.count}
+                  itemLabel="usuario"
+                  onClear={bulk.clear}
+                  actions={[{ label: "Eliminar", variant: "danger", icon: <Trash2 size={14} />, onClick: handleBulkDelete }]}
+                />
+              )}
+              <div className="table-row table-head" style={{ gridTemplateColumns: "24px 32px 1fr 160px 120px 90px 130px auto" }}>
+                {isSuperAdmin ? (
+                  <input type="checkbox" checked={bulk.allSelected} onChange={bulk.toggleAll} aria-label="Seleccionar todos los usuarios" />
+                ) : <span />}
                 <span></span><span>Usuario</span><span>Cargo</span><span>Rol</span><span>Estado</span><span>Último acceso</span><span>Acciones</span>
               </div>
               {filteredUsers.map((user) => (
-                <div className="table-row" key={user.id} style={{ gridTemplateColumns: "32px 1fr 160px 120px 90px 130px auto", alignItems: "center" }}>
+                <div className="table-row" key={user.id} style={{ gridTemplateColumns: "24px 32px 1fr 160px 120px 90px 130px auto", alignItems: "center" }}>
+                  {isSuperAdmin ? (
+                    <input type="checkbox" checked={bulk.isSelected(user.id)} onChange={() => bulk.toggle(user.id)} aria-label={`Seleccionar ${user.full_name}`} />
+                  ) : <span />}
                   <div className="avatar" style={{ "--avatar-hue": getAvatarHue(user.full_name || user.email), width: 28, height: 28, fontSize: "0.6rem" } as CSSProperties}>
                     {getInitials(user.full_name || user.email)}
                   </div>
