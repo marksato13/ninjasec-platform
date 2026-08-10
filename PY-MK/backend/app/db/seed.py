@@ -12,6 +12,7 @@ from app.db.models.catalog_device import CatalogDevice
 from app.db.models.architecture import ArchitectureElement, ArchitectureModel, ArchitectureRelationship
 from app.db.models.audit import Audit
 from app.db.models.compliance import ClientControlStatus, ComplianceControl, ComplianceFramework
+from app.db.models.hardening import HardeningRule
 from app.db.models.risk import Risk, RiskAsset, Threat, Vulnerability
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
@@ -882,6 +883,7 @@ def seed_initial_data(db: Session) -> None:
 
     seed_compliance_catalog(db)
     seed_risk_catalog(db)
+    seed_hardening_catalog(db)
     seed_module_demo_records(db)
 
 
@@ -1083,4 +1085,58 @@ def seed_module_demo_records(db: Session) -> None:
             ArchitectureRelationship(model_id=model.id, source_element_id=app_server.id, target_element_id=business_process.id, relationship_type="serving", label="soporta"),
         ])
 
+    db.commit()
+
+
+_HARDENING_RULES_SEED = [
+    ("H-01", "Firewall perimetral integrado y activo", "Perímetro y detección", "high",
+     "El cliente debe tener al menos una integración de firewall (pfSense/FortiGate) en estado conectado.",
+     "auto", "has_firewall_integration"),
+    ("H-02", "Sistema de detección/monitoreo (SIEM) integrado", "Perímetro y detección", "high",
+     "El cliente debe tener una integración Wazuh (o SIEM equivalente) en estado conectado.",
+     "auto", "has_siem_integration"),
+    ("H-03", "Recolección de eventos activa en los últimos 30 días", "Perímetro y detección", "medium",
+     "Debe existir al menos una recolección de datos reciente sobre alguna integración del cliente.",
+     "auto", "recent_collection"),
+    ("H-04", "Sin eventos de fuerza bruta sin atender", "Gestión de incidentes", "critical",
+     "No deben existir eventos de autenticación de severidad crítica sin resolver.",
+     "auto", "no_critical_auth_events"),
+    ("H-05", "Sin eventos de malware de severidad alta/crítica sin atender", "Gestión de incidentes", "critical",
+     "No deben existir eventos de malware de severidad alta o crítica sin resolver.",
+     "auto", "no_critical_malware_events"),
+    ("H-06", "Política de contraseñas documentada y aplicada", "Identidad y accesos", "high",
+     "Requiere revisión manual de la política de contraseñas vigente del cliente.",
+     "manual", None),
+    ("H-07", "Autenticación multifactor habilitada para accesos administrativos", "Identidad y accesos", "high",
+     "Requiere confirmación manual de que MFA está activo en accesos privilegiados.",
+     "manual", None),
+    ("H-08", "Revisión periódica de cuentas con privilegios elevados", "Identidad y accesos", "medium",
+     "Requiere evidencia manual de una revisión de cuentas privilegiadas en los últimos 90 días.",
+     "manual", None),
+    ("H-09", "Copias de respaldo con prueba de restauración reciente", "Continuidad", "high",
+     "Requiere evidencia manual de una prueba de restauración de backup exitosa.",
+     "manual", None),
+    ("H-10", "Plan de continuidad/DRP documentado", "Continuidad", "medium",
+     "Requiere confirmación manual de la existencia de un plan de recuperación ante desastres.",
+     "manual", None),
+    ("H-11", "Capacitación de concientización en seguridad realizada", "Concientización", "medium",
+     "Requiere evidencia manual de capacitación reciente al personal del cliente.",
+     "manual", None),
+    ("H-12", "Control de acceso físico a infraestructura crítica", "Físico", "medium",
+     "Requiere verificación manual in situ del control de acceso físico.",
+     "manual", None),
+]
+
+
+def seed_hardening_catalog(db: Session) -> None:
+    """31-P1 -- catálogo global de reglas de hardening técnico (estilo CIS
+    Benchmarks). Idempotente por código."""
+    existing = set(db.scalars(select(HardeningRule.code)).all())
+    for code, title, category, severity, description, method, check_key in _HARDENING_RULES_SEED:
+        if code in existing:
+            continue
+        db.add(HardeningRule(
+            code=code, title=title, category=category, severity=severity,
+            description=description, verification_method=method, check_key=check_key,
+        ))
     db.commit()

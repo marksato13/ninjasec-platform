@@ -88,4 +88,9 @@ export const QK = {
   riskVulnerabilities: ()                      => ["risk-vulnerabilities"]        as const,
   riskHeatmap:     (clientId?: number)         => ["risk-heatmap", clientId]      as const,
   hostScores:      (clientId?: number)         => ["host-scores", clientId]       as const,
+
+  // Hardening
+  hardeningRules:  ()                          => ["hardening-rules"]             as const,
+  hardeningEval:   (clientId?: number)         => ["hardening-eval", clientId]    as const,
+  hardeningSummary: (clientId?: number)        => ["hardening-summary", clientId] as const,
 } as const;

@@ -24,6 +24,7 @@ from app.db.models.device import Device
 from app.db.models.device_config import DeviceConfig
 from app.db.models.device_connection import DeviceConnection
 from app.db.models.doc_type import DocType
+from app.db.models.hardening import HardeningRule
 from app.db.models.integration import Integration
 from app.db.models.ip_reputation import IpReputationCache
 from app.db.models.job_application import JobApplication
@@ -84,6 +85,7 @@ __all__ = [
     "DeviceConfig",
     "DeviceConnection",
     "DocType",
+    "HardeningRule",
     "Integration",
     "IpReputationCache",
     "JobApplication",
