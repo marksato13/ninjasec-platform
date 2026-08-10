@@ -9,6 +9,8 @@ from app.core.security import hash_password
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.area import Area
 from app.db.models.catalog_device import CatalogDevice
+from app.db.models.catalog_device_link import CatalogDeviceLink
+from app.db.models.catalog_device_summary import CatalogDeviceSummary
 from app.db.models.architecture import ArchitectureElement, ArchitectureModel, ArchitectureRelationship
 from app.db.models.audit import Audit
 from app.db.models.compliance import ClientControlStatus, ComplianceControl, ComplianceFramework
@@ -875,11 +877,240 @@ def seed_initial_data(db: Session) -> None:
             tags="ubiquiti,wifi,poe,unifi",
             datasheet_url="https://store.ui.com/us/en/products/unifi-ap-ac-pro",
         ),
+        # 29-P2: ampliación del catálogo -- de 4 a ~22 modelos, cubriendo
+        # los vendors ya usados en NetDoctor/topología/integraciones.
+        dict(
+            slug="cisco-catalyst-9200", brand="Cisco", model="Catalyst 9200",
+            category="switch", subcategory="access", osi_layer="L2+L3", segment="enterprise",
+            port_count=24, port_speed="1G", poe=True, poe_budget_w=370,
+            stackable=True, rack_mountable=True, managed=True,
+            switching_capacity_gbps=104.0, power_consumption_w=75,
+            lifecycle_status="active", price_range_usd="2500-4000",
+            use_cases="Acceso empresarial con StackWise y soporte IOS-XE",
+            tags="cisco,switch,poe,stackable,enterprise",
+            datasheet_url="https://www.cisco.com/c/en/us/products/switches/catalyst-9200-series-switches/index.html",
+        ),
+        dict(
+            slug="cisco-isr-4331", brand="Cisco", model="ISR 4331",
+            category="router", subcategory="edge", osi_layer="L3", segment="enterprise",
+            port_count=3, port_speed="1G", poe=False, rack_mountable=True, managed=True,
+            throughput_mbps=100, power_consumption_w=60, lifecycle_status="active",
+            price_range_usd="2500-3500", use_cases="Router de borde WAN para sucursales",
+            tags="cisco,router,isr,wan",
+            datasheet_url="https://www.cisco.com/c/en/us/products/routers/4331-integrated-services-router-isr/index.html",
+        ),
+        dict(
+            slug="cisco-meraki-mx67", brand="Cisco", model="Meraki MX67",
+            category="firewall", subcategory="edge", osi_layer="L3", segment="smb",
+            port_count=5, port_speed="1G", poe=False, rack_mountable=False, managed=True,
+            throughput_mbps=450, power_consumption_w=20, lifecycle_status="active",
+            price_range_usd="600-900", use_cases="Firewall UTM gestionado en la nube para sucursales",
+            tags="cisco,meraki,firewall,cloud-managed",
+            datasheet_url="https://meraki.cisco.com/products/appliances/mx67",
+        ),
+        dict(
+            slug="fortinet-fortigate-60f", brand="Fortinet", model="FortiGate 60F",
+            category="firewall", subcategory="edge", osi_layer="L3", segment="smb",
+            port_count=10, port_speed="1G", poe=False, rack_mountable=True, managed=True,
+            throughput_mbps=10000, power_consumption_w=30, lifecycle_status="active",
+            price_range_usd="700-1000", use_cases="Firewall NGFW perimetral, uno de los vendors ya integrados en la plataforma",
+            tags="fortinet,firewall,ngfw",
+            datasheet_url="https://www.fortinet.com/products/next-generation-firewall/fortigate-60f",
+        ),
+        dict(
+            slug="fortinet-fortiswitch-124f", brand="Fortinet", model="FortiSwitch 124F",
+            category="switch", subcategory="access", osi_layer="L2", segment="smb",
+            port_count=24, port_speed="1G", poe=True, poe_budget_w=370,
+            stackable=True, rack_mountable=True, managed=True, power_consumption_w=45,
+            lifecycle_status="active", price_range_usd="800-1200",
+            use_cases="Switch de acceso gestionado desde FortiGate (Security Fabric)",
+            tags="fortinet,switch,poe",
+            datasheet_url="https://www.fortinet.com/products/switching/fortiswitch-100f-family",
+        ),
+        dict(
+            slug="juniper-srx300", brand="Juniper", model="SRX300",
+            category="firewall", subcategory="edge", osi_layer="L3", segment="smb",
+            port_count=8, port_speed="1G", poe=False, rack_mountable=True, managed=True,
+            throughput_mbps=1000, power_consumption_w=20, lifecycle_status="active",
+            price_range_usd="900-1300", use_cases="Firewall de sucursal con SD-WAN",
+            tags="juniper,firewall,srx",
+            datasheet_url="https://www.juniper.net/us/en/products/security/srx-series/srx300-services-gateway.html",
+        ),
+        dict(
+            slug="juniper-ex2300", brand="Juniper", model="EX2300",
+            category="switch", subcategory="access", osi_layer="L2+L3", segment="enterprise",
+            port_count=24, port_speed="1G", poe=True, poe_budget_w=370,
+            stackable=True, rack_mountable=True, managed=True,
+            switching_capacity_gbps=56.0, power_consumption_w=60,
+            lifecycle_status="active", price_range_usd="1800-2600",
+            use_cases="Switch de acceso empresarial con Virtual Chassis",
+            tags="juniper,switch,poe,stackable",
+            datasheet_url="https://www.juniper.net/us/en/products/switches/ex-series/ex2300-line.html",
+        ),
+        dict(
+            slug="aruba-instant-on-ap15", brand="Aruba", model="Instant On AP15",
+            category="access_point", subcategory="access", osi_layer="L2", segment="smb",
+            poe=True, poe_budget_w=15, managed=True, throughput_mbps=1750,
+            power_consumption_w=12, lifecycle_status="active",
+            price_range_usd="180-250", use_cases="Wi-Fi 5 gestionado desde la nube para pymes",
+            tags="aruba,wifi,poe,instant-on",
+            datasheet_url="https://www.arubanetworks.com/products/wireless/instant-on/ap15/",
+        ),
+        dict(
+            slug="aruba-2930f", brand="Aruba", model="2930F",
+            category="switch", subcategory="access", osi_layer="L2+L3", segment="enterprise",
+            port_count=24, port_speed="1G", poe=True, poe_budget_w=370,
+            stackable=True, rack_mountable=True, managed=True,
+            switching_capacity_gbps=88.0, power_consumption_w=65,
+            lifecycle_status="active", price_range_usd="1600-2400",
+            use_cases="Switch de acceso empresarial (HPE Aruba)",
+            tags="aruba,hpe,switch,poe,stackable",
+            datasheet_url="https://www.arubanetworks.com/products/switches/2930f-series/",
+        ),
+        dict(
+            slug="huawei-ar6121", brand="Huawei", model="AR6121",
+            category="router", subcategory="edge", osi_layer="L3", segment="smb",
+            port_count=4, port_speed="1G", poe=False, rack_mountable=True, managed=True,
+            throughput_mbps=1000, power_consumption_w=25, lifecycle_status="active",
+            price_range_usd="600-900", use_cases="Router de sucursal para pymes",
+            tags="huawei,router",
+            datasheet_url="https://carrier.huawei.com/en/products/enterprise-network/enterprise-routers/ar-router/ar600-series",
+        ),
+        dict(
+            slug="huawei-s5735-s24", brand="Huawei", model="S5735-S24",
+            category="switch", subcategory="distribution", osi_layer="L2+L3", segment="enterprise",
+            port_count=24, port_speed="1G", poe=True, poe_budget_w=370,
+            stackable=True, rack_mountable=True, managed=True,
+            switching_capacity_gbps=128.0, power_consumption_w=70,
+            lifecycle_status="active", price_range_usd="2000-3000",
+            use_cases="Switch de distribución L3 empresarial",
+            tags="huawei,switch,poe,stackable",
+            datasheet_url="https://e.huawei.com/en/products/switches/campus-switches/s5735-series",
+        ),
+        dict(
+            slug="tplink-omada-er605", brand="TP-Link", model="Omada ER605",
+            category="router", subcategory="edge", osi_layer="L3", segment="soho",
+            port_count=5, port_speed="1G", poe=False, rack_mountable=False, managed=True,
+            throughput_mbps=940, power_consumption_w=12, lifecycle_status="active",
+            price_range_usd="60-90", use_cases="Router VPN multi-WAN para negocios pequeños",
+            tags="tp-link,router,omada,soho",
+            datasheet_url="https://www.tp-link.com/en/business-networking/vpn-router/er605/",
+        ),
+        dict(
+            slug="tplink-tl-sg3428", brand="TP-Link", model="TL-SG3428",
+            category="switch", subcategory="access", osi_layer="L2", segment="smb",
+            port_count=24, port_speed="1G", poe=False, rack_mountable=True, managed=True,
+            switching_capacity_gbps=56.0, power_consumption_w=25,
+            lifecycle_status="active", price_range_usd="200-300",
+            use_cases="Switch gestionable L2 de bajo costo",
+            tags="tp-link,switch",
+            datasheet_url="https://www.tp-link.com/en/business-networking/managed-switch/tl-sg3428/",
+        ),
+        dict(
+            slug="mikrotik-hap-ax3", brand="MikroTik", model="hAP ax3",
+            category="router", subcategory="access", osi_layer="L3", segment="soho",
+            poe=False, managed=True, throughput_mbps=2400,
+            power_consumption_w=15, lifecycle_status="active",
+            price_range_usd="150-200", use_cases="Router Wi-Fi 6 doméstico/soho con RouterOS",
+            tags="mikrotik,router,wifi6,soho",
+            datasheet_url="https://mikrotik.com/product/hap_ax3",
+        ),
+        dict(
+            slug="ubiquiti-udm-pro", brand="Ubiquiti", model="UniFi Dream Machine Pro",
+            category="router", subcategory="edge", osi_layer="L3", segment="smb",
+            port_count=9, port_speed="mixed", poe=False, rack_mountable=True, managed=True,
+            throughput_mbps=3500, power_consumption_w=50, lifecycle_status="active",
+            price_range_usd="350-450",
+            use_cases="Router/firewall todo-en-uno con controlador UniFi integrado",
+            tags="ubiquiti,router,firewall,unifi",
+            datasheet_url="https://store.ui.com/us/en/products/udm-pro",
+        ),
+        dict(
+            slug="synology-ds920-plus", brand="Synology", model="DS920+",
+            category="nas", subcategory=None, osi_layer=None, segment="smb",
+            rack_mountable=False, managed=True, power_consumption_w=39,
+            lifecycle_status="active", price_range_usd="500-600",
+            use_cases="NAS de 4 bahías para backups y almacenamiento de oficina",
+            tags="synology,nas,backup",
+            datasheet_url="https://www.synology.com/en-us/products/DS920+",
+        ),
+        dict(
+            slug="apc-smart-ups-1500va", brand="APC", model="Smart-UPS 1500VA",
+            category="ups", subcategory=None, osi_layer=None, segment="smb",
+            rack_mountable=True, managed=True, power_consumption_w=1500,
+            lifecycle_status="active", price_range_usd="400-600",
+            use_cases="UPS de rack para protección de energía de servidores/racks pequeños",
+            tags="apc,ups,power",
+            datasheet_url="https://www.apc.com/us/en/product/SMT1500RM2U/apc-smart-ups-1500va-lcd-rm-2u-120v/",
+        ),
+        dict(
+            slug="dell-poweredge-r240", brand="Dell", model="PowerEdge R240",
+            category="server", subcategory=None, osi_layer=None, segment="smb",
+            rack_mountable=True, managed=True, power_consumption_w=250,
+            lifecycle_status="active", price_range_usd="1200-2000",
+            use_cases="Servidor de rack 1U de entrada para pymes",
+            tags="dell,server,rack",
+            datasheet_url="https://www.dell.com/en-us/shop/dell-poweredge-servers/poweredge-r240-rack-server/spd/poweredge-r240",
+        ),
     ]
     for entry in catalog_seed:
         if not db.scalar(select(CatalogDevice).where(CatalogDevice.slug == entry["slug"])):
             db.add(CatalogDevice(**entry))
 
+    db.commit()
+
+    # 29-P2 -- enlaces y resumenes ejecutivos de muestra para un par de
+    # modelos, para que la ficha de detalle tenga algo real que mostrar.
+    # No es necesario poblar los 22 modelos, solo demostrar el flujo.
+    catalog_extras = {
+        "cisco-catalyst-2960x": {
+            "links": [
+                dict(link_type="datasheet", url="https://www.cisco.com/c/en/us/products/switches/catalyst-2960-x-series-switches/index.html"),
+                dict(link_type="eol_notice", url="https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-2960-x-series-switches/eos-eol-notice-c51-741474.html"),
+            ],
+            "summary": dict(
+                content=(
+                    "Switch de acceso L2 de gama media, ampliamente instalado en "
+                    "pymes peruanas. PoE+ (370W de presupuesto) y apilable via "
+                    "FlexStack-Plus -- buena opción cuando ya hay otros 2960-X en "
+                    "el mismo stack. Sin soporte L3 nativo (requiere licencia LAN "
+                    "Base o superior para rutas estáticas)."
+                ),
+                source_note="Datasheet oficial Cisco, revisado 2026-08",
+            ),
+        },
+        "fortinet-fortigate-60f": {
+            "links": [
+                dict(link_type="datasheet", url="https://www.fortinet.com/products/next-generation-firewall/fortigate-60f"),
+                dict(link_type="security_advisory", url="https://www.fortiguard.com/psirt"),
+            ],
+            "summary": dict(
+                content=(
+                    "Firewall NGFW de borde para sucursales de hasta ~50 usuarios. "
+                    "Throughput de firewall de 10 Gbps pero baja considerablemente "
+                    "con IPS/AV activados (revisar el datasheet para el número real "
+                    "con Security Profiles habilitados). Es uno de los conectores ya "
+                    "soportados en el módulo de integraciones de esta plataforma."
+                ),
+                source_note="Datasheet oficial Fortinet, revisado 2026-08",
+            ),
+        },
+    }
+    for slug, extra in catalog_extras.items():
+        device = db.scalar(select(CatalogDevice).where(CatalogDevice.slug == slug))
+        if not device:
+            continue
+        if not db.scalar(
+            select(CatalogDeviceLink).where(CatalogDeviceLink.catalog_device_id == device.id)
+        ):
+            for link in extra["links"]:
+                db.add(CatalogDeviceLink(catalog_device_id=device.id, **link))
+        if not db.scalar(
+            select(CatalogDeviceSummary).where(
+                CatalogDeviceSummary.catalog_device_id == device.id
+            )
+        ):
+            db.add(CatalogDeviceSummary(catalog_device_id=device.id, **extra["summary"]))
     db.commit()
 
     seed_compliance_catalog(db)

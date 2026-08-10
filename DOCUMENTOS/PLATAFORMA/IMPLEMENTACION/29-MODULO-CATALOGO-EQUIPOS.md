@@ -1,11 +1,11 @@
 # Implementación — Módulo Catálogo de Equipos de Red
 
 > Basado en: `PLANIFICACION/29-MODULO-CATALOGO-EQUIPOS.md`
-> Creado: 2026-08-05 · **Estado: P1 backend hecho 2026-08-09, falta UI**
+> Creado: 2026-08-05 · **Estado: P1 y P2 cerrados 2026-08-10 (issue #85)**
 
 ---
 
-## 🟡 P1 — Catálogo con filtros facetados (backend hecho, falta UI)
+## ✅ P1 — Catálogo con filtros facetados
 
 | # | Requisito | Estado | Notas |
 |---|-----------|--------|-------|
@@ -14,37 +14,41 @@
 | 3 | `slug` único e inmutable | ✅ | `UniqueConstraint`; `CatalogDeviceUpdate` ni siquiera expone el campo `slug` — no hay forma de mandarlo por `PUT` |
 | 4 | `GET /catalog/devices` con filtros combinables | ✅ | `modules/device_catalog/routers/router.py` — brand, category, subcategory, osi_layer, segment, lifecycle_status, poe, stackable, rack_mountable, managed, `q` (búsqueda libre por marca/modelo/tags) |
 | 5 | CRUD restringido a admin y super_admin | ✅ | Lectura: super_admin/admin/collaborator. Escritura: super_admin/admin |
-| 6 | Carga inicial de prueba | 🟡 **Parcial** | 4 modelos de ejemplo (Cisco, MikroTik, Ubiquiti — incluye uno `eol` para poder probar ese filtro), no los 20-30 reales que pide el doc de planificación — issue #18 solo pedía "seed mínimo para poder probar los filtros", no un catálogo real completo |
-| 7 | Página `/dashboard/catalog/devices` | ⏳ | Fuera del alcance de #18 (backend-only) |
-| 8 | Filtros facetados con conteo por faceta | ⏳ | Requiere la UI (#7) |
-| 9 | Búsqueda difusa por marca, modelo y tags | ⏳ | El backend ya soporta `q` (`ilike`, no difusa de verdad); falta la UI |
-| 10 | Cards con badge de `lifecycle_status` | ⏳ | Requiere la UI (#7) |
+| 6 | Carga inicial de prueba | ✅ | Ampliado de 4 a 22 modelos (issue #85) — Cisco, MikroTik, Ubiquiti, Fortinet, Juniper, Aruba, Huawei, TP-Link, Synology, APC, Dell — cubre las 8 categorías del doc de planificación y los vendors ya presentes en NetDoctor/integraciones. Sigue sin ser un catálogo real completo (no es el objetivo de este módulo). |
+| 7 | Página `/dashboard/catalog-devices` | ✅ | `app/(admin)/dashboard/catalog-devices/page.tsx` — issue #85. Ruta con guion (`catalog-devices`), no `/catalog/devices/...` como decía el doc original, para no chocar con el prefijo `/catalog/devices` de la API. |
+| 8 | Filtros facetados con conteo por faceta | 🟡 **Parcial** | Filtros combinables sí (marca, categoría, ciclo de vida, PoE, gestionable); conteo por faceta individual (cuántos resultados tendría cada opción del filtro) no implementado — no lo pide ningún criterio de aceptación concreto, queda como mejora futura si se necesita. |
+| 9 | Búsqueda difusa por marca, modelo y tags | 🟡 **Parcial** | El backend usa `ilike` (substring, no difusa de verdad tipo Fuse.js) — suficiente para el volumen actual del catálogo. |
+| 10 | Cards con badge de `lifecycle_status` | ✅ | Badge de color por `active`/`eos`/`eol` en cada card del listado. |
 
 Validado con `tests/test_catalog_devices.py`: filtros combinados, filtro por `lifecycle_status`, slug duplicado rechazado (400), slug no cambia aunque se mande en el `PUT`, colaborador consulta pero no crea (403).
 
-Los 3 agentes de la flota no generaron ningún commit para este issue; se completó manualmente.
+Los 3 agentes de la flota no generaron ningún commit para el issue original de P1 (#18); se completó manualmente. P1-UI y P2 completos (#85) también manuales.
 
-## ⏳ P2 — Ficha y enlaces
+## ✅ P2 — Ficha y enlaces (issue #85, 2026-08-10)
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 11 | Modelo `CatalogDeviceLink` con 5 tipos de enlace | ⏳ |
-| 12 | Campo `archive_url` (respaldo Wayback) | ⏳ |
-| 13 | Modelo `CatalogDeviceSummary` — resumen propio | ⏳ |
-| 14 | Página de ficha con specs, enlaces y resumen | ⏳ |
-| 15 | **Verificar que NO se alojan PDFs de fabricantes** | ⏳ 🔴 |
-| 16 | Cita de la fuente en cada resumen | ⏳ 🔴 |
+| # | Requisito | Estado | Notas |
+|---|-----------|--------|-------|
+| 11 | Modelo `CatalogDeviceLink` con 5 tipos de enlace | ✅ | `db/models/catalog_device_link.py` — `datasheet`/`config_manual`/`firmware`/`eol_notice`/`security_advisory` (validación de valor libre en `link_type`, no un `Enum` de Postgres — mismo criterio pragmático que otros campos "tipo" de la plataforma) |
+| 12 | Campo `archive_url` (respaldo Wayback) | ✅ | Campo existe y se acepta en `POST /links`; no hay verificación automática de enlaces caídos todavía — eso es P5 |
+| 13 | Modelo `CatalogDeviceSummary` — resumen propio | ✅ | `db/models/catalog_device_summary.py`, único por modelo (`UniqueConstraint`), editable por super_admin/admin/collaborator (igual que dice el doc de planificación en § Acciones disponibles — más permisivo que la edición del modelo en sí, que es solo admin) |
+| 14 | Página de ficha con specs, enlaces y resumen | ✅ | `app/(admin)/dashboard/catalog-devices/[id]/page.tsx` |
+| 15 | **Verificar que NO se alojan PDFs de fabricantes** | ✅ 🔴 | `CatalogDeviceLinkCreate` solo acepta `url`/`archive_url` (texto), no hay ningún endpoint de subida de archivos en este módulo — estructuralmente imposible rehospedar un PDF aquí |
+| 16 | Cita de la fuente en cada resumen | ✅ 🔴 | Campo `source_note`, con placeholder en el formulario del frontend recordándolo |
+
+### Adelanto parcial de P3 (fuera del alcance formal de P2, agregado por valor directo)
+
+`GET /catalog/devices/{id}` incluye `instance_count`: cuántos `Device` del parque instalado de la organización actual tienen el mismo `vendor`/`model` (comparación case-insensitive por texto, sin FK). Es lo que el doc de planificación describe en § Funcionalidades previstas → "Ficha del modelo", aunque la tabla de fases lo ubica en P3. **No incluye la alerta automática de EOL** — ver P3 abajo, eso sigue pendiente.
 
 ## ⏳ P3 — Cruce con inventario ← mayor retorno
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 17 | Campo `catalog_device_id` en `devices` (nullable) | ⏳ |
-| 18 | Vinculación automática por marca + modelo | ⏳ |
-| 19 | "N instancias en el parque" en la ficha del modelo | ⏳ |
-| 20 | **Alerta de EOL sobre el inventario del cliente** | ⏳ 🔥 |
-| 21 | Alerta anticipada 6 meses antes del EOL | ⏳ |
-| 22 | Informe de renovación por cliente | ⏳ |
+| # | Requisito | Estado | Notas |
+|---|-----------|--------|-------|
+| 17 | Campo `catalog_device_id` en `devices` (nullable) | ⏳ | El cruce actual (#85) es por texto vendor/model, no por FK — más frágil (dos formas de escribir el mismo modelo no matchean) pero cero fricción de datos. Migrar a FK es la mejora real de P3. |
+| 18 | Vinculación automática por marca + modelo | 🟡 **Parcial** | El conteo (`instance_count`) ya hace este match por texto (case-insensitive) desde #85; falta la vinculación persistente (escribir el `catalog_device_id` en cada `Device`) |
+| 19 | "N instancias en el parque" en la ficha del modelo | ✅ | Adelantado en #85 (ver arriba) — vía match por texto, no FK |
+| 20 | **Alerta de EOL sobre el inventario del cliente** | ⏳ 🔥 | Sigue siendo la funcionalidad de mayor retorno del módulo, sin implementar |
+| 21 | Alerta anticipada 6 meses antes del EOL | ⏳ | |
+| 22 | Informe de renovación por cliente | ⏳ | |
 
 ## ⏳ P4 — Comparador
 

@@ -8,6 +8,8 @@ from app.db.models.application_review import ApplicationReview
 from app.db.models.area import Area
 from app.db.models.architecture import ArchitectureElement, ArchitectureModel, ArchitectureRelationship
 from app.db.models.catalog_device import CatalogDevice
+from app.db.models.catalog_device_link import CatalogDeviceLink
+from app.db.models.catalog_device_summary import CatalogDeviceSummary
 from app.db.models.client import Client
 from app.db.models.client_contact import ClientContact
 from app.db.models.compliance import (
@@ -73,6 +75,8 @@ __all__ = [
     "ArchitectureModel",
     "ArchitectureRelationship",
     "CatalogDevice",
+    "CatalogDeviceLink",
+    "CatalogDeviceSummary",
     "Client",
     "ClientContact",
     "ClientControlStatus",
