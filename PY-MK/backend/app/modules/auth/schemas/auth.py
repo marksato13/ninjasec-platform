@@ -8,6 +8,17 @@ class LoginRequest(ORMModel):
     password: str = Field(min_length=6, max_length=128)
 
 
+class GoogleLoginRequest(ORMModel):
+    # ID token JWT que entrega Google Identity Services en el navegador
+    # (respuesta "credential" del boton "Sign in with Google").
+    credential: str
+
+
+class GoogleConfigResponse(ORMModel):
+    enabled: bool
+    client_id: str = ""
+
+
 class CurrentUser(ORMModel):
     id: int
     organization_id: int

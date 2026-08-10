@@ -4,9 +4,16 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import get_current_user
 from app.common.deps.database import get_db
+from app.core.config import settings
 from app.core.security import hash_password, verify_password
 from app.db.models.user import User
-from app.modules.auth.schemas import CurrentUser, LoginRequest, LoginResponse
+from app.modules.auth.schemas import (
+    CurrentUser,
+    GoogleConfigResponse,
+    GoogleLoginRequest,
+    LoginRequest,
+    LoginResponse,
+)
 from app.modules.auth.services.auth_service import AuthService
 from app.modules.audit.services.audit_service import AuditService
 
@@ -27,6 +34,23 @@ class PasswordChange(BaseModel):
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
     service = AuthService(db)
     user = service.authenticate(payload.email, payload.password)
+    return LoginResponse.model_validate(service.build_login_response(user))
+
+
+@router.get("/google/config", response_model=GoogleConfigResponse)
+def google_login_config() -> GoogleConfigResponse:
+    """Publico -- el frontend lo usa para decidir si muestra el boton de
+    Google. `client_id` no es secreto (viaja igual en el HTML de cualquier
+    pagina con el boton de Google), por eso es seguro exponerlo aca."""
+    if not settings.google_client_id:
+        return GoogleConfigResponse(enabled=False)
+    return GoogleConfigResponse(enabled=True, client_id=settings.google_client_id)
+
+
+@router.post("/google", response_model=LoginResponse)
+def login_with_google(payload: GoogleLoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
+    service = AuthService(db)
+    user = service.authenticate_google(payload.credential)
     return LoginResponse.model_validate(service.build_login_response(user))
 
 

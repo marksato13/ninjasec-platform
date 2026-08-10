@@ -17,3 +17,4 @@ pytest-cov==6.0.0
 redis==5.2.1
 fakeredis==2.26.1
 lupa==2.8
+google-auth[requests]==2.56.3

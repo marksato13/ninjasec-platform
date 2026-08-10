@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { login } from "@/lib/api";
 import { persistSession } from "@/lib/auth";
 import { loginSchema, type LoginFormValues } from "@/lib/validation";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
 export function LoginForm() {
   const router = useRouter();
@@ -94,6 +95,8 @@ export function LoginForm() {
       <button className="button button-primary" type="submit" disabled={isSubmitting}>
         {isSubmitting ? "Ingresando..." : "Ingresar"}
       </button>
+
+      <GoogleSignInButton onError={setApiError} />
     </form>
   );
 }

@@ -1,3 +1,15 @@
-from app.modules.auth.schemas.auth import CurrentUser, LoginRequest, LoginResponse
+from app.modules.auth.schemas.auth import (
+    CurrentUser,
+    GoogleConfigResponse,
+    GoogleLoginRequest,
+    LoginRequest,
+    LoginResponse,
+)
 
-__all__ = ["CurrentUser", "LoginRequest", "LoginResponse"]
+__all__ = [
+    "CurrentUser",
+    "GoogleConfigResponse",
+    "GoogleLoginRequest",
+    "LoginRequest",
+    "LoginResponse",
+]
