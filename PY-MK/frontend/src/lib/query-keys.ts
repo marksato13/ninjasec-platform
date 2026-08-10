@@ -96,4 +96,8 @@ export const QK = {
 
   // Vulnerability inventory
   deviceCves:      (clientId?: number)         => ["device-cves", clientId]       as const,
+
+  // NetDoctor
+  netdoctorIssues: (category?: string)         => ["netdoctor-issues", category]  as const,
+  netdoctorTree:   ()                          => ["netdoctor-tree"]              as const,
 } as const;

@@ -13,6 +13,7 @@ from app.db.models.architecture import ArchitectureElement, ArchitectureModel, A
 from app.db.models.audit import Audit
 from app.db.models.compliance import ClientControlStatus, ComplianceControl, ComplianceFramework
 from app.db.models.hardening import HardeningRule
+from app.db.models.netdoctor import NetdoctorIssue
 from app.db.models.risk import Risk, RiskAsset, Threat, Vulnerability
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
@@ -884,6 +885,7 @@ def seed_initial_data(db: Session) -> None:
     seed_compliance_catalog(db)
     seed_risk_catalog(db)
     seed_hardening_catalog(db)
+    seed_netdoctor_catalog(db)
     seed_module_demo_records(db)
 
 
@@ -1138,5 +1140,192 @@ def seed_hardening_catalog(db: Session) -> None:
         db.add(HardeningRule(
             code=code, title=title, category=category, severity=severity,
             description=description, verification_method=method, check_key=check_key,
+        ))
+    db.commit()
+
+
+_NETDOCTOR_ISSUES_SEED = [
+    (
+        "ND-IPCONF", "Conflicto de direcciones IP duplicadas", "Direccionamiento", "high",
+        "Dos o más dispositivos pierden conectividad intermitentemente; el sistema operativo del host muestra una advertencia de 'IP address conflict'.",
+        "Asignación estática manual duplicada, o un servidor DHCP entregando una IP que ya está reservada estáticamente.",
+        {
+            "cisco_ios": "show ip arp | include <ip>",
+            "mikrotik": "/ip arp print where address=\"<ip>\"",
+            "huawei": "display arp | include <ip>",
+            "ubiquiti": "ip neigh show | grep <ip>",
+        },
+        "Reasignar la IP en conflicto, documentar el rango estático reservado, y excluirlo del pool DHCP.",
+    ),
+    (
+        "ND-NOCONN", "Sin conectividad de red (host inalcanzable)", "Conectividad", "critical",
+        "El host no responde a ping ni a ningún tráfico; el switch no muestra el puerto como up.",
+        "Cable defectuoso, puerto administrativamente apagado, VLAN incorrecta, o NIC deshabilitada en el host.",
+        {
+            "cisco_ios": "show interfaces status",
+            "mikrotik": "/interface print stats",
+            "huawei": "display interface brief",
+            "ubiquiti": "ifconfig",
+        },
+        "Verificar el cable físico, confirmar que el puerto está en 'no shutdown', y validar la VLAN asignada.",
+    ),
+    (
+        "ND-SLOWPERF", "Rendimiento de red lento", "Rendimiento", "medium",
+        "Transferencias de archivos y navegación notablemente más lentas de lo esperado, sin pérdida total de conectividad.",
+        "Saturación de ancho de banda, duplex mismatch, o un enlace operando por debajo de su velocidad nominal.",
+        {
+            "cisco_ios": "show interfaces | include rate|duplex",
+            "mikrotik": "/interface monitor-traffic interface=<if> once",
+            "huawei": "display interface <if> | include rate",
+            "ubiquiti": "ethtool <if>",
+        },
+        "Confirmar velocidad/dúplex negociados, identificar el proceso o host que satura el enlace, y considerar QoS.",
+    ),
+    (
+        "ND-LATLOSS", "Latencia alta o pérdida de paquetes", "Rendimiento", "high",
+        "Ping muestra tiempos de respuesta elevados o pérdida de paquetes intermitente entre dos puntos.",
+        "Congestión de un enlace intermedio, errores CRC acumulados, o una ruta subóptima.",
+        {
+            "cisco_ios": "show interfaces | include CRC|input errors",
+            "mikrotik": "/tool traceroute <destino>",
+            "huawei": "display interface <if> | include CRC",
+            "ubiquiti": "mtr <destino>",
+        },
+        "Correr traceroute/mtr para ubicar el salto problemático, revisar contadores de error de interfaz, reemplazar cableado si hay CRC.",
+    ),
+    (
+        "ND-DNSFAIL", "Fallo de resolución DNS", "Servicios", "medium",
+        "El host tiene conectividad IP (ping por dirección funciona) pero no puede resolver nombres de dominio.",
+        "Servidor DNS inalcanzable, configuración de DNS incorrecta en el host, o firewall bloqueando el puerto 53.",
+        {
+            "cisco_ios": "show hosts",
+            "mikrotik": "/ip dns print",
+            "huawei": "display dns server",
+            "ubiquiti": "cat /etc/resolv.conf",
+        },
+        "Verificar el servidor DNS configurado, probar resolución directa contra un DNS público (8.8.8.8), revisar reglas de firewall en el puerto 53.",
+    ),
+    (
+        "ND-DHCPFAIL", "Cliente no obtiene IP por DHCP", "Servicios", "high",
+        "El host queda con una IP APIPA (169.254.x.x) o sin IP asignada al conectarse a la red.",
+        "Servidor DHCP caído, pool agotado, o el puerto del switch no reenvía tráfico DHCP (VLAN/relay mal configurado).",
+        {
+            "cisco_ios": "show ip dhcp pool",
+            "mikrotik": "/ip dhcp-server print",
+            "huawei": "display dhcp server pool",
+            "ubiquiti": "dhclient -v <if>",
+        },
+        "Confirmar que el servicio DHCP está activo, revisar el tamaño del pool, y validar el DHCP relay si el cliente está en otra VLAN.",
+    ),
+    (
+        "ND-VLANMIS", "Dispositivo en VLAN incorrecta", "VLAN", "medium",
+        "El dispositivo tiene conectividad física pero no alcanza recursos que debería (está lógicamente en otra red).",
+        "Puerto de acceso asignado a la VLAN equivocada.",
+        {
+            "cisco_ios": "show vlan brief",
+            "mikrotik": "/interface bridge vlan print",
+            "huawei": "display vlan",
+            "ubiquiti": "bridge vlan show",
+        },
+        "Reasignar el puerto a la VLAN correcta con `switchport access vlan <id>` (o equivalente) y confirmar con `show vlan brief`.",
+    ),
+    (
+        "ND-TRUNKMIS", "Puerto trunk mal configurado", "VLAN", "high",
+        "Varias VLANs completas pierden conectividad entre switches, aunque cada switch individualmente funciona.",
+        "El puerto trunk no permite las VLANs necesarias, o la VLAN nativa no coincide entre ambos extremos del enlace.",
+        {
+            "cisco_ios": "show interfaces trunk",
+            "mikrotik": "/interface bridge vlan print",
+            "huawei": "display port vlan",
+            "ubiquiti": "bridge vlan show",
+        },
+        "Verificar la lista de VLANs permitidas en ambos extremos del trunk y que la VLAN nativa coincida en los dos switches.",
+    ),
+    (
+        "ND-GWDOWN", "Gateway por defecto inalcanzable", "Direccionamiento", "critical",
+        "El host puede alcanzar otros dispositivos en su misma subred pero no puede salir de ella.",
+        "El router/firewall que actúa como gateway está caído, o la IP de gateway configurada en el host es incorrecta.",
+        {
+            "cisco_ios": "show ip route 0.0.0.0",
+            "mikrotik": "/ip route print where dst-address=0.0.0.0/0",
+            "huawei": "display ip routing-table",
+            "ubiquiti": "ip route show default",
+        },
+        "Confirmar que el gateway responde a ping, validar la IP de gateway configurada en el host, revisar el estado del router.",
+    ),
+    (
+        "ND-PORTDOWN", "Puerto físico caído / no negocia enlace", "Físico", "high",
+        "El LED del puerto no enciende o parpadea en ámbar; la interfaz aparece como 'down/down'.",
+        "Cable dañado, transceptor SFP defectuoso, o el puerto está deshabilitado administrativamente.",
+        {
+            "cisco_ios": "show interfaces status err-disabled",
+            "mikrotik": "/interface ethernet print stats",
+            "huawei": "display interface brief",
+            "ubiquiti": "ethtool <if>",
+        },
+        "Probar con un cable/puerto conocido bueno, revisar si el puerto quedó en estado err-disabled y reactivarlo tras resolver la causa raíz.",
+    ),
+    (
+        "ND-DUPLEX", "Discordancia de dúplex (half/full)", "Físico", "medium",
+        "Rendimiento muy degradado con muchos errores de colisión tardía en un enlace específico.",
+        "Un extremo del enlace está fijado a full-duplex y el otro a half-duplex (o auto-negociación deshabilitada en uno solo).",
+        {
+            "cisco_ios": "show interfaces | include duplex",
+            "mikrotik": "/interface ethernet monitor <if> once",
+            "huawei": "display interface <if> | include Duplex",
+            "ubiquiti": "ethtool <if> | grep Duplex",
+        },
+        "Igualar la configuración de dúplex y velocidad en ambos extremos, preferentemente dejando auto-negociación activa en los dos.",
+    ),
+    (
+        "ND-STPLOOP", "Loop de capa 2 / tormenta de broadcast", "VLAN", "critical",
+        "La red completa se vuelve inestable, alto uso de CPU en switches, luces de puertos parpadeando excesivamente.",
+        "Un enlace redundante sin STP habilitado, o un cable conectado por error creando un bucle físico.",
+        {
+            "cisco_ios": "show spanning-tree summary",
+            "mikrotik": "/interface bridge print",
+            "huawei": "display stp brief",
+            "ubiquiti": "mstpctl showall",
+        },
+        "Confirmar que STP/RSTP está habilitado en todos los switches, identificar y desconectar el enlace físico que causa el loop.",
+    ),
+    (
+        "ND-ACLBLOCK", "Tráfico bloqueado por ACL", "Seguridad", "medium",
+        "Un servicio específico falla (ej. un puerto TCP) mientras el resto del tráfico funciona con normalidad.",
+        "Una ACL o regla de firewall bloquea el puerto/protocolo requerido por la aplicación.",
+        {
+            "cisco_ios": "show access-lists",
+            "mikrotik": "/ip firewall filter print",
+            "huawei": "display acl all",
+            "ubiquiti": "iptables -L -n -v",
+        },
+        "Revisar las reglas en orden, identificar cuál bloquea el tráfico esperado, y agregar una regla de permiso específica en vez de deshabilitar la ACL completa.",
+    ),
+    (
+        "ND-NATMIS", "Traducción NAT incorrecta", "Direccionamiento", "medium",
+        "Un servicio publicado hacia internet no es alcanzable externamente, aunque funciona correctamente desde la LAN.",
+        "Regla de NAT/port-forwarding mal configurada, o la IP interna del servidor cambió sin actualizar la regla.",
+        {
+            "cisco_ios": "show ip nat translations",
+            "mikrotik": "/ip firewall nat print",
+            "huawei": "display nat session all",
+            "ubiquiti": "iptables -t nat -L -n -v",
+        },
+        "Verificar que la regla de NAT apunta a la IP interna vigente del servidor y que el puerto externo coincide con lo publicado.",
+    ),
+]
+
+
+def seed_netdoctor_catalog(db: Session) -> None:
+    """28-P1 -- catálogo global de problemas comunes de networking, con
+    comandos de diagnóstico por vendor. Idempotente por código."""
+    existing = set(db.scalars(select(NetdoctorIssue.code)).all())
+    for code, title, category, severity, symptoms, causes, commands, remediation in _NETDOCTOR_ISSUES_SEED:
+        if code in existing:
+            continue
+        db.add(NetdoctorIssue(
+            code=code, title=title, category=category, severity=severity,
+            symptoms=symptoms, probable_causes=causes,
+            diagnostic_commands=commands, remediation=remediation,
         ))
     db.commit()

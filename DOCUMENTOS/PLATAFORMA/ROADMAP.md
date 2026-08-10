@@ -101,7 +101,7 @@ Sin deadline externo. Se ejecuta cuando la tanda 2 esté encaminada.
 
 | Orden | Trabajo | Esfuerzo | Valor |
 |---|---|---|---|
-| 1 | **28-P1** Base de conocimiento NetDoctor + modo guiado | 2 sesiones | Alto — producto completo por sí solo |
+| 1 | **28-P1** Base de conocimiento NetDoctor + modo guiado | 2 sesiones | Alto — producto completo por sí solo ✅ **Cerrado 2026-08-10** (mayormente — ver notas en IMPLEMENTACION) |
 | 2 | **29-P1→P3** Catálogo de equipos + **alerta de EOL** | 3.5 sesiones | 🔥 Motor de oportunidades comerciales |
 | 3 | **30-P1** Conector Wazuh + esquema normalizado (incluye normalización multi-fuente vs. Suricata/pfSense) | 2 sesiones | Alto — amplía el stack open source |
 | 4 | **23-P3/P4** Config Visualizer (parser Cisco IOS) | 3 sesiones | Alto — muy demostrable ✅ **Cerrado 2026-08-09** |
