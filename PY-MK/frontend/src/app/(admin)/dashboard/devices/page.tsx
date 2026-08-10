@@ -315,7 +315,7 @@ export default function DashboardDevicesPage() {
           </select>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">Todos los estados</option>
-            {STATUS_OPTIONS.map((s) => <option key={s} value={s} style={{ textTransform: "capitalize" }}>{s}</option>)}
+            {STATUS_OPTIONS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
           </select>
         </div>
         {/* Pills de tipo */}
@@ -401,7 +401,7 @@ export default function DashboardDevicesPage() {
                 <span className="badge badge-draft" style={{ textTransform: "capitalize", fontSize: "0.78rem", padding: "4px 12px" }}>
                   {type}
                 </span>
-                <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>
+                <span className="muted-small">
                   {group.length} activo{group.length !== 1 ? "s" : ""}
                 </span>
               </div>
@@ -499,14 +499,14 @@ export default function DashboardDevicesPage() {
           <input value={form.hostname} onChange={(e) => setForm((f) => ({ ...f, hostname: e.target.value }))} placeholder="Hostname *" />
           <select value={form.device_type} onChange={(e) => setForm((f) => ({ ...f, device_type: e.target.value }))}>
             <option value="">Tipo de dispositivo</option>
-            {DEVICE_TYPES.map((t) => <option key={t} value={t} style={{ textTransform: "capitalize" }}>{t}</option>)}
+            {DEVICE_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
           </select>
           <input value={form.vendor} onChange={(e) => setForm((f) => ({ ...f, vendor: e.target.value }))} placeholder="Fabricante" />
           <input value={form.model}  onChange={(e) => setForm((f) => ({ ...f, model: e.target.value }))}  placeholder="Modelo" />
           <input value={form.ip_address} onChange={(e) => setForm((f) => ({ ...f, ip_address: e.target.value }))} placeholder="Dirección IP" />
           <input value={form.asset_tag}  onChange={(e) => setForm((f) => ({ ...f, asset_tag: e.target.value }))}  placeholder="Asset Tag" />
           <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
-            {STATUS_OPTIONS.map((s) => <option key={s} value={s} style={{ textTransform: "capitalize" }}>{s}</option>)}
+            {STATUS_OPTIONS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
           </select>
           <div style={{ gridColumn: "1 / -1", padding: "6px 0 2px", fontSize: "0.72rem", fontWeight: 700, color: "var(--muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
             Gestión de activos (ISO 27001 A.8)
@@ -534,14 +534,14 @@ export default function DashboardDevicesPage() {
             <input value={editItem.hostname} onChange={(e) => setEditItem({ ...editItem, hostname: e.target.value })} placeholder="Hostname" />
             <select value={editItem.device_type || ""} onChange={(e) => setEditItem({ ...editItem, device_type: e.target.value })}>
               <option value="">Tipo</option>
-              {DEVICE_TYPES.map((t) => <option key={t} value={t} style={{ textTransform: "capitalize" }}>{t}</option>)}
+              {DEVICE_TYPES.map((t) => <option key={t} value={t} className="capitalize">{t}</option>)}
             </select>
             <input value={editItem.vendor || ""} onChange={(e) => setEditItem({ ...editItem, vendor: e.target.value })} placeholder="Fabricante" />
             <input value={editItem.model  || ""} onChange={(e) => setEditItem({ ...editItem, model: e.target.value })}  placeholder="Modelo" />
             <input value={editItem.ip_address || ""} onChange={(e) => setEditItem({ ...editItem, ip_address: e.target.value })} placeholder="IP" />
             <input value={editItem.asset_tag  || ""} onChange={(e) => setEditItem({ ...editItem, asset_tag: e.target.value })}  placeholder="Asset Tag" />
             <select value={editItem.status} onChange={(e) => setEditItem({ ...editItem, status: e.target.value })}>
-              {STATUS_OPTIONS.map((s) => <option key={s} value={s} style={{ textTransform: "capitalize" }}>{s}</option>)}
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
             </select>
             <div style={{ gridColumn: "1 / -1", padding: "6px 0 2px", fontSize: "0.72rem", fontWeight: 700, color: "var(--muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
               Gestión de activos (ISO 27001 A.8)

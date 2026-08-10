@@ -22,9 +22,10 @@ import {
 } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { ViewModeToggle } from "@/components/ui/view-mode-toggle";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { userEditFormSchema, type UserEditFormValues } from "@/lib/validation";
-import { LayoutGrid, List, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 function lastLoginLabel(iso?: string | null) {
   if (!iso) return null;
@@ -269,16 +270,7 @@ export default function UsersPage() {
       <div className="section-heading">
         <div><p className="eyebrow">Admin</p><h2>Gestión de usuarios</h2></div>
         <div className="panel-actions">
-          <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 8, overflow: "hidden" }}>
-            <button type="button" onClick={() => setViewMode("cards")} title="Vista cards"
-              style={{ padding: "6px 10px", background: viewMode === "cards" ? "var(--primary)" : "transparent", color: viewMode === "cards" ? "#fff" : "var(--muted)", border: "none", cursor: "pointer" }}>
-              <LayoutGrid size={15} />
-            </button>
-            <button type="button" onClick={() => setViewMode("table")} title="Vista tabla"
-              style={{ padding: "6px 10px", background: viewMode === "table" ? "var(--primary)" : "transparent", color: viewMode === "table" ? "#fff" : "var(--muted)", border: "none", cursor: "pointer" }}>
-              <List size={15} />
-            </button>
-          </div>
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
           <button className="button button-primary" type="button" onClick={() => setCreateOpen(true)}>Nuevo usuario</button>
         </div>
       </div>
@@ -371,7 +363,7 @@ export default function UsersPage() {
                         <span className={`badge badge-role ${getRoleBadgeClass(role)}`} style={{ fontSize: "0.75rem", padding: "5px 12px" }}>
                           {ROLE_LABELS[role]}
                         </span>
-                        <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>
+                        <span className="muted-small">
                           {group.length} usuario{group.length !== 1 ? "s" : ""}
                         </span>
                       </div>
@@ -443,14 +435,14 @@ export default function UsersPage() {
                     <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>{user.full_name}</div>
                     <div style={{ color: "var(--muted)", fontSize: "0.73rem" }}>{user.email}</div>
                   </span>
-                  <span style={{ fontSize: "0.82rem", color: "var(--muted)" }}>{user.job_title || "—"}</span>
+                  <span className="muted-small">{user.job_title || "—"}</span>
                   <span><span className={`badge badge-role ${getRoleBadgeClass(user.role_code)}`}>{formatRoleLabel(user.role_code)}</span></span>
                   <span>
                     <span style={{ fontSize: "0.75rem", fontWeight: 600, color: user.is_active ? "var(--success)" : "var(--muted)" }}>
                       ● {user.is_active ? "Activo" : "Inactivo"}
                     </span>
                   </span>
-                  <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>{lastLoginLabel(user.last_login_at) ?? "Nunca"}</span>
+                  <span className="muted-small">{lastLoginLabel(user.last_login_at) ?? "Nunca"}</span>
                   <span className="panel-actions">
                     <button className="button button-ghost button-sm" type="button" onClick={() => startEdit(user)}>Editar</button>
                     {isSuperAdmin && <button className="button button-danger button-sm" type="button" onClick={() => handleDelete(user.id)}>Eliminar</button>}

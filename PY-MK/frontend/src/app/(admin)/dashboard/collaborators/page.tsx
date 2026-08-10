@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LayoutGrid, List, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import {
   CollaboratorProfile,
@@ -29,6 +29,7 @@ import {
 } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { ViewModeToggle } from "@/components/ui/view-mode-toggle";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 
 // ── Availability helpers ─────────────────────────────────────────────────────
@@ -298,24 +299,7 @@ export default function DashboardCollaboratorsPage() {
         </div>
         <div className="panel-actions">
           {/* View toggle */}
-          <div style={{ display: "flex", border: "1px solid var(--line)", borderRadius: 8, overflow: "hidden" }}>
-            <button
-              type="button"
-              onClick={() => setViewMode("cards")}
-              style={{ padding: "6px 10px", background: viewMode === "cards" ? "var(--primary)" : "transparent", color: viewMode === "cards" ? "#fff" : "var(--muted)", border: "none", cursor: "pointer" }}
-              title="Vista cards"
-            >
-              <LayoutGrid size={15} />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("table")}
-              style={{ padding: "6px 10px", background: viewMode === "table" ? "var(--primary)" : "transparent", color: viewMode === "table" ? "#fff" : "var(--muted)", border: "none", cursor: "pointer" }}
-              title="Vista tabla"
-            >
-              <List size={15} />
-            </button>
-          </div>
+          <ViewModeToggle mode={viewMode} onChange={setViewMode} />
           {isAdmin && (
             <button className="button button-primary" type="button" onClick={() => setCreateOpen(true)}>
               Nuevo colaborador
@@ -348,7 +332,7 @@ export default function DashboardCollaboratorsPage() {
             </button>
           )}
         </div>
-        <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>
+        <span className="muted-small">
           {filtered.length} de {profiles.length} colaboradores
         </span>
       </article>
@@ -509,7 +493,7 @@ export default function DashboardCollaboratorsPage() {
                     <div style={{ color: "var(--muted)", fontSize: "0.73rem" }}>{user?.email}</div>
                   </span>
                   <span style={{ fontSize: "0.82rem" }}>{profile.position_title || "—"}</span>
-                  <span style={{ fontSize: "0.78rem", color: "var(--muted)" }}>{profile.seniority || "—"}</span>
+                  <span className="muted-small">{profile.seniority || "—"}</span>
                   <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                     {skills.slice(0, 2).map((sk) => <span className="tag" key={sk} style={{ fontSize: "0.68rem" }}>{sk}</span>)}
                     {skills.length > 2 && <span style={{ fontSize: "0.68rem", color: "var(--muted)" }}>+{skills.length - 2}</span>}
@@ -571,7 +555,7 @@ export default function DashboardCollaboratorsPage() {
               onChange={(e) => handlePhotoUpload(e.target.files?.[0] ?? null)}
               disabled={uploadingPhoto}
             />
-            {uploadingPhoto && <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>Subiendo...</span>}
+            {uploadingPhoto && <span className="muted-small">Subiendo...</span>}
           </div>
           <input value={editForm.photo_url} onChange={(e) => setEditForm((f) => ({ ...f, photo_url: e.target.value }))} placeholder="URL de foto (https://...)" />
           <input value={editForm.skills_json} onChange={(e) => setEditForm((f) => ({ ...f, skills_json: e.target.value }))} placeholder="Skills (separadas por coma: Python, AWS, Cisco)" />

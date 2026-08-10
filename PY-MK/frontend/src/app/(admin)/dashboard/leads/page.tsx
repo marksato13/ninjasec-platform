@@ -230,43 +230,43 @@ export default function LeadsPipelinePage() {
       {/* KPI strip */}
       <div className="metrics-grid">
         <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <Users size={16} style={{ color: "var(--primary)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Total leads</span>
+            <span className="eyebrow m-0">Total leads</span>
           </div>
           <strong style={{ fontSize: "2rem" }}>{total}</strong>
-          <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{(grouped["new"] ?? []).length} en pipeline</span>
+          <span className="muted-small">{(grouped["new"] ?? []).length} en pipeline</span>
         </article>
 
         <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <TrendingUp size={16} style={{ color: "var(--success)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Conversión</span>
+            <span className="eyebrow m-0">Conversión</span>
           </div>
           <strong style={{ fontSize: "2rem", color: convPct >= 20 ? "var(--success)" : convPct >= 10 ? "var(--warning)" : "var(--danger)" }}>
             {convPct}%
           </strong>
-          <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{won} ganados de {total}</span>
+          <span className="muted-small">{won} ganados de {total}</span>
         </article>
 
         <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <span style={{ fontSize: "1rem" }}>📄</span>
-            <span className="eyebrow" style={{ margin: 0 }}>En propuesta</span>
+            <span className="eyebrow m-0">En propuesta</span>
           </div>
           <strong style={{ fontSize: "2rem", color: inProposal > 0 ? "var(--primary)" : "var(--muted)" }}>{inProposal}</strong>
-          <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>aguardando respuesta</span>
+          <span className="muted-small">aguardando respuesta</span>
         </article>
 
         <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div className="row-center">
             <span style={{ fontSize: "1rem" }}>🎯</span>
-            <span className="eyebrow" style={{ margin: 0 }}>Calificados</span>
+            <span className="eyebrow m-0">Calificados</span>
           </div>
           <strong style={{ fontSize: "2rem", color: "var(--warning)" }}>
             {(grouped["qualified"] ?? []).length}
           </strong>
-          <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>listos para propuesta</span>
+          <span className="muted-small">listos para propuesta</span>
         </article>
       </div>
 

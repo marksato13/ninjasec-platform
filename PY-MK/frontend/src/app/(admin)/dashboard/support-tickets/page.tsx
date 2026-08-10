@@ -170,50 +170,50 @@ export default function SupportTicketsPage() {
       {stats ? (
         <div className="metrics-grid">
           <article className="metric-card panel">
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="row-center">
               <TicketIcon size={16} style={{ color: "var(--primary)", opacity: 0.7 }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Tickets totales</span>
+              <span className="eyebrow m-0">Tickets totales</span>
             </div>
             <strong style={{ fontSize: "2rem" }}>{stats.total}</strong>
-            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
+            <span className="muted-small">
               {stats.open_count} abiertos · {stats.closed_count} cerrados
             </span>
           </article>
 
           <article className="metric-card panel">
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="row-center">
               <AlertTriangle size={16} style={{ color: "var(--warning)", opacity: 0.7 }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Abiertos</span>
+              <span className="eyebrow m-0">Abiertos</span>
             </div>
             <strong style={{ fontSize: "2rem", color: stats.open_count > 0 ? "var(--warning)" : "var(--success)" }}>
               {stats.open_count}
             </strong>
-            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
+            <span className="muted-small">
               {stats.by_priority.critical ? `${stats.by_priority.critical} críticos · ` : ""}
               {stats.by_priority.high ? `${stats.by_priority.high} altos` : "sin prioridad alta"}
             </span>
           </article>
 
           <article className="metric-card panel">
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="row-center">
               <CheckCircle2 size={16} style={{ color: "var(--success)", opacity: 0.7 }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Cerrados</span>
+              <span className="eyebrow m-0">Cerrados</span>
             </div>
             <strong style={{ fontSize: "2rem", color: "var(--success)" }}>{stats.closed_count}</strong>
-            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
+            <span className="muted-small">
               {stats.total > 0 ? `${Math.round((stats.closed_count / stats.total) * 100)}% del total` : "—"}
             </span>
           </article>
 
           <article className="metric-card panel">
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div className="row-center">
               <Clock size={16} style={{ color: "var(--primary)", opacity: 0.7 }} />
-              <span className="eyebrow" style={{ margin: 0 }}>Tiempo medio</span>
+              <span className="eyebrow m-0">Tiempo medio</span>
             </div>
             <strong style={{ fontSize: "2rem" }}>
               {stats.avg_resolution_hours != null ? `${stats.avg_resolution_hours}h` : "—"}
             </strong>
-            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>Resolución promedio</span>
+            <span className="muted-small">Resolución promedio</span>
           </article>
         </div>
       ) : null}
@@ -275,19 +275,19 @@ export default function SupportTicketsPage() {
                   {isSuperAdmin ? (
                     <input type="checkbox" checked={bulk.isSelected(ticket.id)} onChange={() => bulk.toggle(ticket.id)} aria-label={`Seleccionar ticket ${ticket.id}`} />
                   ) : <span />}
-                  <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>#{ticket.id}</span>
+                  <span className="muted-small">#{ticket.id}</span>
                   <span>
                     <button className="button button-ghost" type="button" style={{ textAlign: "left", fontSize: "0.88rem" }} onClick={async () => setDetail(await getSupportTicket(ticket.id))}>
                       {ticket.title}
                     </button>
                   </span>
-                  <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{clientName(ticket.client_id)}</span>
+                  <span className="muted-small">{clientName(ticket.client_id)}</span>
                   <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{ticket.priority}</span></span>
                   <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {overdue ? (
                       <span className="badge badge-rejected" style={{ fontSize: "0.68rem" }}>Vencido {hoursOpen(ticket)}</span>
                     ) : (
-                      <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>{hoursOpen(ticket)}</span>
+                      <span className="muted-small">{hoursOpen(ticket)}</span>
                     )}
                   </span>
                   <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{ticket.status}</span></span>

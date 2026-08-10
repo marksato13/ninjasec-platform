@@ -49,7 +49,7 @@ export default function SocReportPage() {
         </div>
       </div>
 
-      <p style={{ fontSize: "0.82rem", color: "var(--muted)" }}>
+      <p className="muted-small">
         Índice 0-100 en lenguaje ejecutivo, no técnico — combina hallazgos de revisiones abiertos, reglas de
         hardening incumplidas (31-P1), hosts de alto riesgo (30-P2) y CVEs de alta probabilidad de explotación
         (32-P1). Cada categoría tiene un tope de deducción para que ninguna señal por sí sola hunda el score.
