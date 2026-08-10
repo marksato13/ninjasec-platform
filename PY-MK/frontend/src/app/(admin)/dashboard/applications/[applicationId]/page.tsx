@@ -27,7 +27,7 @@ import {
 } from "@/lib/api";
 import { confirmAction, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser, isAdminRole } from "@/lib/auth";
-import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getDocVisibilityLabel, getStatusBadgeClass } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 
 type TabKey = "summary" | "reviews" | "notes" | "attachments" | "timeline";
@@ -647,7 +647,7 @@ export default function ApplicationDetailPage() {
                   </span>
                   <div>
                     <span>{note.note}</span>
-                    <span className="card-subtitle">Visibilidad: {note.visibility}</span>
+                    <span className="card-subtitle">Visibilidad: {getDocVisibilityLabel(note.visibility)}</span>
                   </div>
                   <span>{formatDateTime(note.created_at)}</span>
                 </div>

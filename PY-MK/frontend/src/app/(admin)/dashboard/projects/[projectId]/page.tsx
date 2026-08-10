@@ -38,6 +38,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getDocStatusLabel, getProjectStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { projectEditFormSchema, type ProjectEditFormValues } from "@/lib/validation";
 import { QK } from "@/lib/query-keys";
@@ -345,7 +346,7 @@ export default function ProjectDetailPage() {
           <Link className="button button-ghost" href="/dashboard/projects">
             Volver
           </Link>
-          <span className={`badge ${getStatusBadgeClass(project.status)}`}>{project.status}</span>
+          <span className={`badge ${getStatusBadgeClass(project.status)}`}>{getProjectStatusLabel(project.status)}</span>
         </div>
       </div>
 
@@ -496,7 +497,7 @@ export default function ProjectDetailPage() {
                       <p className="eyebrow">Documento</p>
                       <h3>{doc.title}</h3>
                     </div>
-                    <span className={`badge badge-${doc.status}`}>{doc.status}</span>
+                    <span className={`badge badge-${doc.status}`}>{getDocStatusLabel(doc.status)}</span>
                   </div>
                   {doc.summary ? <p className="doc-summary">{doc.summary}</p> : null}
                   {doc.github_url ? (

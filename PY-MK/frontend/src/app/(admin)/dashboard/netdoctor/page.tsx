@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GuidedTree, NetdoctorIssue, getGuidedTree, getNetdoctorIssues } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
+import { getSeverityLabel } from "@/lib/labels";
 
 const VENDORS = [
   { value: "cisco_ios", label: "Cisco IOS" },
@@ -22,7 +23,7 @@ function IssueCard({ issue, vendor }: { issue: NetdoctorIssue; vendor: string })
           <p className="eyebrow">{issue.category} · {issue.code}</p>
           <h3>{issue.title}</h3>
         </div>
-        <span className="badge" style={{ background: SEVERITY_COLOR[issue.severity] ?? "#e2e8f0" }}>{issue.severity}</span>
+        <span className="badge" style={{ background: SEVERITY_COLOR[issue.severity] ?? "#e2e8f0" }}>{getSeverityLabel(issue.severity)}</span>
       </div>
       <p style={{ fontSize: "0.85rem" }}><strong>Síntomas:</strong> {issue.symptoms}</p>
       <p style={{ fontSize: "0.85rem" }}><strong>Causas probables:</strong> {issue.probable_causes}</p>

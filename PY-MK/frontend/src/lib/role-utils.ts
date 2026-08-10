@@ -80,6 +80,9 @@ export function getApprovalStatusLabel(status: string) {
     pending: "Pendiente",
     approved: "Aprobado",
     rejected: "Rechazado",
+    // effective_status (21-P-02) agrega "expired" sobre las mismas 3
+    // bases -- una certificacion aprobada pero vencida.
+    expired: "Vencida",
   };
   return map[normalized] ?? status;
 }

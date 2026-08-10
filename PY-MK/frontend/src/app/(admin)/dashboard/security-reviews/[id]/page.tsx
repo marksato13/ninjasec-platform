@@ -28,6 +28,7 @@ import {
 } from "@/lib/api";
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getFindingStatusLabel, getRecommendationStatusLabel, getReviewStatusLabel, getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { getStoredUser } from "@/lib/auth";
 import { QK } from "@/lib/query-keys";
 
@@ -222,7 +223,7 @@ export default function SecurityReviewDetailPage() {
           >
             Exportar PDF
           </button>
-          <span className={`badge ${getStatusBadgeClass(review.status)}`}>{review.status}</span>
+          <span className={`badge ${getStatusBadgeClass(review.status)}`}>{getReviewStatusLabel(review.status)}</span>
           {review.status !== "closed" && (
             <button className="button button-primary" type="button" onClick={async () => {
               const updated = await updateSecurityReview(review.id, { status: "closed", reviewer_user_id: review.reviewer_user_id });
@@ -284,9 +285,7 @@ export default function SecurityReviewDetailPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
               <label style={{ color: "var(--muted)", fontSize: "0.78rem" }}>Estado</label>
               <select value={review.status} onChange={(e) => setReviewOverride({ ...review, status: e.target.value })}>
-                <option value="scheduled">Scheduled</option>
-                <option value="in_progress">In Progress</option>
-                <option value="closed">Closed</option>
+                {["scheduled", "in_progress", "closed"].map((s) => <option key={s} value={s}>{getReviewStatusLabel(s)}</option>)}
               </select>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -360,7 +359,7 @@ export default function SecurityReviewDetailPage() {
           {/* Add finding form */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end", padding: "12px 0", borderBottom: "1px solid var(--line)", marginBottom: 12 }}>
             <select value={newFinding.severity} onChange={(e) => setNewFinding((f) => ({ ...f, severity: e.target.value }))} style={{ minWidth: 110 }}>
-              {["critical","high","medium","low"].map((s) => <option key={s} value={s}>{s}</option>)}
+              {["critical","high","medium","low"].map((s) => <option key={s} value={s}>{getSeverityLabel(s)}</option>)}
             </select>
             <input value={newFinding.title} onChange={(e) => setNewFinding((f) => ({ ...f, title: e.target.value }))} placeholder="Título del hallazgo" style={{ flex: 1, minWidth: 200 }} />
             <input value={newFinding.evidence_url} onChange={(e) => setNewFinding((f) => ({ ...f, evidence_url: e.target.value }))} placeholder="URL evidencia (opcional)" style={{ minWidth: 160 }} />
@@ -379,7 +378,7 @@ export default function SecurityReviewDetailPage() {
               {review.findings.map((finding) => (
                 <div key={finding.id} style={{ display: "flex", flexDirection: "column", borderBottom: "1px solid var(--line)", padding: "8px 0" }}>
                   <div className="table-row" style={{ gridTemplateColumns: "auto 1fr auto auto auto" }}>
-                    <span><span className={`badge ${SEVERITY_BADGE[finding.severity] ?? "badge-draft"}`}>{finding.severity}</span></span>
+                    <span><span className={`badge ${SEVERITY_BADGE[finding.severity] ?? "badge-draft"}`}>{getSeverityLabel(finding.severity)}</span></span>
                     <span style={{ fontWeight: 500, fontSize: "0.88rem" }}>{finding.title}</span>
                     <span>
                       <select value={finding.status} onChange={(e) => {
@@ -387,7 +386,7 @@ export default function SecurityReviewDetailPage() {
                         setReviewOverride((r) => r ? { ...r, findings: r.findings.map((f) => f.id === finding.id ? updated : f) } : r);
                         patchFinding(updated);
                       }} style={{ fontSize: "0.78rem", padding: "2px 6px" }}>
-                        {FINDING_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}
+                        {FINDING_STATUS.map((s) => <option key={s} value={s}>{getFindingStatusLabel(s)}</option>)}
                       </select>
                     </span>
                     <span>
@@ -444,7 +443,7 @@ export default function SecurityReviewDetailPage() {
                   <span style={{ color: item.due_date && new Date(item.due_date) < new Date() && item.status !== "completed" ? "var(--danger)" : "var(--muted)", fontSize: "0.82rem" }}>
                     {item.due_date || "—"}
                   </span>
-                  <span><span className={`badge ${getStatusBadgeClass(item.status)}`}>{item.status}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(item.status)}`}>{getRecommendationStatusLabel(item.status)}</span></span>
                 </div>
               ))}
             </div>
@@ -496,8 +495,8 @@ export default function SecurityReviewDetailPage() {
                 <div className="table-row table-row-wide" key={ticket.id}>
                   <span>#{ticket.id}</span>
                   <span style={{ fontSize: "0.88rem" }}>{ticket.title}</span>
-                  <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{ticket.priority}</span></span>
-                  <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{ticket.status}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{getSeverityLabel(ticket.priority)}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{getTicketStatusLabel(ticket.status)}</span></span>
                 </div>
               ))}
             </div>

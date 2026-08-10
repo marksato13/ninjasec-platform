@@ -25,6 +25,7 @@ import {
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getDeviceStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { NetworkTopology } from "@/components/devices/network-topology";
 import { ConfigVisualizer } from "@/components/devices/config-visualizer";
@@ -315,7 +316,7 @@ export default function DashboardDevicesPage() {
           </select>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">Todos los estados</option>
-            {STATUS_OPTIONS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
+            {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{getDeviceStatusLabel(s)}</option>)}
           </select>
         </div>
         {/* Pills de tipo */}
@@ -426,7 +427,7 @@ export default function DashboardDevicesPage() {
                       <strong style={{ fontSize: "0.9rem" }}>{device.hostname}</strong>
                       <span className="card-subtitle">{device.ip_address || "Sin IP"}</span>
                     </div>
-                    <span className={`badge ${getStatusBadgeClass(device.status)}`}>{device.status}</span>
+                    <span className={`badge ${getStatusBadgeClass(device.status)}`}>{getDeviceStatusLabel(device.status)}</span>
                   </div>
                   {(device.criticality || device.data_classification) && (
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 6 }}>
@@ -506,7 +507,7 @@ export default function DashboardDevicesPage() {
           <input value={form.ip_address} onChange={(e) => setForm((f) => ({ ...f, ip_address: e.target.value }))} placeholder="Dirección IP" />
           <input value={form.asset_tag}  onChange={(e) => setForm((f) => ({ ...f, asset_tag: e.target.value }))}  placeholder="Asset Tag" />
           <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
-            {STATUS_OPTIONS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
+            {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{getDeviceStatusLabel(s)}</option>)}
           </select>
           <div style={{ gridColumn: "1 / -1", padding: "6px 0 2px", fontSize: "0.72rem", fontWeight: 700, color: "var(--muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
             Gestión de activos (ISO 27001 A.8)
@@ -541,7 +542,7 @@ export default function DashboardDevicesPage() {
             <input value={editItem.ip_address || ""} onChange={(e) => setEditItem({ ...editItem, ip_address: e.target.value })} placeholder="IP" />
             <input value={editItem.asset_tag  || ""} onChange={(e) => setEditItem({ ...editItem, asset_tag: e.target.value })}  placeholder="Asset Tag" />
             <select value={editItem.status} onChange={(e) => setEditItem({ ...editItem, status: e.target.value })}>
-              {STATUS_OPTIONS.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
+              {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{getDeviceStatusLabel(s)}</option>)}
             </select>
             <div style={{ gridColumn: "1 / -1", padding: "6px 0 2px", fontSize: "0.72rem", fontWeight: 700, color: "var(--muted)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
               Gestión de activos (ISO 27001 A.8)

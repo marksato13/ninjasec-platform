@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getProjects, ProjectItem } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
+import { getProjectStatusLabel } from "@/lib/labels";
 
 export default function PortalProjectsPage() {
   const { data: items = [], isLoading, error } = useQuery<ProjectItem[]>({
@@ -40,7 +41,7 @@ export default function PortalProjectsPage() {
             {items.map((item) => (
               <div className="table-row table-row-wide" key={item.id}>
                 <span>{item.name}</span>
-                <span>{item.status}</span>
+                <span>{getProjectStatusLabel(item.status)}</span>
                 <span>{item.description || "Sin descripcion"}</span>
               </div>
             ))}

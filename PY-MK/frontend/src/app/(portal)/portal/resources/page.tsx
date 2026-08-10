@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getProjectDocs, getProjects, ProjectDocItem } from "@/lib/api";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getDocStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 
 function formatDate(value?: string | null) {
@@ -89,7 +90,7 @@ export default function PortalResourcesPage() {
                 <div className="doc-card__head">
                   <div className="card-title">
                     <strong style={{ fontSize: "0.92rem" }}>{doc.title}</strong>
-                    <span className={`badge ${getStatusBadgeClass(doc.status)}`}>{doc.status}</span>
+                    <span className={`badge ${getStatusBadgeClass(doc.status)}`}>{getDocStatusLabel(doc.status)}</span>
                   </div>
                   <div style={{ display: "flex", gap: 6 }}>
                     {doc.github_url && (

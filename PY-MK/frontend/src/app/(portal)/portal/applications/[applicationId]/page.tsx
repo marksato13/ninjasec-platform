@@ -19,7 +19,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
-import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getDocVisibilityLabel, getStatusBadgeClass } from "@/lib/role-utils";
 import { QK } from "@/lib/query-keys";
 
 type TabKey = "summary" | "review" | "notes" | "timeline";
@@ -421,7 +421,7 @@ export default function PortalApplicationDetailPage() {
                 <div className="table-row" key={note.id}>
                   <span>{note.note}</span>
                   <span>{formatDateTime(note.created_at)}</span>
-                  <span>{note.visibility}</span>
+                  <span>{getDocVisibilityLabel(note.visibility)}</span>
                 </div>
               ))}
             </div>

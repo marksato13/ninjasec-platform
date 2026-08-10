@@ -24,6 +24,7 @@ import {
 } from "@/lib/api";
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
+import { getDocScopeLabel } from "@/lib/role-utils";
 
 type Tab = "project-types" | "areas" | "doc-types";
 type CatalogTab = "project-types" | "areas";
@@ -313,7 +314,7 @@ export default function DashboardSettingsPage() {
                 {docTypes.map((item) => (
                   <div className="table-row" key={item.id} style={{ gridTemplateColumns: "1fr auto auto" }}>
                     <span>{item.name}</span>
-                    <span className="muted-small">{item.scope}</span>
+                    <span className="muted-small">{getDocScopeLabel(item.scope)}</span>
                     <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
                       {item.is_active ? "Activo" : "Inactivo"}
                     </span>

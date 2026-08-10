@@ -40,6 +40,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { formatClientStatus, getStatusBadgeClass } from "@/lib/role-utils";
+import { getDeviceStatusLabel, getReviewStatusLabel, getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { QK } from "@/lib/query-keys";
 
 type TabKey = "resumen" | "info" | "sites" | "contacts" | "services" | "access" | "integrations" | "inventory" | "tickets" | "reviews";
@@ -363,8 +364,8 @@ export default function ClientDetailPage() {
                     <div className="table-row" key={ticket.id} style={{ gridTemplateColumns: "auto 1fr auto auto" }}>
                       <span>#{ticket.id}</span>
                       <span style={{ fontSize: "0.85rem" }}>{ticket.title}</span>
-                      <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{ticket.priority}</span></span>
-                      <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{ticket.status}</span></span>
+                      <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{getSeverityLabel(ticket.priority)}</span></span>
+                      <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{getTicketStatusLabel(ticket.status)}</span></span>
                     </div>
                   ))}
                 </div>
@@ -518,7 +519,7 @@ export default function ClientDetailPage() {
                   <span>{device.hostname}</span>
                   <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{device.device_type || "—"}</span>
                   <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{device.ip_address || "—"}</span>
-                  <span><span className={`badge ${getStatusBadgeClass(device.status)}`}>{device.status}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(device.status)}`}>{getDeviceStatusLabel(device.status)}</span></span>
                 </div>
               ))}
               {filteredDevices.length === 0 && <div className="empty-state">Sin activos{deviceTypeFilter ? ` de tipo "${deviceTypeFilter}"` : ""}.</div>}
@@ -555,8 +556,8 @@ export default function ClientDetailPage() {
                 <div className="table-row table-row-wide" key={ticket.id}>
                   <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>#{ticket.id}</span>
                   <span style={{ fontSize: "0.85rem" }}>{ticket.title}</span>
-                  <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{ticket.priority}</span></span>
-                  <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{ticket.status}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{getSeverityLabel(ticket.priority)}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{getTicketStatusLabel(ticket.status)}</span></span>
                 </div>
               ))}
               {filteredTickets.length === 0 && <div className="empty-state">Sin tickets con los filtros seleccionados.</div>}
@@ -593,7 +594,7 @@ export default function ClientDetailPage() {
                     <span style={{ fontSize: "0.82rem" }}>
                       {review.executed_at ? new Date(review.executed_at).toLocaleDateString("es-PE") : "—"}
                     </span>
-                    <span><span className={`badge ${getStatusBadgeClass(review.status)}`}>{review.status}</span></span>
+                    <span><span className={`badge ${getStatusBadgeClass(review.status)}`}>{getReviewStatusLabel(review.status)}</span></span>
                     <span style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {totalFindings === 0 ? (
                         <span style={{ color: "var(--success)", fontSize: "0.78rem", fontWeight: 600 }}>✓ Sin hallazgos</span>

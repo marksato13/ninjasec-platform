@@ -30,6 +30,7 @@ import { AlertTriangle, CheckCircle2, Clock, Ticket as TicketIcon, Trash2 } from
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { BulkActionBar } from "@/components/ui/bulk-action-bar";
 import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
@@ -221,7 +222,7 @@ export default function SupportTicketsPage() {
       <article className="panel filters-panel">
         <div className="filters-grid">
           <select value={filters.client_id} onChange={(e) => setFilters((current) => ({ ...current, client_id: e.target.value }))}>{" "}<option value="">Todos los clientes</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}</select>
-          <select value={filters.priority} onChange={(e) => setFilters((current) => ({ ...current, priority: e.target.value }))}><option value="">Todas las prioridades</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical</option></select>
+          <select value={filters.priority} onChange={(e) => setFilters((current) => ({ ...current, priority: e.target.value }))}><option value="">Todas las prioridades</option>{["low", "medium", "high", "critical"].map((item) => <option key={item} value={item}>{getSeverityLabel(item)}</option>)}</select>
           <button className="button button-secondary" type="button" onClick={() => load()}>Aplicar</button>
         </div>
         <div className="filters-dates">
@@ -241,7 +242,7 @@ export default function SupportTicketsPage() {
           const overdueCount = tickets.filter((t) => t.status === s && isOverdue(t)).length;
           return (
             <button key={s} className={`tab ${activeStatus === s ? "tab-active" : ""}`} type="button" onClick={() => setActiveStatus(s)}>
-              {s}
+              {getTicketStatusLabel(s)}
               {count > 0 && <span className="pill" style={{ marginLeft: 6 }}>{count}</span>}
               {overdueCount > 0 && <span style={{ marginLeft: 4, color: "var(--danger)", fontSize: "0.7rem", fontWeight: 700 }}>⚠{overdueCount}</span>}
             </button>
@@ -282,7 +283,7 @@ export default function SupportTicketsPage() {
                     </button>
                   </span>
                   <span className="muted-small">{clientName(ticket.client_id)}</span>
-                  <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{ticket.priority}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(ticket.priority)}`}>{getSeverityLabel(ticket.priority)}</span></span>
                   <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
                     {overdue ? (
                       <span className="badge badge-rejected" style={{ fontSize: "0.68rem" }}>Vencido {hoursOpen(ticket)}</span>
@@ -290,7 +291,7 @@ export default function SupportTicketsPage() {
                       <span className="muted-small">{hoursOpen(ticket)}</span>
                     )}
                   </span>
-                  <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{ticket.status}</span></span>
+                  <span><span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{getTicketStatusLabel(ticket.status)}</span></span>
                 </div>
               );
             })
@@ -303,7 +304,7 @@ export default function SupportTicketsPage() {
           <select value={form.client_id} onChange={(e) => setForm((current) => ({ ...current, client_id: e.target.value }))}><option value="">Cliente</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}</select>
           <input value={form.title} onChange={(e) => setForm((current) => ({ ...current, title: e.target.value }))} placeholder="Titulo" />
           <textarea value={form.description} onChange={(e) => setForm((current) => ({ ...current, description: e.target.value }))} placeholder="Descripcion" rows={4} />
-          <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>{["low","medium","high","critical"].map((item) => <option key={item} value={item}>{item}</option>)}</select>
+          <select value={form.priority} onChange={(e) => setForm((current) => ({ ...current, priority: e.target.value }))}>{["low","medium","high","critical"].map((item) => <option key={item} value={item}>{getSeverityLabel(item)}</option>)}</select>
           <select value={form.category} onChange={(e) => setForm((current) => ({ ...current, category: e.target.value }))}><option value="support">Soporte</option><option value="incident">Incidente</option><option value="request">Solicitud</option><option value="maintenance">Mantenimiento</option></select>
           {isAdmin && <select value={form.assigned_to} onChange={(e) => setForm((current) => ({ ...current, assigned_to: e.target.value }))}><option value="">Asignado a</option>{users.map((user) => <option key={user.id} value={user.id}>{user.full_name}</option>)}</select>}
           <button className="button button-primary" type="button" onClick={async () => { if (!form.client_id || !form.title) return; try { await createSupportTicket({ client_id: Number(form.client_id), title: form.title, description: form.description || null, category: form.category, priority: form.priority, assigned_to: form.assigned_to ? Number(form.assigned_to) : null }); notifySuccess("Ticket creado"); setCreateOpen(false); load(); } catch (err) { notifyError("No se pudo crear", err instanceof Error ? err.message : undefined); } }}>Guardar</button>
@@ -337,7 +338,7 @@ export default function SupportTicketsPage() {
                 <option value="">— Selecciona un hallazgo —</option>
                 {(reviewDetail.findings || []).map((f) => (
                   <option key={f.id} value={f.id}>
-                    [{f.severity}] {f.title.slice(0, 70)}
+                    [{getSeverityLabel(f.severity)}] {f.title.slice(0, 70)}
                   </option>
                 ))}
               </select>
@@ -371,7 +372,7 @@ export default function SupportTicketsPage() {
       </Modal>
 
       <Modal isOpen={!!detail} title={detail ? `Ticket #${detail.id}` : "Detalle"} onClose={() => setDetail(null)}>
-        {detail ? <div className="page-stack"><div className="card-meta"><div><span className="card-label">Cliente</span><span>{clientName(detail.client_id)}</span></div><div><span className="card-label">Asignado</span><span>{userName(detail.assigned_to)}</span></div><div><span className="card-label">Apertura</span><span>{detail.opened_at}</span></div><div><span className="card-label">Resolucion</span><span>{detail.resolution || "-"}</span></div></div><div className="entity-form"><select value={detail.status} onChange={(e) => setDetail({ ...detail, status: e.target.value })}>{statuses.map((item) => <option key={item} value={item}>{item}</option>)}</select>{isAdmin && <select value={detail.assigned_to || ""} onChange={(e) => setDetail({ ...detail, assigned_to: e.target.value ? Number(e.target.value) : null })}><option value="">Sin asignar</option>{users.map((user) => <option key={user.id} value={user.id}>{user.full_name}</option>)}</select>}<textarea value={detail.resolution || ""} onChange={(e) => setDetail({ ...detail, resolution: e.target.value })} rows={3} placeholder="Resolucion" /><button className="button button-primary" type="button" onClick={async () => { try { const updated = await updateSupportTicket(detail.id, { status: detail.status, assigned_to: detail.assigned_to, resolution: detail.resolution }); setDetail({ ...detail, ...updated }); load(); } catch (err) { notifyError("No se pudo actualizar", err instanceof Error ? err.message : undefined); } }}>Guardar cambios</button><button className="button button-secondary" type="button" onClick={async () => { const event = await createSupportTicketEvent(detail.id, { event_type: "manual_note", notes: "Seguimiento manual" }); setDetail({ ...detail, events: [...detail.events, event] }); }}>Agregar evento</button>{isSuperAdmin && <button className="button button-danger button-sm" type="button" onClick={async () => { const confirmed = await confirmDelete({ title: `¿Eliminar Ticket #${detail.id}?`, text: "Esta acción no se puede deshacer." }); if (!confirmed) return; try { await deleteSupportTicket(detail.id); notifySuccess("Ticket eliminado"); setDetail(null); load(); } catch (err) { notifyError("No se pudo eliminar", err instanceof Error ? err.message : undefined); } }}>Eliminar ticket</button>}</div><div className="table-like"><div className="table-row table-head"><span>Evento</span><span>Detalle</span><span>Fecha</span></div>{detail.events.map((event) => <div className="table-row" key={event.id}><span>{event.event_type}</span><span>{event.notes || `${event.from_status || ""} ${event.to_status || ""}`}</span><span>{event.created_at}</span></div>)}</div></div> : null}
+        {detail ? <div className="page-stack"><div className="card-meta"><div><span className="card-label">Cliente</span><span>{clientName(detail.client_id)}</span></div><div><span className="card-label">Asignado</span><span>{userName(detail.assigned_to)}</span></div><div><span className="card-label">Apertura</span><span>{detail.opened_at}</span></div><div><span className="card-label">Resolucion</span><span>{detail.resolution || "-"}</span></div></div><div className="entity-form"><select value={detail.status} onChange={(e) => setDetail({ ...detail, status: e.target.value })}>{statuses.map((item) => <option key={item} value={item}>{getTicketStatusLabel(item)}</option>)}</select>{isAdmin && <select value={detail.assigned_to || ""} onChange={(e) => setDetail({ ...detail, assigned_to: e.target.value ? Number(e.target.value) : null })}><option value="">Sin asignar</option>{users.map((user) => <option key={user.id} value={user.id}>{user.full_name}</option>)}</select>}<textarea value={detail.resolution || ""} onChange={(e) => setDetail({ ...detail, resolution: e.target.value })} rows={3} placeholder="Resolucion" /><button className="button button-primary" type="button" onClick={async () => { try { const updated = await updateSupportTicket(detail.id, { status: detail.status, assigned_to: detail.assigned_to, resolution: detail.resolution }); setDetail({ ...detail, ...updated }); load(); } catch (err) { notifyError("No se pudo actualizar", err instanceof Error ? err.message : undefined); } }}>Guardar cambios</button><button className="button button-secondary" type="button" onClick={async () => { const event = await createSupportTicketEvent(detail.id, { event_type: "manual_note", notes: "Seguimiento manual" }); setDetail({ ...detail, events: [...detail.events, event] }); }}>Agregar evento</button>{isSuperAdmin && <button className="button button-danger button-sm" type="button" onClick={async () => { const confirmed = await confirmDelete({ title: `¿Eliminar Ticket #${detail.id}?`, text: "Esta acción no se puede deshacer." }); if (!confirmed) return; try { await deleteSupportTicket(detail.id); notifySuccess("Ticket eliminado"); setDetail(null); load(); } catch (err) { notifyError("No se pudo eliminar", err instanceof Error ? err.message : undefined); } }}>Eliminar ticket</button>}</div><div className="table-like"><div className="table-row table-head"><span>Evento</span><span>Detalle</span><span>Fecha</span></div>{detail.events.map((event) => <div className="table-row" key={event.id}><span>{event.event_type}</span><span>{event.notes || `${event.from_status || ""} ${event.to_status || ""}`}</span><span>{event.created_at}</span></div>)}</div></div> : null}
       </Modal>
     </section>
   );

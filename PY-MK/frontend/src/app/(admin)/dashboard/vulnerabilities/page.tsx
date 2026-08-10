@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { DeviceCveEntry, getClients, getDeviceCves } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
+import { getSeverityLabel } from "@/lib/labels";
 
 const SEVERITY_COLOR: Record<string, string> = {
   critical: "#fecaca", high: "#fed7aa", medium: "#fef08a", low: "#bbf7d0", unknown: "#e2e8f0",
@@ -59,7 +60,7 @@ export default function VulnerabilitiesPage() {
                 <span style={{ fontWeight: 600 }}>{cve.cve_id}</span>
                 <span className="muted-small">{cve.description}</span>
                 <span>{cve.cvss_score.toFixed(1)}</span>
-                <span className="badge" style={{ background: SEVERITY_COLOR[cve.severity] ?? SEVERITY_COLOR.unknown }}>{cve.severity}</span>
+                <span className="badge" style={{ background: SEVERITY_COLOR[cve.severity] ?? SEVERITY_COLOR.unknown }}>{getSeverityLabel(cve.severity)}</span>
                 <span className="badge" style={{ background: epssBadge(cve.epss_score) }}>{(cve.epss_score * 100).toFixed(2)}%</span>
               </div>
             ))}

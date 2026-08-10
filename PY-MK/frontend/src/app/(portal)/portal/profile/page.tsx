@@ -19,6 +19,7 @@ import {
   UserSkillItem,
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
+import { getApprovalStatusLabel } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 
 function roleLabel(role: string) {
@@ -346,7 +347,7 @@ export default function PortalProfilePage() {
                 <li key={item.id}>
                   <strong>{item.skill_name || `Skill #${item.skill_id}`}</strong>
                   {item.level ? ` · ${item.level}` : ""}
-                  <span className={`badge badge-${item.status}`}>{item.status}</span>
+                  <span className={`badge badge-${item.status}`}>{getApprovalStatusLabel(item.status)}</span>
                   {item.status === "rejected" && item.rejection_reason && (
                     <p className="form-error" style={{ margin: "6px 0 0" }}><strong>Motivo:</strong> {item.rejection_reason}</p>
                   )}
@@ -414,7 +415,7 @@ export default function PortalProfilePage() {
                   {/* 21-P-02: se pinta effective_status, no status. Una
                       certificacion aprobada pero vencida no es "approved". */}
                   <span className={`badge badge-${cert.effective_status}`}>
-                    {cert.effective_status === "expired" ? "vencida" : cert.effective_status}
+                    {getApprovalStatusLabel(cert.effective_status)}
                   </span>
                   {cert.status === "rejected" && cert.rejection_reason && (
                     <p className="form-error" style={{ margin: "6px 0 0" }}><strong>Motivo:</strong> {cert.rejection_reason}</p>
