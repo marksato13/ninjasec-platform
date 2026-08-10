@@ -103,4 +103,8 @@ export const QK = {
 
   // Health score
   healthScore:     (clientId?: number)         => ["health-score", clientId]      as const,
+
+  // Catálogo de equipos
+  catalogDevices:  (filters?: Record<string, unknown>) => ["catalog-devices", filters] as const,
+  catalogDevice:   (id: number)                => ["catalog-device", id]          as const,
 } as const;
