@@ -23,3 +23,4 @@ export * from "./architecture";
 export * from "./risks";
 export * from "./risk-scoring";
 export * from "./hardening";
+export * from "./vulnerability-inventory";
