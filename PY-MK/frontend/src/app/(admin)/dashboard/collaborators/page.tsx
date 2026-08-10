@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LayoutGrid, List } from "lucide-react";
+import { LayoutGrid, List, Trash2 } from "lucide-react";
 
 import {
   CollaboratorProfile,
@@ -28,6 +28,8 @@ import {
   getRoleBadgeClass,
 } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 
 // ── Availability helpers ─────────────────────────────────────────────────────
 const AVAIL_COLOR: Record<string, string> = {
@@ -158,6 +160,8 @@ export default function DashboardCollaboratorsPage() {
     }),
   [profiles, filterAvail, filterSeniority, filterArea]);
 
+  const bulk = useBulkSelection(filtered.map((p) => p.id));
+
   // KPIs
   const availableCount = profiles.filter((p) => (p.availability_status ?? "").toLowerCase() === "available").length;
 
@@ -173,6 +177,23 @@ export default function DashboardCollaboratorsPage() {
     } catch (err) {
       notifyError("No se pudo eliminar", err instanceof Error ? err.message : undefined);
     }
+  }
+
+  async function handleBulkDelete() {
+    const ids = [...bulk.selected];
+    const ok = await confirmDelete({
+      title: `¿Eliminar ${ids.length} colaborador${ids.length === 1 ? "" : "es"}?`,
+      text: "Se eliminarán los perfiles seleccionados permanentemente.",
+    });
+    if (!ok) return;
+    const results = await Promise.allSettled(ids.map((id) => deleteCollaborator(id)));
+    const failed = results.filter((r) => r.status === "rejected").length;
+    queryClient.setQueryData<typeof data>(QK.collaborators(), (prev) =>
+      prev ? { ...prev, profiles: prev.profiles.filter((p) => !ids.includes(p.id)) } : prev
+    );
+    bulk.clear();
+    if (failed > 0) notifyError("Algunos colaboradores no se pudieron eliminar", `${failed} de ${ids.length} fallaron`);
+    else notifySuccess("Colaboradores eliminados");
   }
 
   function openEdit(profile: CollaboratorProfile) {
@@ -451,8 +472,19 @@ export default function DashboardCollaboratorsPage() {
       {/* ── TABLE VIEW ── */}
       {!isLoading && viewMode === "table" && (
         <article className="panel">
+          {isSuperAdmin && (
+            <BulkActionBar
+              count={bulk.count}
+              itemLabel="colaborador"
+              onClear={bulk.clear}
+              actions={[{ label: "Eliminar", variant: "danger", icon: <Trash2 size={14} />, onClick: handleBulkDelete }]}
+            />
+          )}
           <div className="table-like">
-            <div className="table-row table-head" style={{ gridTemplateColumns: "32px 1fr 140px 100px 120px 80px auto" }}>
+            <div className="table-row table-head" style={{ gridTemplateColumns: "24px 32px 1fr 140px 100px 120px 80px auto" }}>
+              {isSuperAdmin ? (
+                <input type="checkbox" checked={bulk.allSelected} onChange={bulk.toggleAll} aria-label="Seleccionar todos los colaboradores" />
+              ) : <span />}
               <span></span>
               <span>Colaborador</span>
               <span>Cargo</span>
@@ -467,7 +499,10 @@ export default function DashboardCollaboratorsPage() {
               const skills = parseSkills(profile.skills_json);
               const color  = availColor(profile.availability_status);
               return (
-                <div className="table-row" key={profile.id} style={{ gridTemplateColumns: "32px 1fr 140px 100px 120px 80px auto", alignItems: "center" }}>
+                <div className="table-row" key={profile.id} style={{ gridTemplateColumns: "24px 32px 1fr 140px 100px 120px 80px auto", alignItems: "center" }}>
+                  {isSuperAdmin ? (
+                    <input type="checkbox" checked={bulk.isSelected(profile.id)} onChange={() => bulk.toggle(profile.id)} aria-label={`Seleccionar ${name}`} />
+                  ) : <span />}
                   <CollabAvatar profile={profile} size={28} />
                   <span>
                     <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>{name}</div>

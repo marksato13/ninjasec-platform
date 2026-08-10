@@ -1332,6 +1332,32 @@ a {
   gap: 8px;
 }
 
+.bulk-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--button-secondary-border);
+  background: var(--button-secondary-bg);
+  margin-bottom: 10px;
+}
+
+.bulk-action-bar-count {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bulk-action-bar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

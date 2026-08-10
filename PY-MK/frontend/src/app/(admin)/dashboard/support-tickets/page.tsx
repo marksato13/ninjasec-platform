@@ -26,11 +26,13 @@ import {
   SupportTicketStats,
   updateSupportTicket,
 } from "@/lib/api";
-import { AlertTriangle, CheckCircle2, Clock, Ticket as TicketIcon } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Ticket as TicketIcon, Trash2 } from "lucide-react";
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
+import { BulkActionBar } from "@/components/ui/bulk-action-bar";
+import { useBulkSelection } from "@/lib/hooks/use-bulk-selection";
 import { QK } from "@/lib/query-keys";
 
 const statuses = ["open", "in_progress", "pending", "resolved", "closed"];
@@ -80,6 +82,23 @@ export default function SupportTicketsPage() {
     queryKey: QK.tickets(ticketFilters),
     queryFn: () => getSupportTickets(ticketFilters),
   });
+
+  const bulk = useBulkSelection(tickets.map((t) => t.id));
+
+  async function handleBulkDelete() {
+    const confirmed = await confirmDelete({
+      title: `¿Eliminar ${bulk.count} ticket${bulk.count === 1 ? "" : "s"}?`,
+      text: "Esta acción eliminará los tickets seleccionados permanentemente y no se puede deshacer.",
+    });
+    if (!confirmed) return;
+    const ids = [...bulk.selected];
+    const results = await Promise.allSettled(ids.map((id) => deleteSupportTicket(id)));
+    const failed = results.filter((r) => r.status === "rejected").length;
+    bulk.clear();
+    load();
+    if (failed > 0) notifyError("Algunos tickets no se pudieron eliminar", `${failed} de ${ids.length} fallaron`);
+    else notifySuccess("Tickets eliminados");
+  }
 
   const { data: clients = [] } = useQuery<DashboardClient[]>({
     queryKey: QK.clients(),
@@ -230,9 +249,20 @@ export default function SupportTicketsPage() {
         })}
       </div>
 
+      {isSuperAdmin && (
+        <BulkActionBar
+          count={bulk.count}
+          itemLabel="ticket"
+          onClear={bulk.clear}
+          actions={[{ label: "Eliminar", variant: "danger", icon: <Trash2 size={14} />, onClick: handleBulkDelete }]}
+        />
+      )}
       <article className="panel">
         <div className="table-like">
-          <div className="table-row table-head" style={{ gridTemplateColumns: "60px 1fr 140px auto auto auto" }}>
+          <div className="table-row table-head" style={{ gridTemplateColumns: "28px 60px 1fr 140px auto auto auto" }}>
+            {isSuperAdmin ? (
+              <input type="checkbox" checked={bulk.allSelected} onChange={bulk.toggleAll} aria-label="Seleccionar todos los tickets" />
+            ) : <span />}
             <span>ID</span><span>Título</span><span>Cliente</span><span>Prioridad</span><span>SLA</span><span>Estado</span>
           </div>
           {tickets.length === 0 ? (
@@ -241,7 +271,10 @@ export default function SupportTicketsPage() {
             tickets.map((ticket) => {
               const overdue = isOverdue(ticket);
               return (
-                <div className="table-row" key={ticket.id} style={{ gridTemplateColumns: "60px 1fr 140px auto auto auto", borderLeft: overdue ? "3px solid var(--danger)" : "3px solid transparent" }}>
+                <div className="table-row" key={ticket.id} style={{ gridTemplateColumns: "28px 60px 1fr 140px auto auto auto", borderLeft: overdue ? "3px solid var(--danger)" : "3px solid transparent" }}>
+                  {isSuperAdmin ? (
+                    <input type="checkbox" checked={bulk.isSelected(ticket.id)} onChange={() => bulk.toggle(ticket.id)} aria-label={`Seleccionar ticket ${ticket.id}`} />
+                  ) : <span />}
                   <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>#{ticket.id}</span>
                   <span>
                     <button className="button button-ghost" type="button" style={{ textAlign: "left", fontSize: "0.88rem" }} onClick={async () => setDetail(await getSupportTicket(ticket.id))}>
