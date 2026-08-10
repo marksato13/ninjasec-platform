@@ -22,3 +22,4 @@ export * from "./topology";
 export * from "./architecture";
 export * from "./risks";
 export * from "./risk-scoring";
+export * from "./hardening";
