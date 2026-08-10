@@ -74,6 +74,35 @@ export function getStatusBadgeClass(status: string) {
   }
 }
 
+export function getApprovalStatusLabel(status: string) {
+  const normalized = status?.toLowerCase?.() ?? "";
+  const map: Record<string, string> = {
+    pending: "Pendiente",
+    approved: "Aprobado",
+    rejected: "Rechazado",
+  };
+  return map[normalized] ?? status;
+}
+
+export function getDocScopeLabel(scope: string) {
+  const normalized = scope?.toLowerCase?.() ?? "";
+  const map: Record<string, string> = {
+    public: "Publico",
+    private: "Privado",
+    both: "Ambos",
+  };
+  return map[normalized] ?? scope;
+}
+
+export function getDocVisibilityLabel(visibility: string) {
+  const normalized = visibility?.toLowerCase?.() ?? "";
+  const map: Record<string, string> = {
+    internal: "Interno",
+    client: "Cliente",
+  };
+  return map[normalized] ?? visibility;
+}
+
 export function getInitials(value?: string | null) {
   if (!value) return "NS";
   const parts = value.split(" ").filter(Boolean);

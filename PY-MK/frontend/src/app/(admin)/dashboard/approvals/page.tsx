@@ -23,6 +23,7 @@ import {
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { Modal } from "@/components/ui/modal";
 import { QK } from "@/lib/query-keys";
+import { getApprovalStatusLabel, getDocScopeLabel, getDocVisibilityLabel } from "@/lib/role-utils";
 
 const scopeOptions = ["public", "private", "both"];
 
@@ -188,7 +189,7 @@ export default function ApprovalsPage() {
                 <div className="table-row table-row-wide" key={item.id}>
                   <span>{item.skill_name || `Skill #${item.skill_id}`}</span>
                   <span>{item.level || "-"}</span>
-                  <span className={`badge badge-${item.status}`}>{item.status}</span>
+                  <span className={`badge badge-${item.status}`}>{getApprovalStatusLabel(item.status)}</span>
                   <span className="table-actions">
                     <button className="button button-secondary" type="button" onClick={() => handleVerifySkill(item, "approved")}>
                       Aprobar
@@ -224,7 +225,7 @@ export default function ApprovalsPage() {
                 <div className="table-row table-row-wide" key={item.id}>
                   <span>{item.name}</span>
                   <span>{item.issuer || "-"}</span>
-                  <span className={`badge badge-${item.status}`}>{item.status}</span>
+                  <span className={`badge badge-${item.status}`}>{getApprovalStatusLabel(item.status)}</span>
                   <span className="table-actions">
                     <button className="button button-secondary" type="button" onClick={() => handleVerifyCert(item, "approved")}>
                       Aprobar
@@ -288,7 +289,7 @@ export default function ApprovalsPage() {
               {docTypes.map((item) => (
                 <div className="table-row table-row-wide" key={item.id}>
                   <span>{item.name}</span>
-                  <span>{item.scope}</span>
+                  <span>{getDocScopeLabel(item.scope)}</span>
                   <span className={`badge badge-${item.is_active ? "approved" : "rejected"}`}>
                     {item.is_active ? "Activo" : "Inactivo"}
                   </span>
@@ -307,7 +308,7 @@ export default function ApprovalsPage() {
               <select value={docTypeScope} onChange={(event) => setDocTypeScope(event.target.value)}>
                 {scopeOptions.map((option) => (
                   <option key={option} value={option}>
-                    {option}
+                    {getDocScopeLabel(option)}
                   </option>
                 ))}
               </select>
@@ -324,9 +325,7 @@ export default function ApprovalsPage() {
               <p className="eyebrow">Documentos</p>
               <h3>Control de visibilidad</h3>
             </div>
-          </div>
-          <div className="table-like">
-            <div className="table-row table-row-wide">
+            <div className="panel-actions">
               <select value={docProjectFilter} onChange={(event) => setDocProjectFilter(event.target.value)}>
                 <option value="">Todos los proyectos</option>
                 {projects.map((project) => (
@@ -335,7 +334,7 @@ export default function ApprovalsPage() {
                   </option>
                 ))}
               </select>
-              <div className="empty-state">{filteredDocs.length} documentos</div>
+              <span className="muted-small">{filteredDocs.length} documento{filteredDocs.length !== 1 ? "s" : ""}</span>
             </div>
           </div>
           {filteredDocs.length === 0 ? (
@@ -353,7 +352,7 @@ export default function ApprovalsPage() {
                 <div className="table-row table-row-5" key={doc.id}>
                   <span>{doc.title}</span>
                   <span>{projectMap.get(doc.project_id) || `#${doc.project_id}`}</span>
-                  <span>{doc.visibility}</span>
+                  <span>{getDocVisibilityLabel(doc.visibility)}</span>
                   <span className={`badge badge-${doc.enabled ? "approved" : "rejected"}`}>
                     {doc.enabled ? "Habilitado" : "Deshabilitado"}
                   </span>
