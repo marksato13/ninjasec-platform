@@ -1,4 +1,4 @@
-"""Limitador de peticiones en memoria (15-P-05).
+"""Limitador de peticiones — en memoria o distribuido con Redis (15-P-05 / G-06).
 
 `POST /job-applications/` es el unico endpoint de la API sin autenticacion.
 Sin freno, cualquiera puede inundar la tabla de postulaciones antes de que
@@ -6,31 +6,59 @@ el sitio este siquiera publicado.
 
 ALCANCE — leelo antes de confiar en esto
 =========================================
-Es un limitador **por proceso y en memoria**. Cubre el caso real de hoy
-(un contenedor, un worker) y nada mas:
+Hay dos backends con la misma semantica de ventana deslizante (evaluados
+en `check`, con `reset()` para tests):
 
-- Se reinicia con el proceso: un redespliegue vacia los contadores.
-- No se comparte entre workers: con N workers uvicorn el limite efectivo
-  es N veces el configurado.
-- No frena un ataque distribuido: limita por IP, y muchas IPs pasan.
+- **En memoria** (`InMemorySlidingWindowLimiter`): por proceso. Se usa
+  siempre que `settings.redis_url` esta vacio (default en dev y en CI, que
+  no levanta Redis) o si Redis no responde al arrancar. Se reinicia con el
+  proceso; con N workers uvicorn el limite efectivo es N veces el
+  configurado.
+- **Redis** (`RedisSlidingWindowLimiter`): compartido entre workers y
+  replicas. Se activa solo con `settings.redis_url` configurado y Redis
+  alcanzable en el arranque. Si Redis se cae *despues* de arrancar, el
+  limitador **falla abierto** (deja pasar la peticion) — un rate limiter
+  caido nunca debe tumbar el endpoint que protege, la barrera aca es
+  contra abuso trivial, no una defensa anti-DDoS.
 
-Es una barrera contra abuso accidental y flooding trivial, no una defensa
-anti-DDoS. Cuando el despliegue crezca a varios workers o replicas, esto
-debe migrar a Redis (o ponerse en Caddy, que ya esta delante). Mientras
-tanto, es mucho mejor que no tener nada.
+En ambos casos limita por IP; muchas IPs distintas igual pasan. Es una
+barrera contra abuso accidental y flooding trivial, no una defensa
+anti-DDoS real.
 """
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
+import uuid
 from collections import defaultdict, deque
+from typing import Protocol
 
 from fastapi import HTTPException, Request, status
 
+from app.core.config import settings
 
-class SlidingWindowLimiter:
-    """Ventana deslizante por clave. Seguro entre hilos."""
+logger = logging.getLogger(__name__)
+
+
+class RateLimiterBackend(Protocol):
+    """Interfaz comun entre el backend en memoria y el de Redis."""
+
+    max_requests: int
+    window_seconds: int
+
+    def check(self, key: str) -> tuple[bool, int]:
+        """(permitido, segundos_para_reintentar). 0 cuando se permite."""
+        ...
+
+    def reset(self) -> None:
+        """Solo para tests."""
+        ...
+
+
+class InMemorySlidingWindowLimiter:
+    """Ventana deslizante por clave, en memoria. Seguro entre hilos."""
 
     def __init__(self, max_requests: int, window_seconds: int) -> None:
         self.max_requests = max_requests
@@ -39,10 +67,6 @@ class SlidingWindowLimiter:
         self._lock = threading.Lock()
 
     def check(self, key: str) -> tuple[bool, int]:
-        """(permitido, segundos_para_reintentar).
-
-        `segundos_para_reintentar` es 0 cuando se permite.
-        """
         now = time.monotonic()
         cutoff = now - self.window_seconds
 
@@ -71,9 +95,72 @@ class SlidingWindowLimiter:
             del self._hits[k]
 
     def reset(self) -> None:
-        """Solo para tests."""
         with self._lock:
             self._hits.clear()
+
+
+# Ventana deslizante atomica sobre un sorted set: ZREMRANGEBYSCORE saca lo
+# vencido, ZCARD cuenta lo que queda, y solo si hay hueco se agrega el
+# nuevo hit. Todo en un solo EVAL -- sin esto, dos peticiones concurrentes
+# podrian leer el mismo conteo antes de que ninguna escriba (TOCTOU).
+_SLIDING_WINDOW_LUA = """
+local key = KEYS[1]
+local now = tonumber(ARGV[1])
+local window = tonumber(ARGV[2])
+local max_requests = tonumber(ARGV[3])
+local member = ARGV[4]
+local cutoff = now - window
+
+redis.call('ZREMRANGEBYSCORE', key, '-inf', cutoff)
+local count = redis.call('ZCARD', key)
+if count >= max_requests then
+  local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+  local retry_after = 1
+  if oldest[2] then
+    retry_after = math.floor(tonumber(oldest[2]) + window - now) + 1
+    if retry_after < 1 then retry_after = 1 end
+  end
+  return {0, retry_after}
+end
+
+redis.call('ZADD', key, now, member)
+redis.call('EXPIRE', key, window)
+return {1, 0}
+"""
+
+
+class RedisSlidingWindowLimiter:
+    """Misma ventana deslizante que la version en memoria, compartida via Redis."""
+
+    def __init__(self, redis_client, max_requests: int, window_seconds: int, *, prefix: str) -> None:
+        self.max_requests = max_requests
+        self.window_seconds = window_seconds
+        self._redis = redis_client
+        self._prefix = prefix
+        self._script = redis_client.register_script(_SLIDING_WINDOW_LUA)
+
+    def check(self, key: str) -> tuple[bool, int]:
+        now = time.time()
+        member = uuid.uuid4().hex
+        try:
+            allowed, retry_after = self._script(
+                keys=[f"{self._prefix}:{key}"],
+                args=[now, self.window_seconds, self.max_requests, member],
+            )
+        except Exception:
+            # Redis se cayo despues de arrancar: mejor dejar pasar que
+            # tumbar el endpoint que este limitador deberia proteger.
+            logger.warning("Redis no disponible para rate limit '%s'; dejando pasar la peticion", self._prefix)
+            return True, 0
+        return bool(allowed), int(retry_after)
+
+    def reset(self) -> None:
+        """Solo para tests."""
+        try:
+            for redis_key in self._redis.scan_iter(f"{self._prefix}:*"):
+                self._redis.delete(redis_key)
+        except Exception:
+            pass
 
 
 def client_key(request: Request) -> str:
@@ -89,9 +176,27 @@ def client_key(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
+def _build_limiter(max_requests: int, window_seconds: int, name: str) -> RateLimiterBackend:
+    if settings.redis_url:
+        try:
+            import redis as redis_module
+
+            client = redis_module.from_url(settings.redis_url)
+            client.ping()
+            return RedisSlidingWindowLimiter(
+                client, max_requests, window_seconds, prefix=f"ratelimit:{name}"
+            )
+        except Exception:
+            logger.warning(
+                "No se pudo conectar a Redis para el rate limit '%s'; usando el limitador en memoria",
+                name,
+            )
+    return InMemorySlidingWindowLimiter(max_requests, window_seconds)
+
+
 def rate_limit(max_requests: int, window_seconds: int, *, name: str):
     """Construye una dependencia FastAPI que aplica el limite."""
-    limiter = SlidingWindowLimiter(max_requests, window_seconds)
+    limiter = _build_limiter(max_requests, window_seconds, name)
 
     def dependency(request: Request) -> None:
         allowed, retry_after = limiter.check(f"{name}:{client_key(request)}")
