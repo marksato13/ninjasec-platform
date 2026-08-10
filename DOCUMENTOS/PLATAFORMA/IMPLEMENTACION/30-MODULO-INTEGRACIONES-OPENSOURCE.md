@@ -45,15 +45,30 @@ Subconjunto real de Elastic Common Schema (ECS) — de ahí "ECS-lite". Lo que n
 | 13 | Dashboard de eventos con series temporales | ⏳ |
 | 14 | Top N reglas disparadas | ⏳ |
 
-## ⏳ P3 — Informe ejecutivo ("SOC as a report")
+## 🟡 P3 — Informe ejecutivo ("SOC as a report") — parcial (issue #63)
 
-| # | Requisito | Estado |
-|---|-----------|--------|
-| 15 | PDF con traducción a lenguaje no técnico | ⏳ |
-| 16 | Índice de "salud de seguridad" para gerencia | ⏳ |
-| 17 | Envío programado por correo (cron nocturno) | ⏳ |
-| 18 | Consolidación multi-sede en un solo informe | ⏳ |
-| 19 | Vista para rol `client` | ⏳ |
+| # | Requisito | Estado | Notas |
+|---|-----------|--------|-------|
+| 15 | PDF con traducción a lenguaje no técnico | ✅ | `modules/health_score/services/soc_report_pdf.py` — número grande + semáforo + narrativa en español llano, sin jerga técnica |
+| 16 | Índice de "salud de seguridad" para gerencia | ✅ | `HealthScoreService.compute()` — parte de 100 y resta puntos por 4 señales reales ya construidas en la plataforma (hallazgos abiertos, hardening incumplido, hosts de alto riesgo, CVEs de alta explotabilidad), cada una con tope de deducción documentado. `GET /health-score?client_id=` + página `/dashboard/soc-report` |
+| 17 | Envío programado por correo (cron nocturno) | ⏳ | No implementado — requiere infraestructura de envío de correo, fuera de alcance de esta fase |
+| 18 | Consolidación multi-sede en un solo informe | ⏳ | El índice es por cliente, no agrega múltiples sedes en un solo número todavía |
+| 19 | Vista para rol `client` | ⏳ | Hoy el endpoint exige rol staff (`super_admin`/`admin`/`collaborator`); una vista de solo lectura para `client` queda pendiente |
+
+### Fórmula del índice (documentada, no una caja negra)
+
+Parte de 100. Cuatro deducciones, cada una con un tope máximo para que ninguna señal por sí sola hunda el score:
+
+| Señal | Peso por severidad | Tope |
+|---|---|---|
+| Hallazgos de revisiones abiertos (`open`/`in_progress`) | crítico=15, alto=10, medio=5, bajo=2 | 30 |
+| Reglas de hardening que fallan (31-P1) | crítico=15, alto=10, medio=5, bajo=2 | 40 |
+| Hosts de alto riesgo, `composite_score` ≥ 70 (30-P2/P4) | 5 por host | 20 |
+| CVEs con EPSS ≥ 0.5 (32-P1) | 3 por CVE | 10 |
+
+Semáforo: **≥80 Saludable** (verde) · **60-79 Con observaciones** (ámbar) · **<60 Requiere atención** (rojo).
+
+**Verificado**: 204 tests pasan (1 skip, 5 casos nuevos, incluyendo el caso honesto de que un cliente sin ninguna integración configurada arrastra el gap base de hardening — no tener firewall ni SIEM integrado es en sí mismo una brecha real, no un bug del cálculo). Smoke test manual vía `curl` con datos reales de hardening de sesiones anteriores. `npx tsc --noEmit` sin errores; build de producción real confirma la ruta `/dashboard/soc-report` (2.87 kB).
 
 ## ✅ P4 — Reputación de IPs — Resuelto 2026-08-09 (issue #62, referido como "30-P2" en ROADMAP.md)
 
