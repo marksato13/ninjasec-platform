@@ -19,6 +19,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getDeviceStatusLabel, getReviewStatusLabel } from "@/lib/labels";
 import { QK } from "@/lib/query-keys";
 
 const environments = ["prod", "dev", "lab"];
@@ -283,7 +284,7 @@ export default function IntegrationDetailPage() {
                 <span>{device.device_type || "-"}</span>
                 <span>{device.ip_address || "-"}</span>
                 <span>{device.asset_tag || "-"}</span>
-                <span><span className={`badge ${getStatusBadgeClass(device.status)}`}>{device.status}</span></span>
+                <span><span className={`badge ${getStatusBadgeClass(device.status)}`}>{getDeviceStatusLabel(device.status)}</span></span>
               </div>
             ))}
           </div>
@@ -304,7 +305,7 @@ export default function IntegrationDetailPage() {
             {reviews.map((review) => (
               <div className="table-row table-row-wide" key={review.id}>
                 <span>#{review.id}</span>
-                <span><span className={`badge ${getStatusBadgeClass(review.status)}`}>{review.status}</span></span>
+                <span><span className={`badge ${getStatusBadgeClass(review.status)}`}>{getReviewStatusLabel(review.status)}</span></span>
                 <span>{userName(review.reviewer_user_id)}</span>
                 <span>{review.scheduled_at || "-"}</span>
                 <span><Link className="button button-ghost button-sm" href={`/dashboard/security-reviews/${review.id}`}>Ver</Link></span>

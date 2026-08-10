@@ -18,6 +18,7 @@ import {
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getTicketStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 
 const ticketSchema = z.object({
@@ -184,7 +185,7 @@ export default function PortalSupportPage() {
                   </span>
                 </span>
                 <span>
-                  <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{ticket.status}</span>
+                  <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>{getTicketStatusLabel(ticket.status)}</span>
                 </span>
                 <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{formatDate(ticket.opened_at)}</span>
                 <span>
@@ -248,7 +249,7 @@ export default function PortalSupportPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div>
                 <p className="eyebrow">Estado</p>
-                <span className={`badge ${getStatusBadgeClass(detail.status)}`}>{detail.status}</span>
+                <span className={`badge ${getStatusBadgeClass(detail.status)}`}>{getTicketStatusLabel(detail.status)}</span>
               </div>
               <div>
                 <p className="eyebrow">Prioridad</p>

@@ -29,6 +29,7 @@ import { QK } from "@/lib/query-keys";
 import { ProjectForm } from "@/components/forms/project-form";
 import { Modal } from "@/components/ui/modal";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getProjectStatusLabel } from "@/lib/labels";
 
 export default function DashboardProjectsPage() {
   const [error, setError] = useState("");
@@ -254,7 +255,7 @@ export default function DashboardProjectsPage() {
                       <span className="card-subtitle">{clientMap.get(item.client_id || 0) || "Cliente sin asignar"}</span>
                     </div>
                     <div className="card-badges">
-                      <span className={`badge ${getStatusBadgeClass(item.status)}`}>{item.status}</span>
+                      <span className={`badge ${getStatusBadgeClass(item.status)}`}>{getProjectStatusLabel(item.status)}</span>
                     </div>
                   </div>
                   {(item.start_date || item.end_date || item.budget_label) && (
@@ -427,7 +428,7 @@ export default function DashboardProjectsPage() {
               </div>
               <div>
                 <span className="card-label">Estado</span>
-                <span>{viewProject.status}</span>
+                <span>{getProjectStatusLabel(viewProject.status)}</span>
               </div>
               <div>
                 <span className="card-label">Cliente</span>

@@ -22,6 +22,7 @@ import {
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getReviewStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { QK } from "@/lib/query-keys";
 
@@ -196,7 +197,7 @@ export default function SecurityReviewsPage() {
                     <span className="card-subtitle">{clientName(review.client_id)}</span>
                   </div>
                   <div className="card-badges">
-                    <span className={`badge ${getStatusBadgeClass(review.status)}`}>{review.status}</span>
+                    <span className={`badge ${getStatusBadgeClass(review.status)}`}>{getReviewStatusLabel(review.status)}</span>
                   </div>
                 </div>
                 <div className="card-meta">

@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getStatusBadgeClass } from "@/lib/role-utils";
+import { getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { QK } from "@/lib/query-keys";
 
@@ -110,10 +111,10 @@ export default function PortalTicketsPage() {
                     {ticket.title}
                   </button>
                 </span>
-                <span>{ticket.priority}</span>
+                <span>{getSeverityLabel(ticket.priority)}</span>
                 <span>
                   <span className={`badge ${getStatusBadgeClass(ticket.status)}`}>
-                    {ticket.status}
+                    {getTicketStatusLabel(ticket.status)}
                   </span>
                 </span>
               </div>
