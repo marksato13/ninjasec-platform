@@ -275,7 +275,7 @@ Los seis huecos de integridad y aislamiento. **63 tests pasan** (26 previos + 37
 4. **Datos de otra organización devuelven 404, no 403.** No se confirma que existan.
 5. **Los catálogos globales (`organization_id = NULL`) se ven pero no se editan** desde una organización.
 
-⚠️ **El rate limiter es por proceso y en memoria.** Con varios workers uvicorn el límite efectivo se multiplica por N y no frena un ataque distribuido. Está documentado en el propio módulo. Migrar a Redis o a Caddy antes de escalar.
+✅ **G-06 (resuelto 2026-08-10): `app/common/rate_limit.py` ahora soporta un backend Redis** compartido entre workers/replicas, seleccionado automáticamente cuando `REDIS_URL` está configurado y Redis responde al arrancar. Sin `REDIS_URL` (default en dev/CI) sigue usando el limitador en memoria de siempre — mismo comportamiento que antes, cero cambios para el caso sin Redis. Si Redis se cae después de arrancar, el limitador falla abierto (deja pasar) en vez de tumbar el endpoint que protege. Ver el docstring del módulo para el detalle completo.
 
 ### 🧱 Deuda de esquema — **bloqueante de FASE 2.8**
 

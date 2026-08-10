@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     storage_path: str = "./storage"
     storage_max_file_size: int = 10 * 1024 * 1024
 
+    # G-06: backend distribuido del rate limiter (app/common/rate_limit.py).
+    # Vacio por defecto -> limitador en memoria, un solo proceso (dev/CI).
+    # Con esto configurado y Redis alcanzable, el limite se comparte entre
+    # workers/replicas. Si Redis se cae despues de arrancar, el limitador
+    # falla abierto -- ver el docstring del modulo.
+    redis_url: str = ""
+
     # 30-P2: reputación externa de IPs -- vacío por defecto, degrada a modo
     # simulado (nunca rompe) cuando no hay key configurada. Nunca loguear
     # el valor de estos campos.
