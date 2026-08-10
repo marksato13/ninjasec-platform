@@ -37,24 +37,20 @@ Los seis huecos que comprometían la integridad del dato o el aislamiento entre 
 
 ---
 
-## 🧱 Tanda 0-bis — Deuda de esquema (bloqueante de FASE 2.8)
+## ✅ Tanda 0-bis — Deuda de esquema — **CERRADA el 2026-08-07** (issue #2, G-01/G-02)
 
-No pertenece a ningún módulo, pero condiciona todo despliegue.
+No pertenecía a ningún módulo, pero condicionaba todo despliegue. **Este párrafo quedó desactualizado y se corrige acá** — `CLAUDE.md` ya lo tenía marcado como resuelto, este documento no.
 
-**El problema:** el esquema no lo construye Alembic. Lo construye `Base.metadata.create_all()` en `app/main.py:19`, y `migrations/versions/` solo tiene dos parches incrementales cuyo primer archivo lleva `down_revision = None` sin crear tabla alguna.
+**El problema que había:** el esquema no lo construía Alembic. Lo construía `Base.metadata.create_all()` en `app/main.py:19`, y `migrations/versions/` solo tenía dos parches incrementales cuyo primer archivo llevaba `down_revision = None` sin crear tabla alguna.
 
-Dos consecuencias, ambas silenciosas:
-
-| # | Consecuencia | Detalle |
+| # | Consecuencia que tenía | Cómo se cerró |
 |---|---|---|
-| G-01 | **`create_all` nunca altera lo existente** | Crea las tablas que faltan y no toca las que ya están. Cualquier columna nueva en un modelo se aplica en una base vacía y **se ignora sin error** en una base con datos. Es exactamente el escenario de una actualización en producción |
-| G-02 | **`alembic upgrade head` no levanta una base desde cero** | La primera migración hace `add_column` sobre `clients`, `services`, `projects`… que aún no existen |
+| G-01 | `create_all` nunca alteraba lo existente — una columna nueva se aplicaba en una base vacía y se ignoraba sin error en una base con datos | Migración base `20260807_00_esquema_base_completo.py` (generada con `--autogenerate` sobre una base vacía), encadenada antes de `20260522_01`. `create_all()` retirado de `app/main.py` |
+| G-02 | `alembic upgrade head` no levantaba una base desde cero | Resuelto por la misma migración base |
 
-Hoy no duele porque el entorno se recrea. **Duele el día que haya una base con datos que actualizar** — es decir, el día del deploy self-hosted.
+`app/db/migrate.py` corre `alembic upgrade head` automáticamente al arrancar el contenedor backend (ver `backend/Dockerfile`) — las migraciones ya son parte del flujo normal de despliegue, no un paso manual aparte. Verificado además contra un Postgres real vacío en cada PR que toca el esquema (`tests/test_alembic_bootstrap.py -m integration`).
 
-**Fix:** generar la migración base con `alembic revision --autogenerate` sobre una base vacía, encadenarla antes de `20260522_01`, y retirar `create_all()` de `main.py`.
-
-**Esfuerzo: ~0.5 sesión.** Debe estar hecho **antes** de FASE 2.8, no después.
+**Runbook de despliegue self-hosted completo (issue #87):** `FLUJOS/DESPLIEGUE-PRODUCCION.md`.
 
 ---
 
