@@ -28,6 +28,7 @@ from app.db.models.hardening import HardeningRule
 from app.db.models.integration import Integration
 from app.db.models.ip_reputation import IpReputationCache
 from app.db.models.job_application import JobApplication
+from app.db.models.netdoctor import NetdoctorIssue
 from app.db.models.lead import Lead
 from app.db.models.organization import Organization
 from app.db.models.organization_alert_threshold import OrganizationAlertThreshold
@@ -90,6 +91,7 @@ __all__ = [
     "Integration",
     "IpReputationCache",
     "JobApplication",
+    "NetdoctorIssue",
     "Lead",
     "Organization",
     "OrganizationAlertThreshold",
