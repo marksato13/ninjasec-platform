@@ -1,0 +1,43 @@
+{
+	local_certs
+}
+
+{$DOMAIN} {
+	log {
+		output file /data/access.log {
+			roll_size 100MB
+			roll_keep 7
+		}
+		format json
+	}
+
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+		-Server
+	}
+
+	handle /health {
+		respond "ok" 200
+	}
+
+	handle /api/* {
+		reverse_proxy backend:8024 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy frontend:3018 {
+			header_up X-Real-IP {remote_host}
+			header_up X-Forwarded-For {remote_host}
+			header_up X-Forwarded-Host {host}
+		}
+	}
+}

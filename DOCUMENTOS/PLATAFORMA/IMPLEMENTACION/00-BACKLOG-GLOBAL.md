@@ -43,8 +43,11 @@ Un pendiente resuelto se tacha en su archivo y se anota la evidencia — nunca s
 | 28 | NetDoctor | ⏳ No iniciado | – | – | P3 con puerta de seguridad |
 | 29 | Catálogo de equipos | ⏳ No iniciado | – | – | |
 | 30 | Integraciones open source | ⏳ No iniciado | – | – | P6 con puerta de seguridad |
+| 31 | Hardening técnico automatizado | ✅ P1 resuelto | 0 | – | Evidencia en `31-MODULO-HARDENING-TECNICO.md` |
+| 32 | Inventario de vulnerabilidades | 🟡 P1 resuelto | 1 | 0 | `32-P-02`: exposición pasiva vía Shodan |
+| 33 | Entrega y automatización | ⏳ Planificado | 11 | 0 | CI/CD seguro, supply chain y agentes |
 
-**Totales:** 22 módulos construidos · **50 pendientes abiertos** · **69 resueltos y documentados** · 8 módulos por empezar.
+**Nota de consistencia:** la tabla fue creada el 2026-08-06 y los módulos 31-33 se incorporaron el 2026-08-23. Los estados y contadores por fila son la referencia mientras se realiza una conciliación completa de los totales históricos.
 
 ---
 

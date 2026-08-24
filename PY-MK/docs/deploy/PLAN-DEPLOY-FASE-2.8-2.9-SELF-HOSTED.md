@@ -1,7 +1,8 @@
 # PLAN-DEPLOY — Continuacion Fase 2.8 y 2.9
 
 > Continuacion del plan principal de despliegue de NinjaSec.
-> Fuente de verdad relacionada: `PY-MK/PLAN-DEPLOY.md`
+> Estado: historico (2026-05-24). No usar para habilitar CD ni despliegues.
+> Fuente de verdad vigente: `DOCUMENTOS/PLATAFORMA/PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md` y `DOCUMENTOS/PLATAFORMA/FLUJOS/DESPLIEGUE-PRODUCCION.md`.
 > Esta version deja cerrada la estrategia elegida: **GitHub Actions + self-hosted runner en VLAN20**.
 > Fecha: 2026-05-24
 

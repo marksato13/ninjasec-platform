@@ -1,0 +1,12 @@
+services:
+  caddy:
+    volumes:
+      - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
+
+  backend:
+    environment:
+      SEED_ON_STARTUP: "false"
+
+  frontend:
+    environment:
+      NODE_ENV: production

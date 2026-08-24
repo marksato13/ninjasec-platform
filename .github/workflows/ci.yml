@@ -11,25 +11,12 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  secretos:
-    name: Secretos
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar historial completo
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          fetch-depth: 0
-      - name: Escanear con Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  backend:
-    name: Backend · pytest
+  backend-tests:
+    name: Backend tests
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -45,47 +32,57 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    defaults:
-      run:
-        working-directory: PY-MK/backend
     steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Preparar Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - name: Obtener codigo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Configurar Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: PY-MK/backend/requirements.txt
+
       - name: Instalar dependencias
-        run: python -m pip install --disable-pip-version-check -r requirements.txt
+        working-directory: PY-MK/backend
+        run: python -m pip install --requirement requirements.txt
+
       - name: Ejecutar pruebas
+        working-directory: PY-MK/backend
         env:
           PYTHONPATH: .
           ALEMBIC_TEST_DATABASE_URL: postgresql+psycopg://postgres:postgres-test-only@localhost:5432/ninjasec_migrations_test
         run: JWT_SECRET_KEY="$(openssl rand -hex 32)" pytest -q
 
-  frontend:
-    name: Frontend · build
+  frontend-build:
+    name: Frontend build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: PY-MK/frontend
     steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - name: Preparar Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - name: Obtener codigo
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: "20"
           cache: npm
           cache-dependency-path: PY-MK/frontend/package-lock.json
-      - name: Instalar dependencias reproducibles
+
+      - name: Instalar dependencias
+        working-directory: PY-MK/frontend
         run: npm ci
-      - name: Auditar vulnerabilidades críticas
+
+      - name: Auditar vulnerabilidades criticas
+        working-directory: PY-MK/frontend
         run: npm audit --audit-level=critical
+
       - name: Compilar frontend
+        working-directory: PY-MK/frontend
         env:
           NEXT_PUBLIC_API_URL: /api/v1
           NEXT_TELEMETRY_DISABLED: "1"
         run: npm run build
+
+  security:
+    name: Security
+    uses: ./.github/workflows/security.yml

@@ -16,6 +16,8 @@ NinjaSec es una plataforma SaaS de monitoreo de infraestructura y seguridad para
 | **`IMPLEMENTACION/`** | El **cómo** + diario: checklist `# / Requisito / Estado / Archivos` | Al empezar a codear y tras cada feature |
 | **`FLUJOS/`** | Procesos que cruzan varios módulos | Cuando el proceso toca 2+ módulos |
 | **`FIX/`** | Ajustes puntuales: problema / cambio / archivos / resultado | Post-mortem de un fix |
+| **`ESTRATEGIA/`** | Decisiones transversales de operación, entrega y automatización | Cuando afecta varios módulos o el ciclo de entrega |
+| **`HISTORICO/`** | Planes reemplazados y material de contexto | Nunca como fuente de requisitos u operación |
 
 **Regla de acoplamiento:** cada archivo de `PLANIFICACION/` tiene su par con el mismo número y nombre en `IMPLEMENTACION/`.
 
@@ -69,7 +71,7 @@ Documentados retroactivamente el 2026-08-05 tras auditar el código.
 | 21 | Habilidades y certificaciones | `/portal/profile` · `/dashboard/approvals` | ✅ | 7 |
 | 22 | Tareas del portal | `/portal/tasks` | ⚠️ | 5 |
 
-### Módulos 23-30 — planificados
+### Módulos 23-33 — producto y plataforma
 
 | # | Módulo | Estado | Naturaleza |
 |---|---|---|---|
@@ -81,6 +83,9 @@ Documentados retroactivamente el 2026-08-05 tras auditar el código.
 | 28 | NetDoctor — diagnóstico multi-vendor | ⏳ | Producto · ⚠️ P3 con puerta de seguridad |
 | 29 | Catálogo de equipos de red | ⏳ | Producto |
 | 30 | Integraciones open source y mini-SOAR | ⏳ | Producto · ⚠️ P6 con puerta de seguridad |
+| 31 | Hardening técnico automatizado | ✅ P1 | Producto · evaluación técnica basada en evidencia |
+| 32 | Inventario de vulnerabilidades | 🟡 P1 cerrado; P2 pendiente | Producto · CVE/EPSS y exposición pasiva |
+| 33 | Plataforma de entrega y automatización | ⏳ | Transversal · CI/CD, supply chain y agentes |
 
 📋 Priorización y secuencia: **`../ROADMAP.md`** · Pendientes en detalle: **`../IMPLEMENTACION/00-BACKLOG-GLOBAL.md`**
 
@@ -110,6 +115,7 @@ Registrados en `api/router.py` pero demasiado pequeños para justificar un docum
 | `FLUJO-REVISION-SEGURIDAD.md` | Revisión técnica hasta el PDF |
 | `FLUJO-DIAGNOSTICO-NETDOCTOR.md` | Tickets → Topología → NetDoctor → Auditoría ⏳ |
 | `FLUJO-CUMPLIMIENTO-SGSI.md` | Dispositivos → Riesgos → Cumplimiento → Auditorías ⏳ |
+| `FLUJO-ENTREGA-SEGURA.md` | Pull request → CI → release → staging → producción protegida |
 
 ---
 
@@ -160,7 +166,7 @@ Contraseña universal: **`NinjaSec2024!`**
 5. Si el módulo introduce un proceso que cruza otros, documentar el flujo en `FLUJOS/`
 6. Al codear: crear la carpeta en `backend/app/modules/`, registrar el router en `api/router.py`, y marcar ✅ en el checklist
 
-**El siguiente número libre es el 31.**
+**El siguiente número libre es el 34.**
 
 ### Convenciones que no se negocian
 

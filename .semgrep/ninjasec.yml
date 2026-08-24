@@ -1,0 +1,30 @@
+rules:
+  - id: python-insecure-tls-verification
+    languages: [python]
+    severity: ERROR
+    message: No deshabilitar la verificacion TLS en solicitudes HTTP.
+    metadata:
+      category: security
+      confidence: HIGH
+    patterns:
+      - pattern-either:
+          - pattern: requests.$METHOD(..., verify=False, ...)
+          - pattern: httpx.$METHOD(..., verify=False, ...)
+
+  - id: python-subprocess-shell-true
+    languages: [python]
+    severity: ERROR
+    message: No ejecutar subprocess con shell=True.
+    metadata:
+      category: security
+      confidence: HIGH
+    pattern: subprocess.$METHOD(..., shell=True, ...)
+
+  - id: javascript-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: No usar eval en codigo de aplicacion.
+    metadata:
+      category: security
+      confidence: HIGH
+    pattern: eval(...)
