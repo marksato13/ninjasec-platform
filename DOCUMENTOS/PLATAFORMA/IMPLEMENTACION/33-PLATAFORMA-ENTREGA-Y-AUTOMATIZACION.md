@@ -12,7 +12,7 @@
 | `33-P-03` | Gate de secretos | ✅ ~~Configurado y verificado~~ Cerrado | Gitleaks bloqueante y proceso de falsos positivos en `ESTRATEGIA/01-CI-Y-CONTROLES-DE-PR.md`; PR verde `32688994382` |
 | `33-P-04` | SAST y supply chain | ✅ ~~Configurado y verificado~~ Cerrado | Semgrep CE y Trivy bloqueantes para HIGH/CRITICAL; PR verde `32688994382` |
 | `33-P-05` | Gestion de dependencias | 🟡 Configurado | `.github/dependabot.yml`; falta primer PR revisable |
-| `33-P-06` | Version y staging | ✅ ~~Staging privado validado~~ Cerrado | SHA `714a2b265d7a9e95f45dbc40f5f67177637a32fb`; Caddy, frontend, backend y PostgreSQL sanos; validacion registrada el 2026-08-24 |
+| `33-P-06` | Version y staging | 🟡 Staging privado validado parcialmente | SHA `714a2b265d7a9e95f45dbc40f5f67177637a32fb`; Caddy, frontend, backend y PostgreSQL sanos; falta validar rollback sin reconstruir otra rama |
 | `33-P-07` | Produccion protegida | Pendiente | Entorno GitHub, aprobacion, deploy runner y health check |
 | `33-P-08` | Recuperacion | Pendiente | Backup y restauracion probados con fecha y responsable |
 | `33-P-09` | Observabilidad de entrega | Pendiente | Evidencia de fallo y alerta sin datos sensibles |
