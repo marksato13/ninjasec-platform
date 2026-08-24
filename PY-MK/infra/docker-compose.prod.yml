@@ -28,7 +28,7 @@ services:
       - caddy_config:/config
     environment:
       DOMAIN:     ${DOMAIN:?DOMAIN requerido}
-      ACME_EMAIL: ${ACME_EMAIL:?ACME_EMAIL requerido}
+      ACME_EMAIL: ${ACME_EMAIL:-}
     depends_on:
       frontend:
         condition: service_healthy

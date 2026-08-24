@@ -1,12 +1,58 @@
 services:
   caddy:
+    container_name: ninjasec-staging-caddy
+    ports: !override
+      - target: 443
+        published: "443"
+        host_ip: ${STAGING_BIND_ADDRESS:?STAGING_BIND_ADDRESS requerido}
+        protocol: tcp
     volumes:
       - ./Caddyfile.staging:/etc/caddy/Caddyfile:ro
+    environment:
+      DOMAIN: ${STAGING_HOSTNAME:?STAGING_HOSTNAME requerido}
+      ACME_EMAIL: ""
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:2019/config/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  postgres:
+    container_name: ninjasec-staging-postgres
+    ports: !reset []
+    volumes:
+      - type: bind
+        source: ${STAGING_BACKUP_PATH:?STAGING_BACKUP_PATH requerido}
+        target: /backups
 
   backend:
+    container_name: ninjasec-staging-backend
     environment:
+      APP_ENV: production
       SEED_ON_STARTUP: "false"
+      CORS_ORIGINS: ${STAGING_CORS_ORIGINS:?STAGING_CORS_ORIGINS requerido}
+      REDIS_URL: ""
+      GOOGLE_CLIENT_ID: ""
+      ABUSEIPDB_API_KEY: ""
+      VIRUSTOTAL_API_KEY: ""
+      GREYNOISE_API_KEY: ""
 
   frontend:
+    container_name: ninjasec-staging-frontend
     environment:
       NODE_ENV: production
+
+networks:
+  ninjasec-net:
+    name: ninjasec-staging-net
+
+volumes:
+  postgres_data:
+    name: ninjasec-staging-postgres-data
+  uploads_data:
+    name: ninjasec-staging-uploads-data
+  caddy_data:
+    name: ninjasec-staging-caddy-data
+  caddy_config:
+    name: ninjasec-staging-caddy-config
