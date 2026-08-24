@@ -7,10 +7,10 @@
 
 | ID | Requisito | Estado | Evidencia esperada |
 |---|---|---|---|
-| `33-P-01` | Inventario y CI base | 🟡 Configurado y verificado | `.github/workflows/ci.yml`; ejecucion manual verde `32688714219`, falta ejecucion verde en PR |
-| `33-P-02` | Calidad y determinismo | 🟡 Configurado y verificado | Python 3.12 y Node 20 fijados; `npm ci` y build verdes en `32688714219`, falta ejecucion verde en PR |
-| `33-P-03` | Gate de secretos | 🟡 Configurado y verificado | `security.yml` con Gitleaks verde en `32688714219`; falta ejecucion verde en PR |
-| `33-P-04` | SAST y supply chain | 🟡 Configurado y verificado | Semgrep CE y Trivy verdes en `32688714219`; falta ejecucion verde en PR |
+| `33-P-01` | Inventario y CI base | ✅ ~~Configurado y verificado~~ Cerrado | `.github/workflows/ci.yml`; PR verde `32688994382` ejecuta backend y frontend |
+| `33-P-02` | Calidad y determinismo | ✅ ~~Configurado y verificado~~ Cerrado | Python 3.12, Node 20, `requirements.txt` fijado y `npm ci`; PR verde `32688994382` |
+| `33-P-03` | Gate de secretos | ✅ ~~Configurado y verificado~~ Cerrado | Gitleaks bloqueante y proceso de falsos positivos en `ESTRATEGIA/01-CI-Y-CONTROLES-DE-PR.md`; PR verde `32688994382` |
+| `33-P-04` | SAST y supply chain | ✅ ~~Configurado y verificado~~ Cerrado | Semgrep CE y Trivy bloqueantes para HIGH/CRITICAL; PR verde `32688994382` |
 | `33-P-05` | Gestion de dependencias | 🟡 Configurado | `.github/dependabot.yml`; falta primer PR revisable |
 | `33-P-06` | Version y staging | 🟡 Base configurada | `docker-compose.staging.yml` y `Caddyfile.staging`; faltan host, registro OCI, runner y ejecucion |
 | `33-P-07` | Produccion protegida | Pendiente | Entorno GitHub, aprobacion, deploy runner y health check |
@@ -39,4 +39,5 @@
 - 2026-08-23: la verificacion local queda bloqueada por entorno: falta `google-auth` en Python global, `npm ci` no completa con 0.01 GB libres en `C:`, y Gitleaks, Semgrep y Trivy no estan instalados localmente. GitHub Actions instalara sus dependencias en runners efimeros al ejecutar una PR.
 - 2026-08-24: ejecucion manual verde de CI: https://github.com/marksato13/ninjasec-platform/actions/runs/32688714219. Pasaron backend tests, frontend build, Gitleaks, Semgrep CE y Trivy filesystem.
 - 2026-08-24: la primera ejecucion de Trivy detecto dependencias vulnerables y procesos `root` en ambas imagenes. Se actualizaron `PyJWT`, `python-multipart` y Next.js a versiones corregidas; los Dockerfiles ahora ejecutan con usuarios sin privilegios. Trivy quedo verde en la ejecucion verificada.
+- 2026-08-24: ejecucion de pull request verde: https://github.com/marksato13/ninjasec-platform/actions/runs/32688994382. Valida `33-P-01` a `33-P-04` con dependencias Python fijadas, `npm ci`, build, Gitleaks, Semgrep CE y Trivy.
 - No se activaron workflows, runners, agentes, despliegues ni servicios de pago.
