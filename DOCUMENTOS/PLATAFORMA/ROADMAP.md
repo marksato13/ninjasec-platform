@@ -54,6 +54,24 @@ No pertenecía a ningún módulo, pero condicionaba todo despliegue. **Este pár
 
 ---
 
+## Tanda 0-c — Entrega segura y automatización
+
+Trabajo transversal documentado como **módulo 33** el 2026-08-23. No bloquea el
+desarrollo local de la Tanda 1 ni los entregables académicos, pero sí bloquea
+cualquier activación de CD real.
+
+| Orden | Trabajo | Esfuerzo | Por qué ahora |
+|---|---|---|---|
+| 1 | `33-P-01` a `33-P-05` | 2 sesiones | Endurece CI existente, seguridad de supply chain y actualizaciones revisables |
+| 2 | `33-P-06`, `33-P-08`, `33-P-07`, `33-P-09` | 2 sesiones | Staging, backup/restauración, producción protegida y evidencia operativa |
+| 3 | `33-P-10` y `33-P-11` | 1 sesión de piloto | Evalúa agentes abiertos sin permisos de merge, despliegue o secretos |
+
+**Puerta innegociable:** no se habilita producción hasta contar con backup y
+restauración probados, aprobación humana en GitHub y rollback verificable.
+Detalles en `PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md`.
+
+---
+
 ## 🎯 Tanda 1 — Ganancia rápida
 
 | Orden | Trabajo | Esfuerzo | Por qué ahora |
