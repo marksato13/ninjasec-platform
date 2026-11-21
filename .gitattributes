@@ -1,0 +1,45 @@
+# Normalizacion de fin de linea.
+#
+# El desarrollo es en Windows (CRLF) y el CI corre en Linux (LF). Sin esto,
+# git avisa en cada `add` ("LF will be replaced by CRLF") y acaban entrando
+# al repositorio archivos con finales mezclados: los diffs se ensucian, los
+# scripts de shell fallan dentro de los contenedores y `git blame` pierde
+# utilidad.
+#
+# `text=auto eol=lf` guarda SIEMPRE LF en el repositorio y deja que cada
+# equipo use lo que quiera en su disco.
+
+* text=auto eol=lf
+
+# Scripts que se ejecutan dentro de contenedores Linux: LF obligatorio.
+# Un CRLF aqui produce el error "bad interpreter: /bin/sh^M".
+*.sh            text eol=lf
+*.bash          text eol=lf
+Dockerfile      text eol=lf
+*.Dockerfile    text eol=lf
+
+# Scripts de PowerShell: se ejecutan en Windows, CRLF.
+*.ps1           text eol=crlf
+*.psm1          text eol=crlf
+*.cmd           text eol=crlf
+*.bat           text eol=crlf
+
+# Binarios: git no debe tocarlos nunca.
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.webp          binary
+*.pdf           binary
+*.xlsx          binary
+*.docx          binary
+*.pptx          binary
+*.zip           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+
+# Lockfiles: se generan, no se revisan a mano. Colapsados en el diff de
+# GitHub para que un PR no parezca enorme por culpa de package-lock.json.
+package-lock.json   linguist-generated=true -diff
