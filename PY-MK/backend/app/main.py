@@ -30,11 +30,20 @@ if settings.is_production:
         raise RuntimeError("CORS_ORIGINS must be set in production")
 
 
+# En produccion no se publica la documentacion interactiva. No es codigo
+# fuente, pero Swagger expone el plano completo de la API --cada endpoint,
+# cada esquema, cada campo y cada validacion-- y eso es reconocimiento
+# gratis para un atacante. En dev sigue disponible en /docs como siempre.
+_docs_publicos = not settings.is_production
+
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
     description="NinjaSec platform API",
     lifespan=lifespan,
+    docs_url="/docs" if _docs_publicos else None,
+    redoc_url="/redoc" if _docs_publicos else None,
+    openapi_url="/openapi.json" if _docs_publicos else None,
 )
 
 app.add_middleware(

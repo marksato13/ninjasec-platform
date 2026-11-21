@@ -78,9 +78,12 @@ services:
       JWT_SECRET_KEY:              ${JWT_SECRET_KEY:?required}
       JWT_ALGORITHM:               ${JWT_ALGORITHM:-HS256}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
-      CORS_ORIGINS:                ${CORS_ORIGINS}
+      CORS_ORIGINS:                "${CORS_ORIGINS:?CORS_ORIGINS requerido en .env, p.ej. https://tudominio.com}"
       SEED_ON_STARTUP:             "false"
+      # IS_PRODUCTION y APP_ENV son equivalentes: cualquiera de las dos
+      # enciende settings.is_production (ver app/core/config.py).
       IS_PRODUCTION:               "true"
+      APP_ENV:                     production
       STORAGE_PATH:                /data/uploads
     volumes:
       - uploads_data:/data/uploads

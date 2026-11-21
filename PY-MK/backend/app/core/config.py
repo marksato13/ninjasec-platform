@@ -1,3 +1,4 @@
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -6,6 +7,19 @@ class Settings(BaseSettings):
     app_version: str = "0.2.0"
     api_prefix: str = "/api/v1"
     app_env: str = "development"
+
+    # Modo produccion. Se activa por cualquiera de las dos vias:
+    #   APP_ENV=production   -> convencion 12-factor, la que ya existia
+    #   IS_PRODUCTION=true   -> la que setea infra/docker-compose.prod.yml
+    #
+    # Antes esto era solo una @property derivada de app_env, asi que el
+    # IS_PRODUCTION del compose de produccion no tenia campo que lo
+    # recibiera y pydantic lo ignoraba en silencio: is_production devolvia
+    # False en produccion y las guardas de app/main.py nunca se disparaban.
+    # Se mantiene como campo para que ambas grafias funcionen y para que
+    # settings.is_production siga leyendose igual en todo el codigo.
+    is_production: bool = False
+
     seed_on_startup: bool = True
     database_url: str = "postgresql+psycopg://postgres:123456@localhost:5432/ninjasec"
     jwt_secret_key: str = "change-this-secret-in-production"
@@ -49,9 +63,17 @@ class Settings(BaseSettings):
             origin.strip() for origin in self.cors_origins.split(",") if origin.strip()
         ]
 
-    @property
-    def is_production(self) -> bool:
-        return self.app_env.lower() == "production"
+    @model_validator(mode="after")
+    def _derivar_modo_produccion(self) -> "Settings":
+        """APP_ENV=production tambien enciende is_production.
+
+        Las dos grafias conviven a proposito: el compose de produccion usa
+        IS_PRODUCTION y el resto del ecosistema espera APP_ENV. Cualquiera
+        de las dos basta; nunca apaga la otra.
+        """
+        if self.app_env.lower() == "production":
+            self.is_production = True
+        return self
 
 
 settings = Settings()
