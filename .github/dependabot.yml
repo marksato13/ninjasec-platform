@@ -1,19 +1,84 @@
+# Dependabot agrupado.
+#
+# La configuracion anterior era semanal, sin grupos y apuntando a `main`.
+# Resultado al 2026-11-21: 16 ramas y 16 PR abiertos a la vez, cada uno con
+# su propio CI, imposibles de revisar y mezclando parches triviales con
+# saltos de version mayor que rompen cosas.
+#
+# Tres cambios:
+#   1. AGRUPAR  -- un PR por ecosistema y tipo, no uno por paquete.
+#   2. SEPARAR  -- las versiones mayores quedan fuera: cada una exige leer su
+#                  guia de migracion. Las minor y patch van juntas.
+#   3. develop  -- las actualizaciones entran por la rama de integracion,
+#                  nunca directamente a `main`.
+#
+# Las alertas de seguridad de GitHub son independientes de este archivo y de
+# este calendario: siguen llegando cuando aparecen, no una vez al mes.
+
 version: 2
 updates:
+  # ─────────────────────────────── Backend (Python)
   - package-ecosystem: pip
     directory: /PY-MK/backend
+    target-branch: develop
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      backend-produccion:
+        applies-to: version-updates
+        dependency-type: production
+        update-types: [minor, patch]
+      backend-desarrollo:
+        applies-to: version-updates
+        dependency-type: development
+        update-types: [minor, patch]
+      backend-seguridad:
+        applies-to: security-updates
+        patterns: ["*"]
+    ignore:
+      # Las mayores se revisan a mano, una a una, leyendo su migracion.
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
 
+  # ─────────────────────────────── Frontend (npm)
   - package-ecosystem: npm
     directory: /PY-MK/frontend
+    target-branch: develop
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+    groups:
+      frontend-produccion:
+        applies-to: version-updates
+        dependency-type: production
+        update-types: [minor, patch]
+      frontend-desarrollo:
+        applies-to: version-updates
+        dependency-type: development
+        update-types: [minor, patch]
+      frontend-seguridad:
+        applies-to: security-updates
+        patterns: ["*"]
+    ignore:
+      - dependency-name: "*"
+        update-types: [version-update:semver-major]
 
+  # ─────────────────────────────── GitHub Actions
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 2
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      actions:
+        patterns: ["*"]
