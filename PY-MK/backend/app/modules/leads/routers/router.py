@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.common.email import avisar_lead_nuevo
 from app.db.models.enums import RoleCode
 from app.modules.leads.schemas import LeadCreate, LeadInfoUpdate, LeadRead, LeadUpdate
 from app.modules.leads.services.lead_service import LeadService
@@ -109,7 +110,19 @@ def list_leads(
 
 @router.post("/", response_model=LeadRead, status_code=status.HTTP_201_CREATED)
 def create_lead(payload: LeadCreate, db: Session = Depends(get_db)) -> LeadRead:
-    return LeadRead.model_validate(LeadService(db).create(payload))
+    lead = LeadService(db).create(payload)
+
+    # 08-P-06. El aviso va DESPUES de crear el lead y nunca lanza: el dato ya
+    # esta guardado, asi que un SMTP caido cuesta el correo, nunca el lead.
+    avisar_lead_nuevo(
+        empresa=lead.company_name,
+        contacto=lead.contact_name,
+        email=lead.email,
+        telefono=lead.phone,
+        mensaje=lead.message,
+    )
+
+    return LeadRead.model_validate(lead)
 
 
 @router.put("/{lead_id}", response_model=LeadRead)

@@ -48,6 +48,24 @@ class Settings(BaseSettings):
     # intercambio de codigo de autorizacion contra el backend de Google.
     google_client_id: str = ""
 
+    # Notificaciones por correo (08-P-06 / 15-P-07). Vacio por defecto -> el
+    # modulo app/common/email.py queda inerte: no manda nada y no falla. Es
+    # lo correcto en dev y CI, donde nadie quiere un SMTP de verdad.
+    # Agnostico de proveedor a proposito: Gmail, Resend, Brevo, Mailgun, SES
+    # y un servidor propio hablan todos SMTP, asi que cambiar de proveedor es
+    # editar el .env. NUNCA loguear smtp_password.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = ""
+    smtp_use_tls: bool = True
+    smtp_use_ssl: bool = False
+    smtp_timeout: int = 10
+    # Buzon que recibe los avisos. Sin esto tampoco se envia nada: no hay
+    # destinatario por defecto a proposito.
+    notify_email: str = ""
+
     # 30-P2: reputación externa de IPs -- vacío por defecto, degrada a modo
     # simulado (nunca rompe) cuando no hay key configurada. Nunca loguear
     # el valor de estos campos.

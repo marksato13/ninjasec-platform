@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.common.email import avisar_postulacion_nueva
 from app.common.rate_limit import rate_limit
 from app.common.storage import DOCUMENT_TYPES, storage
 from app.db.models.application_assignment import ApplicationAssignment
@@ -177,6 +178,16 @@ def create_job_application(
     db.add(application)
     db.commit()
     db.refresh(application)
+
+    # 15-P-07. Mismo criterio que en leads: el aviso va despues del commit y
+    # nunca lanza. La postulacion ya esta guardada.
+    avisar_postulacion_nueva(
+        nombre=application.full_name,
+        email=application.email,
+        puesto=application.desired_role,
+        resumen=application.skills_summary,
+    )
+
     return JobApplicationRead.model_validate(application)
 
 

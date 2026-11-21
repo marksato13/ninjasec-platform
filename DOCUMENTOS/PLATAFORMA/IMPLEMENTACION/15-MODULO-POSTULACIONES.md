@@ -65,6 +65,7 @@
 | 15-P-04 | Notificación por correo al candidato | 🟢 Baja | Los cambios de estado no notifican a nadie |
 | ~~15-P-05~~ | ~~**Rate limiting en el endpoint público**~~ | — | ✅ **Resuelto 2026-08-06**: `app/common/rate_limit.py` — ventana deslizante en memoria, 5 postulaciones/hora por IP, respeta `X-Forwarded-For`. ⚠️ Es por proceso: con varios workers o réplicas hay que migrarlo a Redis o a Caddy. Tests en `tests/test_public_application_rate_limit.py` (4) |
 | 15-P-06 | Vista de detalle con timeline | 🟡 Media | El endpoint `/timeline` existe pero no hay UI que lo consuma |
+| ~~15-P-07~~ | ~~**Nadie se entera de una postulación nueva**~~ | — | ✅ **Resuelto 2026-11-20**: mismo criterio que `08-P-06`. `POST /job-applications/` avisa con nombre, email, puesto y resumen. No confundir con `15-P-04`, que es notificar **al candidato** y sigue abierto |
 
 ---
 
