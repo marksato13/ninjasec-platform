@@ -69,6 +69,7 @@ const navGroups: NavGroup[] = [
       { label: "Riesgos",       href: "/dashboard/risks",             icon: IC(AlertTriangle) },
       { label: "Hardening",     href: "/dashboard/hardening",         icon: IC(Lock) },
       { label: "Vulnerabilidades", href: "/dashboard/vulnerabilities", icon: IC(ShieldAlert) },
+      { label: "Guia SGSI",     href: "/dashboard/sgsi",              icon: IC(BookOpen) },
       { label: "NetDoctor",     href: "/dashboard/netdoctor",         icon: IC(Stethoscope) },
       { label: "Catálogo de equipos", href: "/dashboard/catalog-devices", icon: IC(Boxes) },
       { label: "Informe SOC",   href: "/dashboard/soc-report",        icon: IC(Gauge) },
