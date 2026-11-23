@@ -4,6 +4,7 @@
 > Creado: 2026-08-05 · **Revisado y verificado contra el código: 2026-08-06**
 
 📋 Inventario completo de pendientes: **`IMPLEMENTACION/00-BACKLOG-GLOBAL.md`**
+🖥️ Staging publico multiproyecto (ESXi ahora, Oracle Cloud despues): **`ESTRATEGIA/09-STAGING-MULTIPROYECTO.md`**
 
 ---
 
