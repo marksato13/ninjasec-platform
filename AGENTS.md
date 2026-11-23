@@ -12,6 +12,25 @@ Este archivo gobierna todo el repositorio. Para cualquier cambio dentro de
 
 `tash/` es material histórico y nunca prevalece sobre esas fuentes.
 
+## El plano de control
+
+[`CORTEX/`](CORTEX/) dice **cómo se trabaja**: qué motor de IA y qué modelo
+le toca a cada tarea, qué agentes existen, cómo se entrega y dónde termina
+lo automático. Las fuentes de arriba dicen **qué se construye**; cuando algo
+choque, mandan ellas.
+
+| Para | Lee |
+| --- | --- |
+| Elegir motor y modelo para una tarea | [`CORTEX/10-ENRUTADO/Politica-de-enrutado.md`](CORTEX/10-ENRUTADO/Politica-de-enrutado.md) |
+| Saber qué agentes y skills hay | [`CORTEX/20-PLANTEL/Agentes.md`](CORTEX/20-PLANTEL/Agentes.md) |
+| Entregar sin romper nada | [`CORTEX/30-CICLO/Ciclo-de-vida.md`](CORTEX/30-CICLO/Ciclo-de-vida.md) |
+| Saber qué decide el usuario y no un agente | [`CORTEX/30-CICLO/Frontera-de-autonomia.md`](CORTEX/30-CICLO/Frontera-de-autonomia.md) |
+| Ver el trabajo pendiente ya clasificado | [`CORTEX/40-TAREAS/Tablero.md`](CORTEX/40-TAREAS/Tablero.md) |
+
+**Regla que gobierna el enrutado:** nada que toque `organization_id`,
+autenticación, migraciones de Alembic o secretos se delega a otro motor ni a
+un modelo más barato. Eso es clase T4 y se queda en el agente principal.
+
 ## Flujo obligatorio
 
 1. Trabajar en una rama y worktree propios; nunca directamente en `main`.

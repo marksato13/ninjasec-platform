@@ -60,7 +60,13 @@ temp/
 .cache/
 
 # ─── Herramientas locales de IA / editor ───────────────────────────
-.claude/
+# Los agentes, comandos y skills de .claude/ SI se versionan: son parte
+# del plano de control (ver CORTEX/). Solo se ignora lo de esta maquina.
+.claude/*
+!.claude/agents/
+!.claude/commands/
+!.claude/skills/
+.claude/settings.local.json
 .agents/
 .playwright-mcp/
 skills-lock.json
