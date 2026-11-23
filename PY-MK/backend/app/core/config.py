@@ -21,6 +21,17 @@ class Settings(BaseSettings):
     is_production: bool = False
 
     seed_on_startup: bool = True
+
+    # Clave con la que se crean TODOS los usuarios de siembra. Si se deja
+    # vacia, seed.py usa las claves de desarrollo que estan escritas en el
+    # codigo -- y se niega a sembrar si el entorno es de produccion.
+    #
+    # Existe porque el repositorio va a ser publico: con las claves solo en
+    # el codigo, cualquiera que despliegue sin poner APP_ENV=production
+    # levanta un admin con credencial conocida en una URL publica.
+    #
+    # Nunca se registra en el log ni se devuelve por la API.
+    seed_password: str | None = None
     database_url: str = "postgresql+psycopg://postgres:123456@localhost:5432/ninjasec"
     jwt_secret_key: str = "change-this-secret-in-production"
     jwt_algorithm: str = "HS256"

@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, date
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import hash_password
 from app.core.time_utils import utcnow
 from app.db.session import SessionLocal
@@ -219,7 +220,7 @@ def run(db: Session) -> None:
             organization_id=org_id, role_id=role_collab_id,
             role_code=RoleCode.COLLABORATOR,
             full_name=full_name, email=email,
-            password_hash=hash_password("colab123"),
+            password_hash=hash_password(settings.seed_password or "colab123"),
             status=UserStatus.ACTIVE, job_title=pos, is_active=True,
             last_login_at=now_minus(days=random.randint(0, 14)),
         )
@@ -812,5 +813,14 @@ def run(db: Session) -> None:
 
 
 if __name__ == "__main__":
+    # Misma guarda que seed.py: este script se ejecuta a mano dentro del
+    # contenedor, asi que nada mas lo protege. Crea 12 colaboradores con una
+    # clave que esta escrita en este archivo, y el repositorio va a ser
+    # publico.
+    if settings.is_production and not settings.seed_password:
+        raise SystemExit(
+            "No se siembra demo en produccion con la clave del codigo. "
+            "Define SEED_PASSWORD si de verdad hace falta poblar este entorno."
+        )
     with SessionLocal() as session:
         run(session)

@@ -5,6 +5,7 @@ from app.core.time_utils import utcnow
 from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import hash_password
 from app.db.models.application_assignment import ApplicationAssignment
 from app.db.models.area import Area
@@ -65,7 +66,39 @@ def apply_inline_migrations(db: Session) -> None:
     db.commit()
 
 
+class SiembraNoPermitida(RuntimeError):
+    """Se intento sembrar un entorno donde las claves del codigo no valen."""
+
+
+def _clave_de_siembra(por_defecto: str) -> str:
+    """Devuelve la clave con la que se crea un usuario de siembra.
+
+    Si `SEED_PASSWORD` esta puesta, manda sobre las claves escritas en el
+    codigo y la usan TODOS los usuarios. Si no lo esta, se usan las de
+    desarrollo -- pero solo porque `seed_initial_data` ya comprobo que el
+    entorno no es de produccion.
+
+    El valor no se registra en el log ni se devuelve en ninguna respuesta.
+    """
+    return settings.seed_password or por_defecto
+
+
 def seed_initial_data(db: Session) -> None:
+    # Guarda de profundidad. `app/main.py` ya no siembra en produccion, pero
+    # esta funcion tambien se puede llamar a mano desde un script o una
+    # consola, y ahi no hay nada que lo impida.
+    #
+    # El riesgo concreto, ahora que el repositorio va a ser publico: las
+    # claves de desarrollo estan escritas en este archivo. Quien despliegue
+    # sin poner APP_ENV=production levanta admin@ninjasec.local con una
+    # credencial que cualquiera puede leer en GitHub.
+    if settings.is_production and not settings.seed_password:
+        raise SiembraNoPermitida(
+            "No se siembra en produccion con las claves del codigo. "
+            "Si de verdad hace falta poblar este entorno, define "
+            "SEED_PASSWORD con una clave propia."
+        )
+
     apply_inline_migrations(db)
 
     organization = db.scalar(
@@ -163,77 +196,77 @@ def seed_initial_data(db: Session) -> None:
         "admin@ninjasec.local",
         "Ruben Mark Salazar Tocas",
         RoleCode.SUPER_ADMIN,
-        "change-me",
+        _clave_de_siembra("change-me"),
         "Founder",
     )
     admin_ops = upsert_user(
         "ops@ninjasec.local",
         "Paola Rojas",
         RoleCode.ADMIN,
-        "admin123",
+        _clave_de_siembra("admin123"),
         "Operations Manager",
     )
     collaborator = upsert_user(
         "collab@ninjasec.local",
         "Demo Collaborator",
         RoleCode.COLLABORATOR,
-        "temp123",
+        _clave_de_siembra("temp123"),
         "SOC Analyst",
     )
     collaborator_2 = upsert_user(
         "maria@ninjasec.local",
         "Maria Torres",
         RoleCode.COLLABORATOR,
-        "temp123",
+        _clave_de_siembra("temp123"),
         "Network Engineer",
     )
     collaborator_3 = upsert_user(
         "luis@ninjasec.local",
         "Luis Arce",
         RoleCode.COLLABORATOR,
-        "temp123",
+        _clave_de_siembra("temp123"),
         "Security Analyst",
     )
     collaborator_4 = upsert_user(
         "carla@ninjasec.local",
         "Carla Paredes",
         RoleCode.COLLABORATOR,
-        "temp123",
+        _clave_de_siembra("temp123"),
         "DevOps Engineer",
     )
     collaborator_5 = upsert_user(
         "diego@ninjasec.local",
         "Diego Castillo",
         RoleCode.COLLABORATOR,
-        "temp123",
+        _clave_de_siembra("temp123"),
         "Cloud Engineer",
     )
     collaborator_6 = upsert_user(
         "sofia@ninjasec.local",
         "Sofia Vargas",
         RoleCode.COLLABORATOR,
-        "temp123",
+        _clave_de_siembra("temp123"),
         "Threat Analyst",
     )
     client_user = upsert_user(
         "client@ninjasec.local",
         "Ana Torres",
         RoleCode.CLIENT,
-        "client123",
+        _clave_de_siembra("client123"),
         "Operations Lead",
     )
     client_user_2 = upsert_user(
         "client2@ninjasec.local",
         "Ricardo Nunez",
         RoleCode.CLIENT,
-        "client123",
+        _clave_de_siembra("client123"),
         "IT Manager",
     )
     client_user_3 = upsert_user(
         "client3@ninjasec.local",
         "Valeria Soto",
         RoleCode.CLIENT,
-        "client123",
+        _clave_de_siembra("client123"),
         "Security Lead",
     )
 
