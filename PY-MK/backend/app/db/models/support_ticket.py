@@ -69,6 +69,8 @@ class SupportTicket(Base):
 class SupportTicketEvent(Base):
     __tablename__ = "support_ticket_events"
 
+    __table_args__ = (Index("ix_ticket_events_ticket", "ticket_id"),)
+
     id: Mapped[int] = mapped_column(primary_key=True)
     ticket_id: Mapped[int] = mapped_column(
         ForeignKey("support_tickets.id"), nullable=False

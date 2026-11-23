@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Date, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -9,6 +9,10 @@ from app.db.models.enums import ProjectStatus
 
 class Project(Base):
     __tablename__ = "projects"
+
+    __table_args__ = (
+        Index("ix_projects_org", "organization_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     organization_id: Mapped[int] = mapped_column(

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -9,6 +9,10 @@ from app.db.models.enums import ClientStatus
 
 class Client(Base):
     __tablename__ = "clients"
+
+    __table_args__ = (
+        Index("ix_clients_org", "organization_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     organization_id: Mapped[int] = mapped_column(

@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, String
+from sqlalchemy import Date, DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -8,6 +8,10 @@ from app.db.base import Base
 
 class Integration(Base):
     __tablename__ = "integrations"
+
+    __table_args__ = (
+        Index("ix_integrations_org", "organization_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     organization_id: Mapped[int] = mapped_column(

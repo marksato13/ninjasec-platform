@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -9,6 +9,11 @@ from app.db.models.enums import AssignmentType
 
 class ProjectMember(Base):
     __tablename__ = "project_members"
+
+    __table_args__ = (
+        Index("ix_project_members_project", "project_id"),
+        Index("ix_project_members_user", "user_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), nullable=False)

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -9,6 +9,10 @@ from app.db.models.enums import DocStatus, DocVisibility
 
 class ProjectDoc(Base):
     __tablename__ = "project_docs"
+
+    __table_args__ = (
+        Index("ix_project_docs_project", "project_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), nullable=False)

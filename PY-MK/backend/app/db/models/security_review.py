@@ -16,6 +16,7 @@ from app.db.models.enums import (
 class SecurityReview(Base):
     __tablename__ = "security_reviews"
     __table_args__ = (
+        Index("ix_security_reviews_org", "organization_id"),
         Index("ix_security_reviews_client_status", "client_id", "status"),
     )
 

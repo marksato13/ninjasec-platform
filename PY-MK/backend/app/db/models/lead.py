@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, String
+from sqlalchemy import DateTime, Enum, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -9,6 +9,10 @@ from app.db.models.enums import LeadStatus
 
 class Lead(Base):
     __tablename__ = "leads"
+
+    __table_args__ = (
+        Index("ix_leads_status", "status"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     company_name: Mapped[str | None] = mapped_column(String(150), nullable=True)

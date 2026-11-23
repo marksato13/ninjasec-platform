@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -8,6 +8,11 @@ from app.db.base import Base
 
 class CollectionSnapshot(Base):
     __tablename__ = "collection_snapshots"
+
+    __table_args__ = (
+        Index("ix_collection_snapshots_integration", "integration_id"),
+        Index("ix_collection_snapshots_device", "device_id"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     integration_id: Mapped[int] = mapped_column(
