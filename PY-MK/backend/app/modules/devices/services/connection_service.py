@@ -4,6 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db.models.client_site import ClientSite
 from app.db.models.device import Device
 from app.db.models.device_connection import DeviceConnection
 from app.db.models.integration import Integration
@@ -18,11 +19,34 @@ class DeviceConnectionService:
         self._audit = AuditService(db)
 
     def _device_or_404(self, device_id: int) -> Device:
+        """Devuelve el dispositivo solo si pertenece a la organizacion.
+
+        Parte de `permitido = False` y exige una ruta explicita, en vez de
+        permitir por defecto y buscar motivos para negar.
+
+        La version anterior era `if integration and integration.organization_id
+        != org: 404`. Con `devices.integration_id` nullable desde la migracion
+        20260522_01, un equipo sin integracion hacia que la condicion fuera
+        falsa y se devolviera el dispositivo **de cualquier organizacion**.
+        Eso permitia crear conexiones de topologia cruzadas entre tenants.
+        """
         device = self.db.get(Device, device_id)
         if not device:
             raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
-        integration = self.db.get(Integration, device.integration_id) if device.integration_id else None
-        if integration and integration.organization_id != self.current_user.organization_id:
+
+        org_id = self.current_user.organization_id
+        integration = (
+            self.db.get(Integration, device.integration_id) if device.integration_id else None
+        )
+        site = self.db.get(ClientSite, device.site_id) if device.site_id else None
+
+        permitido = False
+        if integration and integration.organization_id == org_id:
+            permitido = True
+        elif site and site.client and site.client.organization_id == org_id:
+            permitido = True
+
+        if not permitido:
             raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
         return device
 
