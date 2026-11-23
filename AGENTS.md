@@ -5,31 +5,50 @@ Este archivo gobierna todo el repositorio. Para cualquier cambio dentro de
 
 ## Fuentes de verdad
 
-1. `DOCUMENTOS/PLATAFORMA/PLANIFICACION/NN-*.md`: requisitos del módulo.
-2. `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/NN-*.md`: checklist y evidencia.
-3. `DOCUMENTOS/PLATAFORMA/ROADMAP.md`: orden de trabajo.
-4. `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`: inventario.
+1. `DOCUMENTOS/PLANIFICACION/NN-*.md`: requisitos del módulo.
+2. `DOCUMENTOS/IMPLEMENTACION/NN-*.md`: checklist y evidencia.
+3. `DOCUMENTOS/ROADMAP.md`: orden de trabajo.
+4. `DOCUMENTOS/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`: inventario.
 
-`tash/` es material histórico y nunca prevalece sobre esas fuentes.
+`DOCUMENTOS/HISTORICO/` es material histórico y nunca prevalece sobre esas fuentes.
 
 ## El plano de control
 
-[`CORTEX/`](CORTEX/) dice **cómo se trabaja**: qué motor de IA y qué modelo
-le toca a cada tarea, qué agentes existen, cómo se entrega y dónde termina
-lo automático. Las fuentes de arriba dicen **qué se construye**; cuando algo
-choque, mandan ellas.
+Está en otro repositorio:
+[`ninjasec-dev-workspace`](https://github.com/marksato13/ninjasec-dev-workspace),
+hermano de esta carpeta en el disco. Dice **cómo se trabaja**: qué motor de
+IA y qué modelo le toca a cada tarea, qué agentes existen, cómo se entrega y
+dónde termina lo automático.
 
-| Para | Lee |
+Las fuentes de arriba dicen **qué se construye**; cuando algo choque, mandan
+ellas.
+
+| Para | Lee, en ese repo |
 | --- | --- |
-| Elegir motor y modelo para una tarea | [`CORTEX/10-ENRUTADO/Politica-de-enrutado.md`](CORTEX/10-ENRUTADO/Politica-de-enrutado.md) |
-| Saber qué agentes y skills hay | [`CORTEX/20-PLANTEL/Agentes.md`](CORTEX/20-PLANTEL/Agentes.md) |
-| Entregar sin romper nada | [`CORTEX/30-CICLO/Ciclo-de-vida.md`](CORTEX/30-CICLO/Ciclo-de-vida.md) |
-| Saber qué decide el usuario y no un agente | [`CORTEX/30-CICLO/Frontera-de-autonomia.md`](CORTEX/30-CICLO/Frontera-de-autonomia.md) |
-| Ver el trabajo pendiente ya clasificado | [`CORTEX/40-TAREAS/Tablero.md`](CORTEX/40-TAREAS/Tablero.md) |
+| Elegir motor y modelo para una tarea | `10-ENRUTADO/Politica-de-enrutado.md` |
+| Saber qué agentes y skills hay | `20-PLANTEL/Agentes.md` |
+| Entregar sin romper nada | `30-CICLO/Ciclo-de-vida.md` |
+| Saber qué decide el usuario y no un agente | `30-CICLO/Frontera-de-autonomia.md` |
+| Ver el trabajo pendiente ya clasificado | `40-TAREAS/Tablero.md` |
+
+Los agentes, comandos `/ns-*` y skills viven allí, en su `.claude/`. Este
+repositorio se edita **desde** ese workspace, que lo declara en
+`additionalDirectories`.
 
 **Regla que gobierna el enrutado:** nada que toque `organization_id`,
 autenticación, migraciones de Alembic o secretos se delega a otro motor ni a
 un modelo más barato. Eso es clase T4 y se queda en el agente principal.
+
+## Los tres repositorios
+
+| Repo | Qué hay |
+| --- | --- |
+| **este**, `ninjasec-platform` | Código, CI y la especificación de desarrollo |
+| [`ninjasec-empresa`](https://github.com/marksato13/ninjasec-empresa) | Comercial, clientes, finanzas, legal, marketing. **Privado siempre** |
+| [`ninjasec-dev-workspace`](https://github.com/marksato13/ninjasec-dev-workspace) | El plano de control |
+
+Separados el 2026-11-23. Si buscas el catálogo de precios o un contrato, no
+está aquí: está en `ninjasec-empresa`.
 
 ## Flujo obligatorio
 

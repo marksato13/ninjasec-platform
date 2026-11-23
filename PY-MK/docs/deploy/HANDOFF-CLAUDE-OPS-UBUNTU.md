@@ -206,7 +206,7 @@ Crear `~/ninjasec-ops/docs/` en el Desktop Ubuntu y dejar ahí estos `.md`. Son 
 | **`CHECKLIST-OPERATIVO-PRE-FASE-2.2.md`** | Si necesita re-provisionar la VM admin o entender supuestos iniciales |
 | **`NOTAS-REVISION-PLANES-DEPLOY.md`** | Histórico de revisiones de los planes (decisiones descartadas) |
 | **`PLAN-DEPLOY-FASE-2.8-2.9-SELF-HOSTED.md`** | Solo si se reactiva el plan de exposición pública con runner self-hosted |
-| **`DOCUMENTOS/PLATAFORMA/HISTORICO/PLAN-DEPLOY-2026-05-22.md`** | Visión macro original — histórica; no guía CD vigente |
+| **`DOCUMENTOS/HISTORICO/PLAN-DEPLOY-2026-05-22.md`** | Visión macro original — histórica; no guía CD vigente |
 | **`CLAUDE.md`** (raíz del repo) | Solo si necesita entender el stack de la app o credenciales seed locales |
 
 ### NO copiar (irrelevantes u obsoletos para Ops)

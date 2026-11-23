@@ -200,7 +200,7 @@ Documentación y comentarios en **español**. Identificadores de código en **in
 
 ## ✅ Estado actual de los módulos
 
-Los checklists `01-14` en `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/` están cerrados (todos los P-XX en ✅ excepto menores documentados como "mejoras futuras"). Los `15-22` se documentaron retroactivamente el 2026-08-05 y **sí tienen pendientes abiertos**. Resumen:
+Los checklists `01-14` en `DOCUMENTOS/IMPLEMENTACION/` están cerrados (todos los P-XX en ✅ excepto menores documentados como "mejoras futuras"). Los `15-22` se documentaron retroactivamente el 2026-08-05 y **sí tienen pendientes abiertos**. Resumen:
 
 | # | Módulo | Última implementación destacada |
 |---|---|---|
@@ -236,7 +236,7 @@ Estaban en producción sin especificación. Auditados contra el código y docume
 
 ### Módulos planificados (23-30)
 
-Especificados el 2026-08-05, sin codear salvo el 23. Ver `DOCUMENTOS/PLATAFORMA/ROADMAP.md` para la priorización:
+Especificados el 2026-08-05, sin codear salvo el 23. Ver `DOCUMENTOS/ROADMAP.md` para la priorización:
 
 | # | Módulo | Estado |
 |---|---|---|
@@ -253,8 +253,8 @@ Especificados el 2026-08-05, sin codear salvo el 23. Ver `DOCUMENTOS/PLATAFORMA/
 
 ## 🔜 Próximos pasos pendientes — **PRIORITARIO**
 
-📋 **Priorización y estimaciones: `DOCUMENTOS/PLATAFORMA/ROADMAP.md`**
-📋 **Inventario completo de pendientes: `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`**
+📋 **Priorización y estimaciones: `DOCUMENTOS/ROADMAP.md`**
+📋 **Inventario completo de pendientes: `DOCUMENTOS/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`**
 
 ### ✅ Deuda crítica — cerrada el 2026-08-06
 
@@ -279,7 +279,7 @@ Los seis huecos de integridad y aislamiento. **63 tests pasan** (26 previos + 37
 
 ✅ **G-06 (resuelto 2026-08-10): `app/common/rate_limit.py` ahora soporta un backend Redis** compartido entre workers/replicas, seleccionado automáticamente cuando `REDIS_URL` está configurado y Redis responde al arrancar. Sin `REDIS_URL` (default en dev/CI) sigue usando el limitador en memoria de siempre — mismo comportamiento que antes, cero cambios para el caso sin Redis. Si Redis se cae después de arrancar, el limitador falla abierto (deja pasar) en vez de tumbar el endpoint que protege. Ver el docstring del módulo para el detalle completo.
 
-✅ **Deuda de esquema (resuelta 2026-08-07, issue #2 / G-01, G-02):** Alembic ya es la fuente de verdad del esquema — migración base `20260807_00_esquema_base_completo.py` (generada con `--autogenerate` sobre una base vacía), `create_all()` retirado de `app/main.py`. `app/db/migrate.py` corre `alembic upgrade head` automáticamente al arrancar el contenedor backend (`backend/Dockerfile`), verificado además contra un Postgres real vacío en cada PR que toca el esquema (`tests/test_alembic_bootstrap.py -m integration`). Runbook completo de despliegue en `DOCUMENTOS/PLATAFORMA/FLUJOS/DESPLIEGUE-PRODUCCION.md` (issue #87).
+✅ **Deuda de esquema (resuelta 2026-08-07, issue #2 / G-01, G-02):** Alembic ya es la fuente de verdad del esquema — migración base `20260807_00_esquema_base_completo.py` (generada con `--autogenerate` sobre una base vacía), `create_all()` retirado de `app/main.py`. `app/db/migrate.py` corre `alembic upgrade head` automáticamente al arrancar el contenedor backend (`backend/Dockerfile`), verificado además contra un Postgres real vacío en cada PR que toca el esquema (`tests/test_alembic_bootstrap.py -m integration`). Runbook completo de despliegue en `DOCUMENTOS/FLUJOS/DESPLIEGUE-PRODUCCION.md` (issue #87).
 
 ### 🔐 Multi-tenancy — regla permanente
 
@@ -382,7 +382,7 @@ Ubicación: `C:\Users\markp\Desktop\PY-MEGATRON\PY - PERSONAL\EMPRESA NINJA-SEC\
 
 **Regla de acoplamiento:** cada archivo de `PLANIFICACION/` tiene su par con el mismo número y nombre en `IMPLEMENTACION/`. Módulos 01-30 ocupados; **el siguiente número libre es el 31**.
 
-⚠️ `tash/` es brainstorming histórico (36 documentos), **no** es especificación. No tomarlo como fuente de verdad.
+⚠️ `DOCUMENTOS/HISTORICO/` es brainstorming histórico (36 documentos), **no** es especificación. No tomarlo como fuente de verdad.
 
 ---
 

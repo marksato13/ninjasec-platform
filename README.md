@@ -14,13 +14,33 @@ Backend, frontend y base de datos reales — no es una demo estática. Un timer 
 
 ---
 
+## Los tres repositorios
+
+Esto era un solo repositorio con todo dentro. Separado el **2026-11-23**:
+
+| Repo | Qué hay | Visibilidad |
+|---|---|---|
+| **este**, `ninjasec-platform` | Código, CI y la especificación de desarrollo | privado hoy |
+| [`ninjasec-empresa`](https://github.com/marksato13/ninjasec-empresa) | Comercial, clientes, finanzas, legal, marketing | **privado siempre** |
+| [`ninjasec-dev-workspace`](https://github.com/marksato13/ninjasec-dev-workspace) | Plano de control: agentes, skills y enrutado por modelo | privado |
+
+Si buscas el catálogo de precios, una propuesta o un contrato, **no está
+aquí**: está en `ninjasec-empresa`. Se separó precisamente para que abrir
+este repositorio al público algún día no arrastre los precios.
+
 ## Qué hay en este repositorio
 
 | Carpeta | Contenido |
 |---|---|
 | **`PY-MK/`** | La aplicación: backend FastAPI, frontend Next.js, infra Docker |
-| **`DOCUMENTOS/`** | Toda la documentación de plataforma: 30 módulos especificados, checklists de implementación, flujos y roadmap |
-| **`tash/`** | Brainstorming y notas sueltas. **No es especificación** — nada de aquí es fuente de verdad |
+| **`DOCUMENTOS/PLANIFICACION/`** | Requisitos de los 30 módulos |
+| **`DOCUMENTOS/IMPLEMENTACION/`** | Checklists y pendientes `NN-P-NN` con su evidencia |
+| **`DOCUMENTOS/ESTRATEGIA/`** | CI/CD, staging y decisiones de hosting |
+| **`DOCUMENTOS/FLUJOS/`** | Procesos técnicos que cruzan varios módulos |
+| **`DOCUMENTOS/FIX/`** | Post-mortems de cambios puntuales |
+| **`DOCUMENTOS/ROADMAP.md`** | El orden de trabajo |
+| **`DOCUMENTOS/HISTORICO/`** | Especificaciones y planes antiguos. **No es fuente de verdad** |
+| **`DOCUMENTOS/EVIDENCIA/`** | Capturas de pantalla de verificación |
 
 ---
 
@@ -29,10 +49,10 @@ Backend, frontend y base de datos reales — no es una demo estática. Un timer 
 | Si quieres… | Lee |
 |---|---|
 | Entender el proyecto y sus reglas técnicas | `PY-MK/CLAUDE.md` |
-| Saber qué hacer ahora | `DOCUMENTOS/PLATAFORMA/ROADMAP.md` |
-| Ver qué está hecho y qué falta | `DOCUMENTOS/PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md` |
-| Entender un módulo concreto | `DOCUMENTOS/PLATAFORMA/PLANIFICACION/NN-*.md` |
-| Saber quién puede hacer qué | `DOCUMENTOS/PLATAFORMA/PLANIFICACION/01-ROLES-Y-ACCESOS.md` |
+| Saber qué hacer ahora | `DOCUMENTOS/ROADMAP.md` |
+| Ver qué está hecho y qué falta | `DOCUMENTOS/IMPLEMENTACION/00-BACKLOG-GLOBAL.md` |
+| Entender un módulo concreto | `DOCUMENTOS/PLANIFICACION/NN-*.md` |
+| Saber quién puede hacer qué | `DOCUMENTOS/PLANIFICACION/01-ROLES-Y-ACCESOS.md` |
 | Instalar o adoptar una base con Alembic | `PY-MK/docs/deploy/RUNBOOK-ALEMBIC.md` |
 
 ---
@@ -66,7 +86,7 @@ cp backend/.env.example backend/.env
 
 ## Antes de exponer esto en producción
 
-Está documentado en detalle en `DOCUMENTOS/PLATAFORMA/ROADMAP.md`, pero lo esencial:
+Está documentado en detalle en `DOCUMENTOS/ROADMAP.md`, pero lo esencial:
 
 1. **Rotar los secretos comprometidos** — `POSTGRES_PASSWORD`, `JWT_SECRET_KEY` y el token DuckDNS. Ver `PY-MK/docs/deploy/HANDOFF-CLAUDE-OPS-UBUNTU.md`
 2. **Tanda 0 del roadmap** — seis huecos de integridad, incluido `20-P-08` (fuga de datos entre organizaciones, fix de una línea)
@@ -82,4 +102,4 @@ Está documentado en detalle en `DOCUMENTOS/PLATAFORMA/ROADMAP.md`, pero lo esen
 - Un pendiente resuelto se tacha con su evidencia (`archivo:línea`), no se borra
 - Todo modelo con datos de negocio lleva `organization_id`, y todo `unique` se compone con él
 
-Detalle completo en `DOCUMENTOS/PLATAFORMA/PLANIFICACION/README.md`.
+Detalle completo en `DOCUMENTOS/PLANIFICACION/README.md`.

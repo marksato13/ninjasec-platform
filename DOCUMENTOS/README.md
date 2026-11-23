@@ -1,27 +1,31 @@
-# Documentacion NinjaSec
+# Documentacion de la plataforma
 
-Este indice separa la documentacion de negocio, la especificacion de producto,
-los runbooks tecnicos y el material historico.
+Indice operativo de la documentacion de **desarrollo**. Lo comercial, legal,
+financiero y de marketing ya **no esta aqui**: vive en el repositorio
+[`ninjasec-empresa`](https://github.com/marksato13/ninjasec-empresa), y la
+politica de agentes y enrutado en
+[`ninjasec-dev-workspace`](https://github.com/marksato13/ninjasec-dev-workspace).
 
-| Ubicacion | Contenido | Fuente de verdad |
+Indice operativo de la documentacion de la plataforma. La estructura evita
+mezclar requisitos de producto, evidencias de implementacion y material que ya
+no debe guiar despliegues.
+
+| Ubicacion | Proposito | Cuando actualizar |
 |---|---|---|
-| `PLATAFORMA/` | Producto NinjaSec, roadmap, modulos, implementacion y operacion | Si |
-| `CLIENTES/` | Material operativo de clientes | Segun cada expediente |
-| `COMERCIAL/` | Propuestas y proceso comercial | Si para operacion comercial |
-| `FINANZAS/` | Control financiero | Si para finanzas |
-| `LEGAL/` | Documentacion legal y contractual | Si para legal |
-| `MARKETING/` | Material de comunicacion y marca | Si para marketing |
-| `PY-MK/docs/` | Runbooks tecnicos cercanos al codigo y diagramas editables | Complementaria |
+| `PLANIFICACION/` | Especificacion funcional y tecnica de cada modulo | Antes de implementar un modulo o pendiente |
+| `IMPLEMENTACION/` | Checklist, evidencias y pendientes por modulo | Durante y despues de cada cambio |
+| `ESTRATEGIA/` | Decisiones transversales de plataforma, entrega y automatizacion | Al cambiar arquitectura u operacion transversal |
+| `FLUJOS/` | Procesos que cruzan dos o mas modulos | Al modificar el proceso completo |
+| `FIX/` | Post-mortems de cambios puntuales | Al cerrar un fix relevante |
+| `HISTORICO/` | Planes reemplazados o contexto no operativo | Nunca como fuente de verdad |
+| `ROADMAP.md` | Orden, prioridad y decisiones pendientes | Al reordenar o cerrar una tanda |
 
-## Plataforma
+## Como empezar
 
-Empieza en [`PLATAFORMA/README.md`](PLATAFORMA/README.md). Las fuentes de
-verdad para cambios de producto son, en este orden:
+1. Revisa [`ROADMAP.md`](ROADMAP.md) para conocer el orden de trabajo.
+2. Consulta [`IMPLEMENTACION/00-BACKLOG-GLOBAL.md`](IMPLEMENTACION/00-BACKLOG-GLOBAL.md) para el inventario de pendientes.
+3. Abre el par `PLANIFICACION/NN-*.md` y `IMPLEMENTACION/NN-*.md` del modulo.
+4. Para CI/CD, seguridad de entrega y agentes, sigue [`ESTRATEGIA/`](ESTRATEGIA/README.md) y el modulo 33.
 
-1. `PLATAFORMA/PLANIFICACION/NN-*.md`
-2. `PLATAFORMA/IMPLEMENTACION/NN-*.md`
-3. `PLATAFORMA/ROADMAP.md`
-4. `PLATAFORMA/IMPLEMENTACION/00-BACKLOG-GLOBAL.md`
-
-Los archivos bajo `PLATAFORMA/HISTORICO/` y cualquier material en `tash/`
-conservan contexto, pero no definen requisitos ni procedimientos vigentes.
+Los diagramas de producto editables viven en `PY-MK/docs/diagrams/`. Mermaid
+puede vivir dentro de Markdown y GitHub lo renderiza directamente.

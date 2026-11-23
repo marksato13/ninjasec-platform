@@ -60,13 +60,9 @@ temp/
 .cache/
 
 # ─── Herramientas locales de IA / editor ───────────────────────────
-# Los agentes, comandos y skills de .claude/ SI se versionan: son parte
-# del plano de control (ver CORTEX/). Solo se ignora lo de esta maquina.
-.claude/*
-!.claude/agents/
-!.claude/commands/
-!.claude/skills/
-.claude/settings.local.json
+# El plano de control vive en el repo ninjasec-dev-workspace, no aqui.
+# Lo que quede en .claude/ es configuracion local de cada maquina.
+.claude/
 .agents/
 .playwright-mcp/
 skills-lock.json

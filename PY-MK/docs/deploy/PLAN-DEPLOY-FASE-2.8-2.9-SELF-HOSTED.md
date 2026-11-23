@@ -2,7 +2,7 @@
 
 > Continuacion del plan principal de despliegue de NinjaSec.
 > Estado: historico (2026-05-24). No usar para habilitar CD ni despliegues.
-> Fuente de verdad vigente: `DOCUMENTOS/PLATAFORMA/PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md` y `DOCUMENTOS/PLATAFORMA/FLUJOS/DESPLIEGUE-PRODUCCION.md`.
+> Fuente de verdad vigente: `DOCUMENTOS/PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md` y `DOCUMENTOS/FLUJOS/DESPLIEGUE-PRODUCCION.md`.
 > Esta version deja cerrada la estrategia elegida: **GitHub Actions + self-hosted runner en VLAN20**.
 > Fecha: 2026-05-24
 
