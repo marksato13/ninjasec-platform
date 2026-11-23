@@ -83,6 +83,91 @@ jobs:
           NEXT_TELEMETRY_DISABLED: "1"
         run: npm run build
 
+  e2e:
+    name: E2E · Playwright
+    runs-on: ubuntu-latest
+    # A nivel de job, no de paso: `docker compose down -v` del paso de limpieza
+    # tambien necesita interpolar POSTGRES_PASSWORD, y sin ellas fallaba con
+    # "required variable POSTGRES_PASSWORD is missing a value" DESPUES de que
+    # las pruebas ya hubieran corrido. El job salia rojo por la limpieza.
+    env:
+      POSTGRES_PASSWORD: ci-solo-para-pruebas
+      JWT_SECRET_KEY: ci-solo-para-pruebas-no-es-un-secreto-real
+      SEED_ON_STARTUP: "true"
+      IS_PRODUCTION: "false"
+    # Solo tiene sentido levantar el stack si el codigo compila y los tests
+    # unitarios pasan. Sin esta puerta se gastarian ~5 minutos de runner
+    # construyendo imagenes de codigo que ya se sabe roto.
+    needs: [backend-tests, frontend-build]
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Preparar Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: qa/package-lock.json
+
+      # El unico sitio del CI donde se construye lo que de verdad se entrega.
+      # El producto se despliega con Docker Compose; hasta ahora nada
+      # verificaba que esas imagenes siquiera compilaran.
+      - name: Levantar el stack con Docker Compose
+        working-directory: PY-MK/infra
+        run: docker compose up -d --build
+
+      - name: Esperar a que el stack responda
+        run: |
+          echo "Esperando al backend..."
+          for i in $(seq 1 40); do
+            if curl -fsS http://localhost:8024/health >/dev/null 2>&1; then
+              echo "Backend arriba tras $i intentos"; break
+            fi
+            if [ "$i" = "40" ]; then echo "::error::El backend nunca respondio"; exit 1; fi
+            sleep 3
+          done
+          echo "Esperando al frontend..."
+          for i in $(seq 1 40); do
+            if curl -fsS http://localhost:3018 >/dev/null 2>&1; then
+              echo "Frontend arriba tras $i intentos"; break
+            fi
+            if [ "$i" = "40" ]; then echo "::error::El frontend nunca respondio"; exit 1; fi
+            sleep 3
+          done
+
+      - name: Instalar Playwright
+        working-directory: qa
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Ejecutar pruebas E2E
+        working-directory: qa
+        env:
+          NINJASEC_BASE_URL: http://localhost:3018
+        run: npm test
+
+      # Sin esto, un fallo en CI es un mensaje sin contexto. Con esto se ve
+      # que pasaba dentro de los contenedores en el momento exacto.
+      - name: Logs de los contenedores si algo fallo
+        if: failure()
+        working-directory: PY-MK/infra
+        run: docker compose logs --tail=200
+
+      - name: Guardar el informe de Playwright
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-report
+          path: qa/playwright-report/
+          retention-days: 7
+
+      - name: Limpiar
+        if: always()
+        working-directory: PY-MK/infra
+        run: docker compose down -v
+
   contrato-api:
     name: Contrato OpenAPI
     runs-on: ubuntu-latest

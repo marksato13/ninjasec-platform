@@ -1,0 +1,19 @@
+{
+  "name": "ninjasec-qa",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pruebas end-to-end de NinjaSec. Proyecto npm propio, deliberadamente fuera de PY-MK/frontend: asi Playwright no entra en el bundle, ni en el npm ci del frontend, ni puede romper su build.",
+  "scripts": {
+    "test": "playwright test",
+    "test:dashboard": "playwright test --project=dashboard",
+    "test:portal": "playwright test --project=portal",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen http://localhost:3018"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/node": "24.10.1",
+    "typescript": "5.9.2"
+  }
+}

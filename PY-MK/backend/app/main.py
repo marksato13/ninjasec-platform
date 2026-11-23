@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -45,6 +46,40 @@ app = FastAPI(
     redoc_url="/redoc" if _docs_publicos else None,
     openapi_url="/openapi.json" if _docs_publicos else None,
 )
+
+@app.middleware("http")
+async def _redirecciones_relativas(request, call_next):
+    """Convierte la cabecera Location de absoluta a relativa.
+
+    FastAPI construye el Location de sus redirecciones -- la de `redirect_slashes`,
+    sobre todo -- a partir del Host de la peticion. Detras del proxy de Next, ese
+    Host es `backend:8024`: el nombre del servicio DENTRO de la red de Docker.
+
+    Eso produce dos problemas a la vez:
+
+    1. **Fuga de topologia.** Pedir `/api/v1/clients` sin barra final devuelve
+       `Location: http://backend:8024/api/v1/clients/`, y le regala a cualquiera
+       la estructura interna. Lo detecto una prueba E2E del PR #128.
+    2. **El redirect no funciona.** Ese nombre no resuelve desde fuera, asi que
+       cualquier cliente que siga la redireccion falla con un error de DNS. El
+       frontend se salva solo porque siempre usa barra final.
+
+    Un Location relativo lo resuelve el propio cliente contra el host por el que
+    entro, que es el correcto por definicion. Es lo que recomienda el RFC 7231
+    desde que dejo de exigir URI absolutas.
+    """
+    respuesta = await call_next(request)
+    if 300 <= respuesta.status_code < 400:
+        destino = respuesta.headers.get("location")
+        if destino:
+            partes = urlsplit(destino)
+            if partes.netloc:
+                respuesta.headers["location"] = (
+                    urlunsplit(("", "", partes.path, partes.query, partes.fragment))
+                    or "/"
+                )
+    return respuesta
+
 
 app.add_middleware(
     CORSMiddleware,
