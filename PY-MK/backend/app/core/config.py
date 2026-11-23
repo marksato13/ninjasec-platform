@@ -32,6 +32,17 @@ class Settings(BaseSettings):
     #
     # Nunca se registra en el log ni se devuelve por la API.
     seed_password: str | None = None
+
+    # Capsulas de funcionalidad encendidas, separadas por comas.
+    # Vacio = solo las que estan activas por defecto en app/core/features.py.
+    #
+    # Hoy existe "telemetria": conectores, recoleccion, hardening, puntuacion
+    # de riesgo e indice de salud. Esta APAGADA porque los conectores son
+    # simulados y el informe SOC corre sobre ese dato inventado.
+    #
+    # Un nombre que no exista rompe el arranque a proposito: una errata aqui
+    # es silenciosa de la peor manera, porque crees que encendiste algo y no.
+    capsulas_activas: str | None = None
     database_url: str = "postgresql+psycopg://postgres:123456@localhost:5432/ninjasec"
     jwt_secret_key: str = "change-this-secret-in-production"
     jwt_algorithm: str = "HS256"

@@ -1,5 +1,9 @@
 "use client";
 
+import { notFound } from "next/navigation";
+
+import { rutaDisponible } from "@/lib/capsulas";
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -72,6 +76,10 @@ function HealthIndicator({ status, isExpired }: { status: string; isExpired?: bo
 }
 
 export default function IntegrationDetailPage() {
+  // Se me escapo en la primera pasada: la ruta de detalle era
+  // alcanzable con la capsula apagada. rutaDisponible compara por
+  // prefijo, pero solo sirve si la pagina la llama.
+  if (!rutaDisponible("/dashboard/integrations")) notFound();
   const params = useParams();
   const integrationId = Number(params?.id);
   const [saving, setSaving] = useState(false);

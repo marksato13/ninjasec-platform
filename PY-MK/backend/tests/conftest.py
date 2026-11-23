@@ -6,6 +6,23 @@ os.environ["DATABASE_URL"] = "sqlite:///./tests/test.db"
 os.environ["SEED_ON_STARTUP"] = "false"
 os.environ["APP_ENV"] = "testing"
 
+# TODAS las capsulas encendidas durante las pruebas.
+#
+# Las capsulas deciden que se SIRVE en un despliegue, no que codigo existe.
+# Las pruebas tienen que cubrir el codigo que existe: si la suite corre con
+# telemetria apagada, las 18 pruebas de hardening, health_score, conectores y
+# puntuacion de riesgo fallan con 404 -- y lo que es peor, dejarian de cubrir
+# nada el dia que se encienda.
+#
+# test_capsulas.py recarga el router con sus propios valores, asi que puede
+# comprobar los dos estados sin depender de esto.
+#
+# Se construye desde el registro para que una capsula nueva quede cubierta
+# sola, sin tener que acordarse de anadirla aqui.
+from app.core.features import CAPSULAS  # noqa: E402
+
+os.environ["CAPSULAS_ACTIVAS"] = ",".join(sorted(CAPSULAS))
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker

@@ -1,5 +1,9 @@
 "use client";
 
+import { notFound } from "next/navigation";
+
+import { rutaDisponible } from "@/lib/capsulas";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { RuleEvaluation, downloadHardeningPdf, evaluateHardening, getClients, getHardeningSummary } from "@/lib/api";
@@ -10,6 +14,11 @@ const RESULT_LABEL: Record<string, string> = { pass: "Cumple", fail: "No cumple"
 const RESULT_COLOR: Record<string, string> = { pass: "#bbf7d0", fail: "#fecaca", manual: "#e2e8f0", not_applicable: "#f1f5f9" };
 
 export default function HardeningPage() {
+  // Esta pantalla pertenece a la capsula "telemetria". Si esta
+  // apagada, la ruta no existe: esconder el menu no basta, porque
+  // adivinar la URL llega igual. Ver
+  // DOCUMENTOS/ESTRATEGIA/10-MODULOS-ACTIVABLES.md
+  if (!rutaDisponible("/dashboard/hardening")) notFound();
   const [clientId, setClientId] = useState<number | "">("");
   const [exporting, setExporting] = useState(false);
   const { data: clients = [] } = useQuery({ queryKey: QK.clients(), queryFn: getClients });

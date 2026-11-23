@@ -17,6 +17,7 @@ cualquier trabajo transversal conserva su par en `PLANIFICACION/` e
 | [`07-PROVISIONAMIENTO-UBUNTU-STAGING.md`](07-PROVISIONAMIENTO-UBUNTU-STAGING.md) | Que instalar y como preparar Ubuntu Server para staging privado |
 | [`08-DECISION-HOSTING.md`](08-DECISION-HOSTING.md) | Donde se despliega NinjaSec en produccion, con costes en soles y por periodo |
 | [`09-STAGING-MULTIPROYECTO.md`](09-STAGING-MULTIPROYECTO.md) | Staging publico para varios proyectos: VM en ESXi sobre red plana ahora, Oracle Cloud despues |
+| [`10-MODULOS-ACTIVABLES.md`](10-MODULOS-ACTIVABLES.md) | Que modulos se despliegan y cuales esperan apagados, con el interruptor para encenderlos |
 | [`../PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md`](../PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md) | Que se debe construir y con que criterios |
 | [`../IMPLEMENTACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md`](../IMPLEMENTACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md) | Que esta pendiente y que evidencia lo cierra |
 

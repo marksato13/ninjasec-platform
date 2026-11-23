@@ -39,6 +39,7 @@ import { clearSession, getStoredUser } from "@/lib/auth";
 import { formatRoleLabel, getInitials } from "@/lib/role-utils";
 import { getPendingApprovalsCount } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
+import { rutaDisponible } from "@/lib/capsulas";
 
 type NavItem = {
   label: string;
@@ -188,6 +189,9 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
           const items = group.items.filter((item) => {
             if (isCollaborator && item.adminOnly) return false;
             if (item.href === "/dashboard/audit" && !isSuperAdmin) return false;
+            // Pantallas de una capsula apagada: no se pintan. La pagina
+            // ademas devuelve notFound(), porque esconder el menu no basta.
+            if (!rutaDisponible(item.href)) return false;
             return true;
           });
 

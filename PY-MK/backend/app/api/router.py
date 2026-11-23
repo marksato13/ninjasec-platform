@@ -40,46 +40,87 @@ from app.modules.support_tickets.routers.router import router as support_tickets
 from app.modules.users.routers.router import router as users_router
 from app.modules.certifications.routers.router import router as certifications_router
 
+from app.core.config import settings
+from app.core.features import inventario, rutas_apagadas
+
+_RUTAS_APAGADAS = frozenset(rutas_apagadas(settings.capsulas_activas))
+
 api_router = APIRouter()
-api_router.include_router(auth_router)
-api_router.include_router(dashboard_router)
-api_router.include_router(organizations_router)
-api_router.include_router(users_router)
-api_router.include_router(clients_router)
-api_router.include_router(client_sites_router)
-api_router.include_router(client_contacts_router)
-api_router.include_router(client_services_router)
-api_router.include_router(collaborators_router)
-api_router.include_router(devices_router)
-api_router.include_router(device_connections_router)
-api_router.include_router(device_configs_router)
-api_router.include_router(catalogs_router)
-api_router.include_router(device_catalog_router)
-api_router.include_router(compliance_router)
-api_router.include_router(audits_router)
-api_router.include_router(skills_router)
-api_router.include_router(certifications_router)
-api_router.include_router(projects_router)
-api_router.include_router(project_extras_router)
-api_router.include_router(project_tasks_router)
-api_router.include_router(services_router)
-api_router.include_router(leads_router)
-api_router.include_router(recruitment_router)
-api_router.include_router(integrations_router)
-api_router.include_router(collection_router)
-api_router.include_router(security_reviews_router)
-api_router.include_router(support_tickets_router)
-api_router.include_router(alerts_router)
-api_router.include_router(reports_router)
-api_router.include_router(risks_router)
-api_router.include_router(risk_scoring_router)
-api_router.include_router(hardening_router)
-api_router.include_router(vulnerability_inventory_router)
-api_router.include_router(netdoctor_router)
-api_router.include_router(health_score_router)
-api_router.include_router(docs_router)
-api_router.include_router(audit_router)
-api_router.include_router(architecture_router)
+
+
+def _registrar(router) -> None:
+    """Incluye un router salvo que su cápsula esté apagada.
+
+    Apagar = NO REGISTRAR. La ruta deja de existir y el 404 es el natural de
+    FastAPI, no uno fabricado: ni aparece en /openapi.json, ni en /docs, ni
+    revela que hay algo detrás.
+
+    Esa es la diferencia con esconder el menú, que es el error clásico: la
+    ruta sigue ahí y cualquiera que teclee la URL entra.
+
+    El criterio y los límites estan en
+    DOCUMENTOS/ESTRATEGIA/10-MODULOS-ACTIVABLES.md.
+    """
+    prefijo = getattr(router, "prefix", "") or ""
+    if prefijo and prefijo in _RUTAS_APAGADAS:
+        return
+    api_router.include_router(router)
+
+
+_registrar(auth_router)
+_registrar(dashboard_router)
+_registrar(organizations_router)
+_registrar(users_router)
+_registrar(clients_router)
+_registrar(client_sites_router)
+_registrar(client_contacts_router)
+_registrar(client_services_router)
+_registrar(collaborators_router)
+_registrar(devices_router)
+_registrar(device_connections_router)
+_registrar(device_configs_router)
+_registrar(catalogs_router)
+_registrar(device_catalog_router)
+_registrar(compliance_router)
+_registrar(audits_router)
+_registrar(skills_router)
+_registrar(certifications_router)
+_registrar(projects_router)
+_registrar(project_extras_router)
+_registrar(project_tasks_router)
+_registrar(services_router)
+_registrar(leads_router)
+_registrar(recruitment_router)
+_registrar(integrations_router)
+_registrar(collection_router)
+_registrar(security_reviews_router)
+_registrar(support_tickets_router)
+_registrar(alerts_router)
+_registrar(reports_router)
+_registrar(risks_router)
+_registrar(risk_scoring_router)
+_registrar(hardening_router)
+_registrar(vulnerability_inventory_router)
+_registrar(netdoctor_router)
+_registrar(health_score_router)
+_registrar(docs_router)
+_registrar(audit_router)
+_registrar(architecture_router)
+
+
+@api_router.get("/capsulas", tags=["meta"])
+def listar_capsulas() -> dict[str, object]:
+    """Que capsulas estan encendidas y por que las demas no.
+
+    El frontend lo consulta para saber que pantallas pintar. No lleva nada
+    sensible: son nombres de modulo y de ruta, que ademas estan en el
+    repositorio.
+
+    Va sin autenticacion a proposito: el frontend necesita saber que menu
+    dibujar antes de que nadie inicie sesion, y la respuesta no dice nada que
+    no se pueda leer en el codigo.
+    """
+    return {"capsulas": inventario(settings.capsulas_activas)}
 
 
 @api_router.get("/")

@@ -1,5 +1,9 @@
 "use client";
 
+import { notFound } from "next/navigation";
+
+import { rutaDisponible } from "@/lib/capsulas";
+
 import Link from "next/link";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,6 +41,11 @@ function healthColor(item: IntegrationItem): string {
 }
 
 export default function DashboardIntegrationsPage() {
+  // Esta pantalla pertenece a la capsula "telemetria". Si esta
+  // apagada, la ruta no existe: esconder el menu no basta, porque
+  // adivinar la URL llega igual. Ver
+  // DOCUMENTOS/ESTRATEGIA/10-MODULOS-ACTIVABLES.md
+  if (!rutaDisponible("/dashboard/integrations")) notFound();
   const currentUser  = getStoredUser();
   const isSuperAdmin = currentUser?.role === "super_admin";
   const isAdmin      = currentUser?.role === "admin" || isSuperAdmin;

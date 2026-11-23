@@ -1,5 +1,9 @@
 "use client";
 
+import { notFound } from "next/navigation";
+
+import { rutaDisponible } from "@/lib/capsulas";
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getClients, getHealthScore, downloadHealthScorePdf } from "@/lib/api";
@@ -9,6 +13,11 @@ import { QK } from "@/lib/query-keys";
 const LABEL_COLOR: Record<string, string> = { "Saludable": "#10b981", "Con observaciones": "#f59e0b", "Requiere atención": "#dc2626" };
 
 export default function SocReportPage() {
+  // Esta pantalla pertenece a la capsula "telemetria". Si esta
+  // apagada, la ruta no existe: esconder el menu no basta, porque
+  // adivinar la URL llega igual. Ver
+  // DOCUMENTOS/ESTRATEGIA/10-MODULOS-ACTIVABLES.md
+  if (!rutaDisponible("/dashboard/soc-report")) notFound();
   const [clientId, setClientId] = useState<number | "">("");
   const [exporting, setExporting] = useState(false);
   const { data: clients = [] } = useQuery({ queryKey: QK.clients(), queryFn: getClients });
