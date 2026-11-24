@@ -76,6 +76,15 @@ function Confirm-Docker {
 }
 
 function Invoke-Compose {
+    # OJO: hay que llamarla con un ARREGLO explicito -- Invoke-Compose @("up", "-d") --
+    # y no suelto -- Invoke-Compose up -d --.
+    #
+    # PowerShell interpreta un token que empieza por guion como intento de
+    # nombre de parametro y lo DESCARTA antes de que llegue a
+    # ValueFromRemainingArguments. Comprobado: "up -d" llega como ["up"], y el
+    # stack se levantaba en primer plano sin que nadie lo notara, porque
+    # compose no se queja. "--build" si pasa, porque el doble guion no se
+    # confunde con un parametro.
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Argumentos)
     Push-Location $INFRA
     try { & docker compose -p $PROYECTO @Argumentos }
@@ -126,7 +135,8 @@ function Invoke-Levantar {
     if ($Reconstruir) { Write-Titulo "Levantando con reconstruccion" }
     else { Write-Titulo "Levantando" }
 
-    if ($Reconstruir) { Invoke-Compose up -d --build } else { Invoke-Compose up -d }
+    if ($Reconstruir) { Invoke-Compose @("up", "-d", "--build") }
+    else { Invoke-Compose @("up", "-d") }
     if ($LASTEXITCODE -ne 0) {
         Write-Mal "Compose fallo."
         if (-not (Test-Path (Join-Path $INFRA ".env"))) {
@@ -154,21 +164,21 @@ function Invoke-Detener {
     if (-not (Confirm-Docker)) { return }
     Write-Titulo "Deteniendo"
     Write-Gris "Los datos se conservan: esto no toca los volumenes."
-    Invoke-Compose down
+    Invoke-Compose @("down")
     Write-Ok "Detenido."
 }
 
 function Invoke-Reiniciar {
     if (-not (Confirm-Docker)) { return }
     Write-Titulo "Reiniciando"
-    Invoke-Compose restart
+    Invoke-Compose @("restart")
     Wait-Stack | Out-Null
 }
 
 function Show-Estado {
     if (-not (Confirm-Docker)) { return }
     Write-Titulo "Estado"
-    Invoke-Compose ps
+    Invoke-Compose @("ps")
 }
 
 function Show-Logs {
@@ -183,8 +193,8 @@ function Show-Logs {
         default { $null }
     }
     Write-Gris "Ctrl+C para salir."
-    if ($svc) { Invoke-Compose logs -f --tail 100 $svc }
-    else { Invoke-Compose logs -f --tail 100 }
+    if ($svc) { Invoke-Compose @("logs", "-f", "--tail", "100", $svc) }
+    else { Invoke-Compose @("logs", "-f", "--tail", "100") }
 }
 
 function Invoke-Depurar {
@@ -327,7 +337,7 @@ function Remove-Datos {
     if ($r -cne "BORRAR") { Write-Ok "Cancelado. No se toco nada."; return }
 
     if (-not (Confirm-Docker)) { return }
-    Invoke-Compose down -v
+    Invoke-Compose @("down", "-v")
     Write-Aviso "Volumenes borrados. Al levantar de nuevo, la base arranca vacia."
 }
 
