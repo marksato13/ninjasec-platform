@@ -13,6 +13,7 @@ import {
   Cpu,
   FileBarChart2,
   FolderKanban,
+  GraduationCap,
   Layers,
   Lock,
   LogOut,
@@ -86,6 +87,16 @@ const navGroups: NavGroup[] = [
       { label: "Colaboradores", href: "/dashboard/collaborators", icon: IC(UserCheck) },
       { label: "Leads",         href: "/dashboard/leads",         icon: IC(Target),  adminOnly: true },
       { label: "Servicios",     href: "/dashboard/services",      icon: IC(Layers),  adminOnly: true },
+    ],
+  },
+  {
+    // La formacion es de todo el equipo, no solo de los administradores: por eso va en
+    // su propio grupo y no dentro de "Talento", que los colaboradores no ven.
+    id: "training",
+    label: "Formación",
+    staffAllowed: true,
+    items: [
+      { label: "Formación", href: "/dashboard/formacion", icon: IC(GraduationCap) },
     ],
   },
   {

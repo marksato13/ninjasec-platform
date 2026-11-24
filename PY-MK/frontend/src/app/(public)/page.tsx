@@ -143,6 +143,36 @@ export default function HomePage() {
         )}
       </section>
 
+      {/* Lo que se puede ver, no solo lo que se promete. Cada enlace lleva a un diagrama. */}
+      <section className="page-stack">
+        <div>
+          <h2>Qué construimos</h2>
+          <p className="muted-small" style={{ margin: 0 }}>
+            Trabajos reales, cada uno con su diagrama y el nivel de evidencia: producto en línea, laboratorio propio o caso de cliente.
+          </p>
+        </div>
+        <div className="marketing-grid marketing-grid--two">
+          <article className="panel">
+            <p className="eyebrow">Desarrollo</p>
+            <h3>Software que ya está funcionando</h3>
+            <p>
+              La plataforma con la que gestionamos clientes, proyectos y equipo, y el despliegue
+              continuo que la publica solo y vuelve atrás si algo falla.
+            </p>
+            <Link className="button button-secondary" href="/proyectos#plataforma-ninjasec">Ver la plataforma</Link>
+          </article>
+          <article className="panel">
+            <p className="eyebrow">Infraestructura</p>
+            <h3>Redes que no paran</h3>
+            <p>
+              Una red segmentada con firewalls en alta disponibilidad y doble proveedor de internet,
+              medida en nuestro laboratorio.
+            </p>
+            <Link className="button button-secondary" href="/proyectos#lab-alta-disponibilidad">Ver el diagrama</Link>
+          </article>
+        </div>
+      </section>
+
       <section className="marketing-grid marketing-grid--two">
         <article className="panel">
           <p className="eyebrow">Portafolio</p>

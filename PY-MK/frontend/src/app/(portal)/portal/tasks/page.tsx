@@ -2,9 +2,10 @@
 
 import { ListChecks } from "lucide-react";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getProjectTasks } from "@/lib/api";
+import { getProjectTasks, updateMyTaskStatus } from "@/lib/api";
+import { notifyError } from "@/lib/alerts";
 
 const STATUS_LABEL: Record<string, string> = {
   pending:     "Pendiente",
@@ -12,14 +13,17 @@ const STATUS_LABEL: Record<string, string> = {
   done:        "Hecha",
 };
 
-const STATUS_BADGE: Record<string, string> = {
-  pending:     "badge-draft",
-  in_progress: "badge-active",
-  done:        "badge-archived",
-};
-
 export default function PortalTasksPage() {
   const [statusFilter, setStatusFilter] = useState("");
+  const qc = useQueryClient();
+
+  const mover = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: "pending" | "in_progress" | "done" }) =>
+      updateMyTaskStatus(id, status),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["portal-my-tasks"] }),
+    onError: (e: unknown) =>
+      notifyError("No se pudo cambiar el estado", e instanceof Error ? e.message : undefined),
+  });
 
   const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ["portal-my-tasks"],
@@ -109,9 +113,18 @@ export default function PortalTasksPage() {
                 <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{task.project_name}</span>
                 <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>{task.assigned_user_name}</span>
                 <span>
-                  <span className={`badge ${STATUS_BADGE[task.status] ?? "badge-draft"}`}>
-                    {STATUS_LABEL[task.status] ?? task.status}
-                  </span>
+                  <select
+                    aria-label={`Estado de la tarea ${task.title}`}
+                    value={task.status}
+                    disabled={mover.isPending}
+                    onChange={(e) =>
+                      mover.mutate({ id: task.id, status: e.target.value as "pending" | "in_progress" | "done" })
+                    }
+                  >
+                    <option value="pending">{STATUS_LABEL.pending}</option>
+                    <option value="in_progress">{STATUS_LABEL.in_progress}</option>
+                    <option value="done">{STATUS_LABEL.done}</option>
+                  </select>
                 </span>
                 <span style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
                   {task.description?.slice(0, 60) ?? "—"}

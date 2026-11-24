@@ -78,6 +78,7 @@ OPCIONES: tuple[Opcion, ...] = (
     _pub("/", "Inicio"),
     _pub("/nosotros", "Nosotros"),
     _pub("/servicios", "Servicios"),
+    _pub("/proyectos", "Proyectos"),
     # Describe conectores por API: va con la capsula de telemetria.
     Opcion("public", "/solucion", "Solución", "Sitio web", ("visitor",), capsula="telemetria"),
     _pub("/contacto", "Contacto"),
@@ -103,6 +104,7 @@ OPCIONES: tuple[Opcion, ...] = (
     _staff("/dashboard/collaborators", "Colaboradores", "Clientes"),
     _staff("/dashboard/leads", "Leads", "Clientes", _ADMINS),
     _staff("/dashboard/services", "Servicios", "Clientes", _ADMINS),
+    _staff("/dashboard/formacion", "Formación", "Formación"),
     _staff("/dashboard/users", "Usuarios", "Talento", _ADMINS),
     _staff("/dashboard/applications", "Postulaciones", "Talento", _ADMINS),
     _staff("/dashboard/reports", "Reportes", "Control", _ADMINS),

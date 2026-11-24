@@ -13,6 +13,7 @@ import { test, expect } from "@playwright/test";
 const RUTAS_PUBLICAS = [
   "/",
   "/servicios",
+  "/proyectos",
   "/nosotros",
   "/contacto",
   "/agenda-demo",
