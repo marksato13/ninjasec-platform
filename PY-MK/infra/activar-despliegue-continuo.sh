@@ -21,36 +21,35 @@
 
 set -euo pipefail
 
-REPO="${NINJASEC_REPO:-git@github.com:marksato13/ninjasec-platform.git}"
+# El repositorio es publico: se clona por HTTPS y no hace falta ninguna clave.
+# Si algun dia vuelve a ser privado, pasa NINJASEC_REPO=git@github.com:... y el
+# paso 1 prepara una clave de despliegue de solo lectura.
+REPO="${NINJASEC_REPO:-https://github.com/marksato13/ninjasec-platform.git}"
 DESTINO="${NINJASEC_DESTINO:-/opt/ninjasec}"
 RAMA="${NINJASEC_RAMA:-main}"
 CLAVE="/root/.ssh/ninjasec_deploy"
 
 [ "$(id -u)" -eq 0 ] || { echo "Ejecuta con sudo."; exit 1; }
 
-echo "== 1. clave de despliegue (solo lectura)"
-mkdir -p /root/.ssh && chmod 700 /root/.ssh
-if [ ! -f "$CLAVE" ]; then
-    ssh-keygen -t ed25519 -N "" -C "ninjasec-vm-despliegue" -f "$CLAVE" >/dev/null
-fi
-grep -q "ninjasec_deploy" /root/.ssh/config 2>/dev/null || cat >> /root/.ssh/config <<EOF
+echo "== 1. acceso al repositorio"
+case "$REPO" in
+  git@*|ssh://*)
+    mkdir -p /root/.ssh && chmod 700 /root/.ssh
+    [ -f "$CLAVE" ] || ssh-keygen -t ed25519 -N "" -C "ninjasec-vm-despliegue" -f "$CLAVE" >/dev/null
+    grep -q "ninjasec_deploy" /root/.ssh/config 2>/dev/null || cat >> /root/.ssh/config <<EOF
 Host github.com
   IdentityFile $CLAVE
   IdentitiesOnly yes
 EOF
-chmod 600 /root/.ssh/config
-ssh-keygen -F github.com >/dev/null 2>&1 || ssh-keyscan -t ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
-
-if ! ssh -o BatchMode=yes -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-    echo
-    echo "GitHub todavia no acepta la clave. Autorizala como clave de despliegue"
-    echo "SIN permiso de escritura (Settings > Deploy keys):"
-    echo
-    cat "$CLAVE.pub"
-    echo
-    exit 2
-fi
-echo "   GitHub acepta la clave."
+    chmod 600 /root/.ssh/config
+    ssh-keygen -F github.com >/dev/null 2>&1 || ssh-keyscan -t ed25519 github.com >> /root/.ssh/known_hosts 2>/dev/null
+    if ! ssh -o BatchMode=yes -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+        echo "GitHub todavia no acepta la clave. Autorizala SIN permiso de escritura:"; echo
+        cat "$CLAVE.pub"; echo; exit 2
+    fi
+    echo "   GitHub acepta la clave." ;;
+  *) echo "   repositorio publico por HTTPS: no hace falta clave." ;;
+esac
 
 echo "== 2. clon de $RAMA en $DESTINO"
 if [ -d "$DESTINO/.git" ]; then
@@ -85,6 +84,8 @@ for _ in $(seq 1 60); do
 done
 
 echo "== 4. temporizador"
+git config --system --add safe.directory "$DESTINO"
+git -C "$DESTINO" config core.fileMode false
 chmod +x "$DESTINO/PY-MK/infra/actualizar.sh"
 install -m 0644 "$DESTINO/PY-MK/infra/ninjasec-actualizar.service" /etc/systemd/system/
 install -m 0644 "$DESTINO/PY-MK/infra/ninjasec-actualizar.timer" /etc/systemd/system/
