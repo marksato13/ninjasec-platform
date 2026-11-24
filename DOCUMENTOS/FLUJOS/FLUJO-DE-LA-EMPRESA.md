@@ -51,6 +51,37 @@ podía marcarla como hecha**, porque la actualización de tareas era solo de adm
 tiene `PATCH /project-tasks/{id}/status`, que cambia **solo el estado** y **solo de sus
 tareas**. Título, descripción y responsable siguen siendo del admin.
 
+## Seguimiento del proyecto: el cliente ve su recorrido
+
+El cliente no tiene que preguntar «¿cómo va lo mío?»: lo ve.
+
+```
+ EL CLIENTE VE                                  EL ESPECIALISTA ALIMENTA
+ ──────────────                                 ────────────────────────
+ La senda: 5 fases, y Kuro en la actual    ◄──  Cambia la fase (y escribe qué sigue)
+ En marcha: quién hace qué ahora           ◄──  Marca sus tareas: pendiente / en curso / hecha
+ Tu equipo: nombre y rol, sin correos      ◄──  Se asigna al proyecto
+ Equipos: cuáles, su estado, sin IP        ◄──  Enlaza los equipos de la sede del cliente
+ Bitácora: lo que ha pasado                ◄──  Publica avances e hitos (con enlace a la demo)
+                                                Notas internas: SOLO el equipo las ve
+```
+
+- **Una sola vista** para los dos: la del especialista es la del cliente más un **centro de mando**, y trae un interruptor «**Ver como lo ve el cliente**» para comprobar lo que se publica antes de que lo lea nadie.
+- **Las fases se leen con las palabras de cada línea.** Mismas claves en la base, distinto rótulo:
+
+  | | 1 | 2 | 3 | 4 | 5 |
+  |---|---|---|---|---|---|
+  | **Infraestructura** | Diagnóstico | Planificación | Implementación | Transferencia | Acompañamiento |
+  | **Desarrollo** | Descubrimiento | Diseño | Desarrollo | Entrega | Soporte |
+
+- **Lado de desarrollo:** un avance puede llevar un **enlace a la demo o al entorno de pruebas**, que el cliente abre desde la bitácora.
+- **Se actualiza sola** cada 15 segundos y muestra «última actividad hace X».
+- La bitácora se llena también sola: cada **cambio de fase** y cada **tarea que pasa a hecha** quedan anotados (una sola vez, aunque se marque dos veces).
+
+**Lo que nunca llega al cliente** (las pruebas lo vigilan): notas internas, correos del equipo, la IP de los equipos, proyectos de otro cliente. Lo ajeno devuelve 404, no 403.
+
+Pantallas: cliente en **Proyectos → Ver seguimiento** (`/portal/projects/{id}`); equipo en **Proyectos → Centro de mando** (`/dashboard/projects/{id}/centro`).
+
 ## Formación
 
 ```
@@ -71,5 +102,5 @@ tareas**. Título, descripción y responsable siguen siendo del admin.
 |---|---|
 | **Conversión de lead a cliente con un clic** | Hoy el admin crea el cliente a mano; el lead no queda enlazado |
 | **Alta de un usuario de portal para el cliente** | Hoy se hace en Usuarios; no hay invitación por correo |
-| **Notificación al cliente** cuando avanza su proyecto | Hoy tiene que entrar a mirarlo |
+| **Aviso por correo o WhatsApp** cuando avanza el proyecto | Hoy el cliente lo ve al entrar; no se le empuja |
 | **Subida de entregables por el colaborador** | Los documentos los publica quien tenga permiso en el proyecto |

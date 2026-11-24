@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { getProjects, ProjectItem } from "@/lib/api";
@@ -37,12 +38,16 @@ export default function PortalProjectsPage() {
               <span>Nombre</span>
               <span>Estado</span>
               <span>Descripcion</span>
+              <span />
             </div>
             {items.map((item) => (
               <div className="table-row table-row-wide" key={item.id}>
                 <span>{item.name}</span>
                 <span>{getProjectStatusLabel(item.status)}</span>
                 <span>{item.description || "Sin descripcion"}</span>
+                <span>
+                  <Link className="button button-primary button-sm" href={`/portal/projects/${item.id}`}>Ver seguimiento</Link>
+                </span>
               </div>
             ))}
           </div>

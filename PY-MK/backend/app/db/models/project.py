@@ -36,6 +36,9 @@ class Project(Base):
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus, name="project_status_enum"), default=ProjectStatus.PLANNING
     )
+    phase: Mapped[str] = mapped_column(String(20), nullable=False, default="diagnostico", server_default="diagnostico")
+    """Fase del recorrido (app/core/fases.py). Distinta de `status`: el estado dice si el
+    proyecto corre, esta dice POR DONDE va."""
     start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     budget_label: Mapped[str | None] = mapped_column(String(80), nullable=True)

@@ -77,6 +77,9 @@ export const QK = {
   studyMine:       (id: number)                => ["study", "me", id]          as const,
   studyTeam:       ()                          => ["study", "team"]            as const,
 
+  // Seguimiento de proyectos
+  tracking:        (id: number)                => ["tracking", id]               as const,
+
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
   projectDocs:     (f?: object)               => ["project-docs", f]            as const,
