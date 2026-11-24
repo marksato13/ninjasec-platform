@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { DiagramaProyecto } from "@/components/public/diagrama-proyecto";
@@ -10,13 +11,14 @@ import {
 } from "@/lib/portafolio";
 
 export const metadata = {
-  title: "Proyectos · NinjaSec",
-  description: "Lo que NinjaSec ha construido en desarrollo e infraestructura, con su diagrama y el nivel de evidencia de cada trabajo.",
+  title: "Proyectos · Ninja Tech",
+  description: "Lo que Ninja Tech ha construido en desarrollo e infraestructura, con su diagrama y el nivel de evidencia de cada trabajo.",
 };
 
 const LINEAS: { id: Linea; titulo: string; texto: string }[] = [
-  { id: "dev", titulo: "Desarrollo", texto: "Software que construimos y que puedes ver funcionando." },
-  { id: "infra", titulo: "Infraestructura y nube", texto: "Redes, seguridad y nube, con su diagrama y su nivel de evidencia." },
+  { id: "sec", titulo: "Ninja Sec", texto: "Ciberseguridad e infraestructura segura." },
+  { id: "dev", titulo: "Ninja Dev", texto: "Software que construimos y que puedes ver funcionando." },
+  { id: "futuro", titulo: "Áreas en preparación", texto: "Ninja Infra, Ninja Cloud y Ninja Auditoría son líneas futuras. Los casos actuales de infraestructura segura están en Ninja Sec." },
 ];
 
 function Tarjeta({ p }: { p: ProyectoPublico }) {
@@ -39,6 +41,19 @@ function Tarjeta({ p }: { p: ProyectoPublico }) {
         <p style={{ margin: 0 }}>{p.resumen}</p>
         <p className="muted-small" style={{ margin: 0 }}>{ev.ayuda}</p>
       </header>
+
+      {p.imagen && (
+        <figure className="project-evidence">
+          <Image
+            src={p.imagen.src}
+            alt={p.imagen.alt}
+            width={p.imagen.ancho}
+            height={p.imagen.alto}
+            sizes="(max-width: 720px) 90vw, 1028px"
+          />
+          <figcaption className="muted-small">{p.imagen.pie}</figcaption>
+        </figure>
+      )}
 
       {p.diagrama && (
         <DiagramaProyecto

@@ -55,15 +55,15 @@ export function SiteHeader() {
   // simulados: solo se dice con la capsula de telemetria encendida.
   const subtitulo = conApi
     ? "API Reporting Platform"
-    : "Consultoría de TI y ciberseguridad";
+    : "Ciberseguridad y desarrollo";
 
   return (
     <header className="site-header">
       <div className="site-header__inner">
         <Link className="brand-mark" href="/">
-          <span className="brand-mark__logo">NS</span>
+          <span className="brand-mark__logo">NT</span>
           <span>
-            <strong>NinjaSec</strong>
+            <strong>Ninja Tech</strong>
             <small>{subtitulo}</small>
           </span>
         </Link>

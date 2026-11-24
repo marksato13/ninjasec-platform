@@ -3,7 +3,7 @@ import { ServiceRequestForm } from "@/components/public/service-request-form";
 import { capsulaActiva } from "@/lib/capsulas";
 
 /**
- * Servicios que NinjaSec ofrece HOY.
+ * Servicios que Ninja Tech ofrece HOY.
  *
  * Sale del catalogo comercial, que separa lo que esta probado de lo que
  * todavia no se vende. Por eso no aparece aqui: conectarse a los equipos del
@@ -20,11 +20,12 @@ import { capsulaActiva } from "@/lib/capsulas";
  */
 
 type Servicio = { titulo: string; texto: string };
-type Linea = { eyebrow: string; titulo: string; servicios: Servicio[] };
+type Linea = { id?: string; eyebrow: string; titulo: string; servicios: Servicio[] };
 
 const LINEAS: Linea[] = [
   {
-    eyebrow: "Infraestructura y redes",
+    id: "ninja-sec",
+    eyebrow: "Ninja Sec · Infraestructura segura",
     titulo: "Que tu red funcione, esté ordenada y segura",
     servicios: [
       {
@@ -66,7 +67,7 @@ const LINEAS: Linea[] = [
     ],
   },
   {
-    eyebrow: "Ciberseguridad",
+    eyebrow: "Ninja Sec · Ciberseguridad",
     titulo: "Saber dónde estás expuesto",
     servicios: [
       {
@@ -82,7 +83,8 @@ const LINEAS: Linea[] = [
     ],
   },
   {
-    eyebrow: "Desarrollo",
+    id: "ninja-dev",
+    eyebrow: "Ninja Dev",
     titulo: "Software hecho a tu medida",
     servicios: [
       {
@@ -124,13 +126,13 @@ export default function ServiciosPage() {
         <p className="eyebrow">Servicios</p>
         <h1>Infraestructura, nube, seguridad y desarrollo para tu empresa.</h1>
         <p>
-          NinjaSec ayuda a pequeñas y medianas empresas a ordenar, proteger y hacer crecer su
+          Ninja Tech ayuda a pequeñas y medianas empresas a ordenar, proteger y hacer crecer su
           tecnología. Empezamos entendiendo qué tienes, y solo entonces proponemos qué hacer.
         </p>
       </section>
 
       {lineas.map((linea) => (
-        <section className="page-stack" key={linea.eyebrow}>
+        <section className="page-stack" key={linea.eyebrow} id={linea.id}>
           <div>
             <p className="eyebrow">{linea.eyebrow}</p>
             <h2>{linea.titulo}</h2>

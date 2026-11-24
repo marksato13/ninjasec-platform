@@ -9,7 +9,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="site-footer__inner">
         <div>
-          <h3>NinjaSec</h3>
+          <h3>Ninja Tech</h3>
           <p>
             {conApi
               ? "Plataforma y firma tecnológica orientada a integraciones API, reporting automatizado, dashboards y servicios especializados para infraestructura y ciberseguridad."

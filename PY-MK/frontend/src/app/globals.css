@@ -3819,3 +3819,41 @@ a {
   .hero-actions { flex-wrap: wrap; }
   .hero-actions .button { flex: 1 1 100%; justify-content: center; text-align: center; }
 }
+
+.ninja-tech-hero-image {
+  width: min(100%, 32rem);
+  height: auto;
+  justify-self: center;
+}
+
+.ninja-tech-service {
+  display: grid;
+  grid-template-columns: minmax(0, 10rem) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+
+.ninja-tech-service img,
+.project-evidence img {
+  max-width: 100%;
+  height: auto;
+}
+
+.project-evidence {
+  margin: 0;
+}
+
+.project-evidence figcaption {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .ninja-tech-service {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ninja-tech-service img {
+    width: min(50%, 10rem);
+    justify-self: center;
+  }
+}

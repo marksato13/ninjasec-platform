@@ -1,5 +1,5 @@
 /**
- * Portafolio público: los proyectos que NinjaSec puede enseñar.
+ * Portafolio público: los proyectos que Ninja Tech puede enseñar.
  *
  * ## Regla de honestidad
  *
@@ -17,7 +17,7 @@
  * no se publica sin su permiso por escrito, y ese permiso no existe todavía.
  */
 
-export type Linea = "dev" | "infra";
+export type Linea = "dev" | "sec" | "futuro";
 export type Evidencia = "producto" | "laboratorio" | "caso" | "preparacion";
 export type Capa = "usuario" | "borde" | "aplicacion" | "datos" | "operacion" | "red" | "externo";
 
@@ -42,11 +42,12 @@ export type ProyectoPublico = {
   /** Lo que se sabe que NO hace o que falta. Se muestra: es parte de la honestidad. */
   limites?: string;
   diagrama?: { titulo: string; nodos: NodoDiagrama[]; aristas: AristaDiagrama[] };
+  imagen?: { src: string; alt: string; pie: string; ancho: number; alto: number };
   publicar: boolean;
 };
 
 export const EVIDENCIA_ETIQUETA: Record<Evidencia, { texto: string; ayuda: string }> = {
-  producto: { texto: "En línea", ayuda: "Construido por NinjaSec y funcionando: puedes verlo." },
+  producto: { texto: "En línea", ayuda: "Construido por Ninja Tech y funcionando: puedes verlo." },
   laboratorio: {
     texto: "Laboratorio propio",
     ayuda: "Implementado y medido en nuestro laboratorio, no en un cliente.",
@@ -60,10 +61,10 @@ export const PROYECTOS: ProyectoPublico[] = [
   {
     id: "plataforma-ninjasec",
     linea: "dev",
-    titulo: "Plataforma de gestión de NinjaSec",
+    titulo: "Plataforma de gestión de Ninja Tech",
     evidencia: "producto",
     resumen:
-      "El sistema con el que NinjaSec gestiona clientes, proyectos y colaboradores. Es el mismo que estás usando: está en línea ahora.",
+      "El sistema con el que Ninja Tech gestiona clientes, proyectos y colaboradores. Es el mismo que estás usando: está en línea ahora.",
     detalle: [
       "Cuatro roles (super admin, admin, colaborador y cliente), cada uno con su propio menú, que el super admin puede editar.",
       "Aislamiento por organización: los datos de un cliente no se ven desde otro, y pedir un recurso ajeno devuelve 404.",
@@ -127,10 +128,30 @@ export const PROYECTOS: ProyectoPublico[] = [
     },
     publicar: true,
   },
+  {
+    id: "cyberflow",
+    linea: "sec",
+    titulo: "CyberFlow",
+    evidencia: "laboratorio",
+    resumen: "Proyecto de código abierto para detectar comportamientos anómalos y decidir respuestas temporales en redes de datos.",
+    tecnologias: ["Suricata", "Isolation Forest"],
+    detalle: [
+      "La vista Decisiones recientes muestra la acción, el motivo y la puntuación del modelo frente al umbral.",
+      "La captura documenta decisiones del motor durante una prueba de laboratorio.",
+    ],
+    imagen: {
+      src: "/ninja-tech/cyberflow-decisiones.webp",
+      alt: "Panel Decisiones recientes de CyberFlow con cuatro filas BLOCK y un gráfico de puntuaciones frente al umbral.",
+      pie: "CyberFlow registró cuatro decisiones BLOCK por escaneo de puertos durante una prueba de laboratorio.",
+      ancho: 1028,
+      alto: 623,
+    },
+    publicar: true,
+  },
   // ---------------------------------------------------------------- INFRA
   {
     id: "lab-alta-disponibilidad",
-    linea: "infra",
+    linea: "sec",
     titulo: "Red con alta disponibilidad y doble proveedor",
     evidencia: "laboratorio",
     resumen:
@@ -171,7 +192,7 @@ export const PROYECTOS: ProyectoPublico[] = [
   {
     // Entregado a un cliente real. NO se publica sin su permiso por escrito.
     id: "migracion-firewall",
-    linea: "infra",
+    linea: "sec",
     titulo: "Migración de firewall de MikroTik a FortiGate",
     evidencia: "caso",
     resumen:
@@ -185,7 +206,7 @@ export const PROYECTOS: ProyectoPublico[] = [
   },
   {
     id: "aws",
-    linea: "infra",
+    linea: "futuro",
     titulo: "Infraestructura en AWS",
     evidencia: "preparacion",
     resumen:

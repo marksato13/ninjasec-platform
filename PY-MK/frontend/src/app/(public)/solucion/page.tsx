@@ -13,7 +13,7 @@ export default function SolucionPage() {
     <PublicPageShell>
       <section className="content-hero">
         <p className="eyebrow">Solucion</p>
-        <h1>Como funciona NinjaSec.</h1>
+        <h1>Como funciona Ninja Tech.</h1>
         <p>
           La plataforma conecta dispositivos y sistemas por API, procesa datos y genera dashboards
           y reportes que reducen trabajo manual y elevan la visibilidad operativa.
