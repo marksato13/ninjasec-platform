@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Check } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import type { FaseSeguimiento, VistaSeguimiento } from "@/lib/api";
+import type { VistaSeguimiento } from "@/lib/api";
 
 /**
  * La senda ninja: el recorrido del proyecto como un camino por el que Kuro avanza.
@@ -45,12 +45,14 @@ const POSE: Record<string, string> = {
 
 const ESTILOS = `
 .senda-wrap { position: relative; }
+/* Escena = solo el dibujo: los porcentajes de Kuro se miden contra ella y no contra la lista de abajo. */
+.senda-escena { position: relative; }
 .senda-svg { width: 100%; height: auto; display: block; overflow: visible; }
 .senda-hecho { stroke-dasharray: 1; stroke-dashoffset: 1; animation: senda-dibujar 1.6s ease-out .2s forwards; }
 @keyframes senda-dibujar { to { stroke-dashoffset: 0; } }
 .senda-pulso { transform-box: fill-box; transform-origin: center; animation: senda-latir 1.8s ease-in-out infinite; }
 @keyframes senda-latir { 0%,100% { transform: scale(1); opacity: .55; } 50% { transform: scale(1.7); opacity: 0; } }
-.senda-kuro { position: absolute; width: 14%; max-width: 120px; transform: translate(-50%, -88%);
+.senda-kuro { position: absolute; width: clamp(40px, 14%, 120px); height: auto; transform: translate(-50%, -88%);
   transition: left 1.7s cubic-bezier(.45,.05,.2,1), top 1.7s cubic-bezier(.45,.05,.2,1); pointer-events: none;
   filter: drop-shadow(0 6px 10px rgba(0,0,0,.45)); }
 .senda-kuro--flota { animation: senda-flotar 2.6s ease-in-out infinite; }
@@ -62,6 +64,7 @@ const ESTILOS = `
 .senda-fase[data-estado="current"] { border-color: var(--primary); box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent); }
 .senda-fase[data-estado="done"] { border-color: color-mix(in srgb, var(--success) 55%, var(--line)); }
 .senda-fase[data-estado="todo"] { opacity: .72; }
+@media (max-width: 640px) { .senda-escena { margin-top: 34px; } }
 @media (prefers-reduced-motion: reduce) {
   .senda-hecho { animation: none; stroke-dashoffset: 0; }
   .senda-pulso, .senda-kuro--flota { animation: none; }
@@ -124,6 +127,7 @@ export function SendaNinja({ vista }: { vista: VistaSeguimiento }) {
     <div className="senda-wrap">
       <style>{ESTILOS}</style>
 
+      <div className="senda-escena">
       <svg className="senda-svg" viewBox="0 0 1000 220" aria-hidden focusable="false">
         <defs>
           <linearGradient id="senda-grad" x1="0" y1="0" x2="1" y2="0">
@@ -185,6 +189,7 @@ export function SendaNinja({ vista }: { vista: VistaSeguimiento }) {
         style={{ left: `${(x / 1000) * 100}%`, top: `${(y / 220) * 100}%` }}
         priority
       />
+      </div>
 
       {/* La misma informacion, como lista: es lo que se lee con lector de pantalla y en el celular */}
       <ol className="senda-fases" aria-label="Fases del proyecto">
