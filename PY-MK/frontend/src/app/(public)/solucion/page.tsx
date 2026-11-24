@@ -1,6 +1,14 @@
+import { notFound } from "next/navigation";
+
 import { PublicPageShell } from "@/components/public/public-page-shell";
+import { capsulaActiva } from "@/lib/capsulas";
 
 export default function SolucionPage() {
+  // Esta pagina describe conectores por API, y los conectores son simulados
+  // mientras la capsula de telemetria este apagada. Ocultarla del menu no
+  // basta: quien teclee /solucion llegaria igual. Por eso se cierra.
+  if (!capsulaActiva("telemetria")) notFound();
+
   return (
     <PublicPageShell>
       <section className="content-hero">

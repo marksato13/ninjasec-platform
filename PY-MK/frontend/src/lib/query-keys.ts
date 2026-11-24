@@ -67,6 +67,10 @@ export const QK = {
   certifications:  ()                          => ["certifications"]             as const,
   pendingApprovals: ()                          => ["approvals", "pending-count"] as const,
 
+  // Menus editables por rol
+  navMe:           ()                          => ["nav", "me"]                  as const,
+  navConfig:       ()                          => ["nav", "config"]              as const,
+
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
   projectDocs:     (f?: object)               => ["project-docs", f]            as const,

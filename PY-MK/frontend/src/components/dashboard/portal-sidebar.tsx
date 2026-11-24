@@ -15,8 +15,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
+import { getMisMenus } from "@/lib/api";
 import { clearSession, getStoredUser } from "@/lib/auth";
+import { QK } from "@/lib/query-keys";
 import { formatRoleLabel, getInitials } from "@/lib/role-utils";
 
 type NavItem = { label: string; href: string; icon: React.ReactNode };
@@ -59,7 +62,15 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
   const router   = useRouter();
   const pathname = usePathname();
   const user     = getStoredUser();
-  const navItems = getNavItems(user?.role);
+  const { data: misMenus } = useQuery({
+    queryKey: QK.navMe(),
+    queryFn: getMisMenus,
+    staleTime: 60_000,
+  });
+  const visibles = misMenus?.portal ?? null;
+  const navItems = getNavItems(user?.role).filter(
+    (item) => !visibles || visibles.includes(item.href),
+  );
 
   function handleLogout() {
     clearSession();

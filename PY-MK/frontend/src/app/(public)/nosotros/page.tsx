@@ -1,31 +1,43 @@
 import { PublicPageShell } from "@/components/public/public-page-shell";
+import { capsulaActiva } from "@/lib/capsulas";
 
 export default function NosotrosPage() {
+  const conApi = capsulaActiva("telemetria");
+
   return (
     <PublicPageShell>
       <section className="content-hero">
         <p className="eyebrow">Nosotros</p>
-        <h1>NinjaSec combina producto, servicios y ejecución técnica.</h1>
+        <h1>Consultoría técnica con un equipo que aprende haciendo.</h1>
         <p>
-          Nuestra misión es convertir datos de infraestructura y seguridad en información accionable,
-          mientras ayudamos a organizaciones a automatizar visibilidad, reportes y decisiones.
+          NinjaSec reúne dirección técnica con experiencia en redes y seguridad, y un equipo de
+          estudiantes y profesionales de infraestructura, desarrollo y ciberseguridad que trabaja
+          en casos reales con seguimiento.
         </p>
       </section>
 
       <section className="marketing-grid marketing-grid--two">
         <article className="panel">
           <h3>Misión</h3>
-          <p>Automatizar reporting e integraciones API para que empresas y MSPs operen con claridad y menor fricción.</p>
+          <p>
+            Ayudar a pequeñas y medianas empresas a ordenar, proteger y hacer crecer su tecnología,
+            con servicios claros y entregables que se entienden.
+          </p>
         </article>
         <article className="panel">
           <h3>Visión</h3>
-          <p>Ser una plataforma y firma tecnológica reconocida por conectar infraestructura, seguridad y negocio en un solo ecosistema.</p>
+          <p>
+            Ser la consultora tecnológica de confianza de las PYMEs, conectando infraestructura,
+            seguridad y desarrollo en un solo equipo.
+          </p>
         </article>
         <article className="panel panel-wide">
           <h3>Enfoque</h3>
           <p>
-            Construimos soluciones serias para APIs, dashboards, reportes automatizados y operación técnica,
-            manteniendo como núcleo el reporting desde dispositivos conectados y servicios de valor agregado.
+            Primero entendemos qué tienes, y solo entonces proponemos qué hacer. Documentamos lo
+            que construimos y decimos con claridad qué sabemos hacer y qué no.
+            {conApi &&
+              " Además desarrollamos una plataforma de reporting por API para dispositivos de red y seguridad."}
           </p>
         </article>
       </section>

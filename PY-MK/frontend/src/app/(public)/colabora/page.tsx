@@ -7,7 +7,10 @@ export default function ColaboraPage() {
       <section className="content-hero">
         <p className="eyebrow">Colabora</p>
         <h1>Forma parte de NinjaSec.</h1>
-        <p>Buscamos perfiles técnicos con interés en integración API, reporting, frontend y operación tecnológica.</p>
+        <p>
+          Buscamos estudiantes y profesionales con interés en infraestructura y redes, nube (AWS),
+          ciberseguridad y desarrollo de software. Trabajarás en casos reales, con seguimiento.
+        </p>
       </section>
       <JobApplicationForm />
     </PublicPageShell>

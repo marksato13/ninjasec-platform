@@ -1,6 +1,7 @@
 "use client";
 
 import { Pencil, Plus, Power } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -326,6 +327,18 @@ export default function DashboardSettingsPage() {
           </div>
         )}
       </article>
+
+      {isSuperAdmin && (
+        <article className="panel">
+          <div className="panel-head">
+            <div><p className="eyebrow">Navegación</p><h3>Menús por rol</h3></div>
+            <Link className="button button-primary button-sm" href="/dashboard/settings/menus">Editar menús</Link>
+          </div>
+          <p style={{ color: "var(--muted)", margin: 0, fontSize: "0.88rem" }}>
+            Decide qué opciones ve cada rol en el sitio web, en el panel del equipo y en el portal.
+          </p>
+        </article>
+      )}
 
       {isSuperAdmin && (
         <article className="panel">

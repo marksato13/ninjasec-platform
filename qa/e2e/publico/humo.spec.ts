@@ -13,12 +13,44 @@ import { test, expect } from "@playwright/test";
 const RUTAS_PUBLICAS = [
   "/",
   "/servicios",
-  "/solucion",
   "/nosotros",
   "/contacto",
+  "/agenda-demo",
   "/colabora",
   "/login",
 ];
+
+// `/solucion` describe conectores por API, y esos conectores son simulados.
+// Pertenece a la capsula de telemetria: con ella apagada la pagina NO EXISTE
+// (404 de Next, no una pagina vacia), y con ella encendida responde 200. La
+// prueba exige lo que corresponde a cada estado, porque "siempre 200" fue
+// justo lo que dejo de ser verdad al apagarla.
+const TELEMETRIA_ENCENDIDA = (process.env.NEXT_PUBLIC_CAPSULAS_ACTIVAS ?? "")
+  .split(",")
+  .map((c) => c.trim())
+  .includes("telemetria");
+
+test(`la ruta /solucion ${TELEMETRIA_ENCENDIDA ? "responde 200" : "no existe (404)"} según la cápsula`, async ({
+  page,
+}) => {
+  const respuesta = await page.goto("/solucion");
+
+  expect(respuesta, "sin respuesta para /solucion").not.toBeNull();
+  expect(respuesta!.status()).toBe(TELEMETRIA_ENCENDIDA ? 200 : 404);
+});
+
+test("con la cápsula apagada la portada no promete reporting por API", async ({
+  page,
+}) => {
+  test.skip(TELEMETRIA_ENCENDIDA, "solo aplica con telemetría apagada");
+
+  await page.goto("/");
+  const cuerpo = page.locator("body");
+
+  await expect(cuerpo).not.toContainText(/reporting inteligente por api/i);
+  // Las cifras fijas de la demo (17 clientes, 73 dispositivos...) ya no existen.
+  await expect(cuerpo).not.toContainText(/clientes monitoreados|dispositivos gestionados/i);
+});
 
 for (const ruta of RUTAS_PUBLICAS) {
   test(`la ruta pública ${ruta} responde 200`, async ({ page }) => {

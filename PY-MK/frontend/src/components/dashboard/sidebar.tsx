@@ -37,7 +37,7 @@ import { useState } from "react";
 
 import { clearSession, getStoredUser } from "@/lib/auth";
 import { formatRoleLabel, getInitials } from "@/lib/role-utils";
-import { getPendingApprovalsCount } from "@/lib/api";
+import { getMisMenus, getPendingApprovalsCount } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
 import { rutaDisponible } from "@/lib/capsulas";
 
@@ -138,9 +138,19 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
     enabled: isSuperAdmin,
   });
 
-  const visibleGroups = navGroups.filter((g) =>
-    isAdmin || (isCollaborator && g.staffAllowed)
-  );
+  // Lo que se muestra lo decide el servidor (menus editables por rol). Mientras
+  // no llega, o si falla, se usa la regla que estaba escrita aqui: el menu
+  // nunca se queda vacio por un fallo de red.
+  const { data: misMenus } = useQuery({
+    queryKey: QK.navMe(),
+    queryFn: getMisMenus,
+    staleTime: 60_000,
+  });
+  const visiblesDelServidor = misMenus?.staff ?? null;
+
+  const visibleGroups = visiblesDelServidor
+    ? navGroups
+    : navGroups.filter((g) => isAdmin || (isCollaborator && g.staffAllowed));
 
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() =>
     navGroups.reduce((acc, g) => { acc[g.id] = true; return acc; }, {} as Record<string, boolean>),
@@ -187,8 +197,12 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
 
           // Filtrar items: collaborator no ve los adminOnly, admin no ve Auditoria (solo super_admin)
           const items = group.items.filter((item) => {
-            if (isCollaborator && item.adminOnly) return false;
-            if (item.href === "/dashboard/audit" && !isSuperAdmin) return false;
+            if (visiblesDelServidor) {
+              if (!visiblesDelServidor.includes(item.href)) return false;
+            } else {
+              if (isCollaborator && item.adminOnly) return false;
+              if (item.href === "/dashboard/audit" && !isSuperAdmin) return false;
+            }
             // Pantallas de una capsula apagada: no se pintan. La pagina
             // ademas devuelve notFound(), porque esconder el menu no basta.
             if (!rutaDisponible(item.href)) return false;

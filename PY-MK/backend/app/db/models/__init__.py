@@ -53,6 +53,7 @@ from app.db.models.security_review import (
     ReviewRecommendation,
     SecurityReview,
 )
+from app.db.models.nav_visibility import NavVisibility
 from app.db.models.service import Service
 from app.db.models.service_request import ServiceRequest
 from app.db.models.skill import Skill
@@ -121,6 +122,7 @@ __all__ = [
     "ReviewChecklistItem",
     "ReviewFinding",
     "ReviewRecommendation",
+    "NavVisibility",
     "Role",
     "SecurityReview",
     "Service",

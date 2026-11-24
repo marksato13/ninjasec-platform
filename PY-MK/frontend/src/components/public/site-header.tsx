@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { getMenuPublico } from "@/lib/api";
+import { capsulaActiva } from "@/lib/capsulas";
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -16,6 +20,36 @@ const links = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  // Lo que se muestra lo decide el servidor (menus editables por rol).
+  // Mientras no llega, o si falla, se muestra todo: la barra nunca se queda
+  // vacia por un fallo de red.
+  const [visibles, setVisibles] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    getMenuPublico()
+      .then((r) => {
+        if (vivo) setVisibles(r.visibles);
+      })
+      .catch(() => {
+        /* se queda con todos los enlaces */
+      });
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  const conApi = capsulaActiva("telemetria");
+  // Sin la plataforma no hay demo que agendar: la pagina sirve para pedir una reunion.
+  const etiqueta = (l: { href: string; label: string }) =>
+    l.href === "/agenda-demo" && !conApi ? "Agenda reunión" : l.label;
+  const enlaces = visibles ? links.filter((l) => visibles.includes(l.href)) : links;
+
+  // El subtitulo promete reporting por API, y los conectores todavia son
+  // simulados: solo se dice con la capsula de telemetria encendida.
+  const subtitulo = conApi
+    ? "API Reporting Platform"
+    : "Consultoría de TI y ciberseguridad";
 
   return (
     <header className="site-header">
@@ -24,18 +58,18 @@ export function SiteHeader() {
           <span className="brand-mark__logo">NS</span>
           <span>
             <strong>NinjaSec</strong>
-            <small>API Reporting Platform</small>
+            <small>{subtitulo}</small>
           </span>
         </Link>
 
         <nav className="site-nav">
-          {links.map((link) => (
+          {enlaces.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               className={`site-nav__link ${pathname === link.href ? "site-nav__link--active" : ""}`}
             >
-              {link.label}
+              {etiqueta(link)}
             </Link>
           ))}
         </nav>

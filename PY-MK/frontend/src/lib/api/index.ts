@@ -27,3 +27,4 @@ export * from "./vulnerability-inventory";
 export * from "./netdoctor";
 export * from "./health-score";
 export * from "./catalog-devices";
+export * from "./navigation";

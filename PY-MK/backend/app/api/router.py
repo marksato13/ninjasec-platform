@@ -38,6 +38,7 @@ from app.modules.health_score.routers.router import router as health_score_route
 from app.modules.services.routers.router import router as services_router
 from app.modules.support_tickets.routers.router import router as support_tickets_router
 from app.modules.users.routers.router import router as users_router
+from app.modules.navigation.router import router as navigation_router
 from app.modules.certifications.routers.router import router as certifications_router
 
 from app.core.config import settings
@@ -71,6 +72,7 @@ _registrar(auth_router)
 _registrar(dashboard_router)
 _registrar(organizations_router)
 _registrar(users_router)
+_registrar(navigation_router)
 _registrar(clients_router)
 _registrar(client_sites_router)
 _registrar(client_contacts_router)
