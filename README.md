@@ -3,8 +3,8 @@
 Plataforma para gestionar **clientes, proyectos y colaboradores** de una consultora de
 infraestructura, nube, seguridad y desarrollo para pequeñas y medianas empresas.
 
-🌐 **En línea:** <https://144-22-50-158.sslip.io>
-*(Dirección provisional. Cambiará cuando haya un dominio propio.)*
+🌐 **En línea:** <https://ninjasec-pe.duckdns.org>
+*(Dominio gratuito de DuckDNS. Cambiará si se registra un dominio propio.)*
 
 > **Origen:** NinjaSec nace para que estudiantes de Desarrollo, Infraestructura y
 > Ciberseguridad practiquen entregando valor real a PYMEs, con supervisión.
