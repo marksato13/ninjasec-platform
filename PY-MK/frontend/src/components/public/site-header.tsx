@@ -11,6 +11,7 @@ const links = [
   { href: "/", label: "Inicio" },
   { href: "/nosotros", label: "Nosotros" },
   { href: "/servicios", label: "Servicios" },
+  { href: "/proyectos", label: "Proyectos" },
   { href: "/solucion", label: "Solucion" },
   { href: "/contacto", label: "Contacto" },
   { href: "/agenda-demo", label: "Agenda Demo" },
@@ -43,7 +44,10 @@ export function SiteHeader() {
   // Sin la plataforma no hay demo que agendar: la pagina sirve para pedir una reunion.
   const etiqueta = (l: { href: string; label: string }) =>
     l.href === "/agenda-demo" && !conApi ? "Agenda reunión" : l.label;
-  const enlaces = visibles ? links.filter((l) => visibles.includes(l.href)) : links;
+  // Sin respuesta del servidor se muestran los enlaces por defecto, pero NO los que dependen
+  // de la capsula apagada: /solucion devuelve 404 y un enlace roto es peor que no ponerlo.
+  const porDefecto = links.filter((l) => l.href !== "/solucion" || conApi);
+  const enlaces = visibles ? links.filter((l) => visibles.includes(l.href)) : porDefecto;
 
   // El subtitulo promete reporting por API, y los conectores todavia son
   // simulados: solo se dice con la capsula de telemetria encendida.

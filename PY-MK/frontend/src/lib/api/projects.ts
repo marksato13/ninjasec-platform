@@ -38,3 +38,8 @@ export async function getProjectTasks(projectId?: number): Promise<ProjectTaskIt
 export async function createProjectTask(payload: { project_id: number; assigned_user_id: number; title: string; description?: string | null; status?: string }): Promise<ProjectTaskItem> { return request<ProjectTaskItem>("/project-tasks/", { method: "POST", body: JSON.stringify(payload) }); }
 export async function updateProjectTask(id: number, payload: { title?: string | null; description?: string | null; status?: string | null; assigned_user_id?: number | null }): Promise<ProjectTaskItem> { return request<ProjectTaskItem>(`/project-tasks/${id}`, { method: "PUT", body: JSON.stringify(payload) }); }
 export async function deleteProjectTask(id: number): Promise<{ message: string }> { return request<{ message: string }>(`/project-tasks/${id}`, { method: "DELETE" }); }
+
+/** El colaborador mueve el estado de SU tarea; un admin, la de cualquiera. Titulo y responsable siguen siendo del admin. */
+export async function updateMyTaskStatus(id: number, status: "pending" | "in_progress" | "done"): Promise<ProjectTaskItem> {
+  return request<ProjectTaskItem>(`/project-tasks/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) });
+}

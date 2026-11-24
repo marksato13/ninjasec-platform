@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -114,6 +115,45 @@ def create_project_task(
     db.commit()
     db.refresh(task)
     return _to_read(task, project, assigned_user)
+
+
+class TaskStatusIn(BaseModel):
+    status: str
+
+
+@router.patch("/{task_id}/status", response_model=ProjectTaskRead)
+def update_my_task_status(
+    task_id: int,
+    payload: TaskStatusIn,
+    current_user: CurrentUser = Depends(
+        require_roles(
+            RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value
+        )
+    ),
+    db: Session = Depends(get_db),
+) -> ProjectTaskRead:
+    """Cambia SOLO el estado de una tarea.
+
+    Existe porque `PUT /project-tasks/{id}` es solo de admin, y eso dejaba al
+    colaborador sin forma de decir "termine": veia su tarea y no podia moverla.
+
+    Un colaborador solo puede mover las tareas ASIGNADAS A EL. La de otro
+    devuelve 404, no 403: no se confirma que exista. Un admin mueve cualquiera
+    de su organizacion. Titulo, descripcion y responsable siguen siendo del admin.
+    """
+    task = Repository(db).get_by_id(ProjectTask, task_id)
+    if not task or task.organization_id != current_user.organization_id:
+        raise HTTPException(status_code=404, detail="Task not found")
+    if current_user.role == RoleCode.COLLABORATOR.value and task.assigned_user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Task not found")
+    try:
+        task.status = ProjectTaskStatus(payload.status)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid status") from exc
+    db.add(task)
+    db.commit()
+    db.refresh(task)
+    return _to_read(task, db.get(Project, task.project_id), db.get(User, task.assigned_user_id))
 
 
 @router.put("/{task_id}", response_model=ProjectTaskRead)

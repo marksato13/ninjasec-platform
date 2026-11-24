@@ -71,6 +71,12 @@ export const QK = {
   navMe:           ()                          => ["nav", "me"]                  as const,
   navConfig:       ()                          => ["nav", "config"]              as const,
 
+  // Formacion
+  studyPlans:      ()                          => ["study", "plans"]           as const,
+  studyMe:         ()                          => ["study", "me"]              as const,
+  studyMine:       (id: number)                => ["study", "me", id]          as const,
+  studyTeam:       ()                          => ["study", "team"]            as const,
+
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
   projectDocs:     (f?: object)               => ["project-docs", f]            as const,
