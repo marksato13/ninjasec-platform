@@ -9,6 +9,7 @@ from app.db.models.client_profile import ClientProfile
 from app.db.models.enums import ProjectTaskStatus, RoleCode
 from app.db.models.project import Project
 from app.db.models.project_task import ProjectTask
+from app.db.models.project_tracking import ProjectUpdate
 from app.db.models.user import User
 from app.db.repositories.base import Repository
 from app.modules.projects.schemas import (
@@ -18,6 +19,22 @@ from app.modules.projects.schemas import (
 )
 
 router = APIRouter(prefix="/project-tasks", tags=["project-tasks"])
+
+
+def registrar_tarea_hecha(db: Session, task: ProjectTask, nuevo: ProjectTaskStatus, actor: CurrentUser) -> None:
+    """Cuando una tarea PASA a hecha, queda en la bitacora que ve el cliente.
+
+    Solo en la transicion: marcar dos veces como hecha no escribe dos entradas, y
+    reabrirla no borra la entrada anterior (la bitacora cuenta lo que paso).
+    """
+    if nuevo != ProjectTaskStatus.DONE or task.status == ProjectTaskStatus.DONE:
+        return
+    quien = db.get(User, task.assigned_user_id)
+    db.add(ProjectUpdate(
+        organization_id=task.organization_id, project_id=task.project_id, author_user_id=actor.id,
+        kind="task_done", phase=task.phase,
+        title=f"{(quien.full_name if quien else 'El equipo')} completó: {task.title}"[:160],
+        visible_to_client=True))
 
 
 def _to_read(task: ProjectTask, project: Project, assigned_user: User) -> ProjectTaskRead:
@@ -110,6 +127,7 @@ def create_project_task(
         title=payload.title,
         description=payload.description,
         status=status_value,
+        phase=project.phase,
     )
     db.add(task)
     db.commit()
@@ -147,9 +165,11 @@ def update_my_task_status(
     if current_user.role == RoleCode.COLLABORATOR.value and task.assigned_user_id != current_user.id:
         raise HTTPException(status_code=404, detail="Task not found")
     try:
-        task.status = ProjectTaskStatus(payload.status)
+        nuevo = ProjectTaskStatus(payload.status)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail="Invalid status") from exc
+    registrar_tarea_hecha(db, task, nuevo, current_user)
+    task.status = nuevo
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -175,9 +195,11 @@ def update_project_task(
         task.description = payload.description
     if payload.status is not None:
         try:
-            task.status = ProjectTaskStatus(payload.status)
+            nuevo = ProjectTaskStatus(payload.status)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail="Invalid status") from exc
+        registrar_tarea_hecha(db, task, nuevo, current_user)
+        task.status = nuevo
     if payload.assigned_user_id is not None:
         assigned_user = db.scalar(
             select(User).where(

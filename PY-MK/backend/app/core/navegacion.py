@@ -116,6 +116,7 @@ OPCIONES: tuple[Opcion, ...] = (
            fija=("super_admin",)),
     # --- Portal -------------------------------------------------------------
     _portal("/portal", "Inicio", ("client", "collaborator", "admin", "super_admin")),
+    _portal("/portal/projects", "Proyectos", ("client",)),
     _portal("/portal/inventory", "Inventario", ("client",)),
     _portal("/portal/documents", "Documentos", ("client",)),
     _portal("/portal/tickets", "Tickets", ("client",)),

@@ -29,3 +29,4 @@ export * from "./health-score";
 export * from "./catalog-devices";
 export * from "./navigation";
 export * from "./study";
+export * from "./tracking";

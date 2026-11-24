@@ -153,7 +153,7 @@ def test_sin_ediciones_el_colaborador_ve_lo_que_veia(http_client, collab_tok):
 def test_sin_ediciones_el_cliente_solo_tiene_portal(http_client, client_tok):
     datos = http_client.get(f"{API}/me", headers=_auth(client_tok)).json()
     assert datos["staff"] is None
-    assert set(datos["portal"]) == {"/portal", "/portal/inventory", "/portal/documents",
+    assert set(datos["portal"]) == {"/portal", "/portal/projects", "/portal/inventory", "/portal/documents",
                                     "/portal/tickets", "/portal/services", "/portal/profile"}
 
 

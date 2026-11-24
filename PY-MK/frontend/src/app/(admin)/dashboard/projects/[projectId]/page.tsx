@@ -343,6 +343,9 @@ export default function ProjectDetailPage() {
           <h2>{project.name}</h2>
         </div>
         <div className="panel-actions">
+          <Link className="button button-primary" href={`/dashboard/projects/${project.id}/centro`}>
+            Centro de mando
+          </Link>
           <Link className="button button-ghost" href="/dashboard/projects">
             Volver
           </Link>

@@ -26,6 +26,7 @@ class ProjectTask(Base):
         Enum(ProjectTaskStatus, name="project_task_status_enum"),
         default=ProjectTaskStatus.PENDING,
     )
+    phase: Mapped[str | None] = mapped_column(String(20), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
