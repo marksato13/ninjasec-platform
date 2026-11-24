@@ -56,6 +56,12 @@ from app.db.models.security_review import (
 from app.db.models.service import Service
 from app.db.models.service_request import ServiceRequest
 from app.db.models.skill import Skill
+from app.db.models.study_plan import (
+    StudyEnrollment,
+    StudyModule,
+    StudyPlan,
+    StudyProgress,
+)
 from app.db.models.support_ticket import SupportTicket, SupportTicketEvent, TicketLink
 from app.db.models.user import User
 from app.db.models.user_certification import UserCertification
@@ -120,6 +126,10 @@ __all__ = [
     "Service",
     "ServiceRequest",
     "Skill",
+    "StudyEnrollment",
+    "StudyModule",
+    "StudyPlan",
+    "StudyProgress",
     "SupportTicket",
     "SupportTicketEvent",
     "TicketLink",
