@@ -1,0 +1,13 @@
+[Unit]
+Description=NinjaSec - desplegar lo que haya entrado en main
+After=docker.service network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/ninjasec/PY-MK/infra/actualizar.sh
+# Un despliegue que se cuelga no puede quedarse bloqueando al siguiente.
+TimeoutStartSec=900
+# El script ya revierte solo si la version nueva no levanta; que systemd
+# lo reintente encima solo duplicaria el trabajo.
+Restart=no

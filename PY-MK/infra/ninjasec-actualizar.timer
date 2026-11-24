@@ -1,0 +1,16 @@
+[Unit]
+Description=Comprobar main cada 5 minutos
+
+[Timer]
+# Cinco minutos es el compromiso: lo bastante rapido para que un merge se
+# vea casi en caliente, y lo bastante espaciado para no castigar a la API
+# de GitHub ni a una VM pequena. El git fetch sin novedad tarda ~1 segundo.
+OnBootSec=3min
+OnUnitActiveSec=5min
+# Sin esto, al reiniciar la maquina todos los temporizadores arrancan a la
+# vez y compiten por la CPU de una e2-medium.
+RandomizedDelaySec=30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

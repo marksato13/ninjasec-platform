@@ -94,13 +94,26 @@ navegador: no hace falta configurar claves.
 
 ## Paso 4 — Instalar
 
+> **El `curl` directo NO funciona.** El repositorio es privado y
+> `raw.githubusercontent.com` devuelve 404 sin autenticarse. Lo comprobé.
+> Hay que pegar el script a mano, que además te obliga a leerlo antes de
+> ejecutarlo con `sudo`, que es lo correcto.
+
+Abre
+[`PY-MK/infra/instalar-en-vm.sh`](../../PY-MK/infra/instalar-en-vm.sh) en
+GitHub, pulsa **Copy raw file**, y en la terminal SSH de la VM:
+
 ```bash
-# en la VM
 sudo apt-get update && sudo apt-get install -y git
-curl -fsSL https://raw.githubusercontent.com/marksato13/ninjasec-platform/main/PY-MK/infra/instalar-en-vm.sh -o instalar.sh
+cat > instalar.sh <<'FIN'
+# ...pega aqui el contenido del script...
+FIN
 less instalar.sh      # leelo antes de ejecutarlo
 sudo bash instalar.sh
 ```
+
+Cuando el repositorio pase a público, el `curl` de una línea volverá a
+funcionar y esto sobra.
 
 El script comprueba la máquina, instala Docker, **genera los secretos**
 —así la rotación de G-03 ocurre por construcción—, cierra el cortafuegos y
@@ -114,6 +127,25 @@ Te va a pedir dos cosas y a parar una vez:
    privado: el script genera una clave y te la muestra para que la pegues en
    `Settings → Deploy keys`. **No marques «Allow write access»**: esa máquina
    está expuesta a internet y solo necesita leer.
+
+## Paso 4-bis — El despliegue continuo ya quedó activo
+
+El instalador deja un temporizador de systemd que **comprueba `main` cada
+5 minutos**. Lo que fusiones en `main` sube solo, sin que entres a la VM.
+
+Tira desde la máquina en vez de que GitHub empuje: así no hay que guardar
+una clave privada en los secretos del repositorio ni abrir SSH a los rangos
+de GitHub.
+
+**Y si la versión nueva no levanta, vuelve sola a la anterior.** Un
+despliegue continuo que deja el sitio caído es peor que no tenerlo: te
+enteras por un cliente, no por el log.
+
+```bash
+systemctl list-timers ninjasec-actualizar.timer
+journalctl -u ninjasec-actualizar.service -n 50
+sudo systemctl start ninjasec-actualizar.service   # forzar uno ahora
+```
 
 ## Paso 5 — El dominio
 

@@ -265,6 +265,24 @@ else
     exit 1
 fi
 
+# ------------------------------------------------- 7. despliegue continuo
+
+titulo "Despliegue continuo"
+
+if [ -f "$DESTINO/PY-MK/infra/ninjasec-actualizar.timer" ]; then
+    chmod +x "$DESTINO/PY-MK/infra/actualizar.sh"
+    cp "$DESTINO/PY-MK/infra/ninjasec-actualizar.service" /etc/systemd/system/
+    cp "$DESTINO/PY-MK/infra/ninjasec-actualizar.timer"   /etc/systemd/system/
+    systemctl daemon-reload
+    systemctl enable --now ninjasec-actualizar.timer
+    verde "  Activado: comprueba main cada 5 minutos."
+    gris "  Tira desde aqui en vez de que GitHub empuje: asi no hace falta"
+    gris "  guardar una clave privada en los secretos del repositorio."
+    gris "  Si la version nueva no levanta, VUELVE a la anterior sola."
+else
+    rojo "  No encuentro las unidades de systemd; sin despliegue continuo."
+fi
+
 # ---------------------------------------------------------------- resumen
 
 titulo "Listo"
@@ -274,6 +292,11 @@ echo
 gris "  El certificado de Let's Encrypt tarda hasta un minuto la primera vez."
 gris "  Si el dominio aun no apunta a esta IP, fallara: arregla el DNS y"
 gris "  reinicia caddy con 'docker compose -p ninjasec restart caddy'."
+echo
+echo "  Despliegue continuo:"
+gris "    systemctl list-timers ninjasec-actualizar.timer"
+gris "    journalctl -u ninjasec-actualizar.service -n 50"
+gris "    systemctl start ninjasec-actualizar.service   # forzar ahora"
 echo
 echo "  Comandos utiles, desde $DESTINO/PY-MK/infra :"
 gris "    docker compose -p ninjasec -f docker-compose.prod.yml ps"
