@@ -1,12 +1,20 @@
 # ════════════════════════════════════════════════════════════════════
 # NinjaSec — Caddy (reverse proxy + HTTPS automático Let's Encrypt)
 # ════════════════════════════════════════════════════════════════════
-# Las variables {$DOMAIN} y {$ACME_EMAIL} vienen del .env
+# La variable {$DOMAIN} viene del .env.
+#
+# SIN `email` A PROPOSITO. Caddy obtiene el certificado de Let's Encrypt igual
+# sin el, y una linea `email {$ACME_EMAIL}` con la variable vacia hace que
+# Caddy se niegue a arrancar. Asi la maquina no tiene que llevar un Caddyfile
+# distinto del repositorio: un cambio local en esta maquina bloquea el
+# despliegue continuo (`git merge --ff-only`).
+#
+# Si quieres avisos de caducidad de Let's Encrypt, anade dentro del bloque
+# global:   email tu@correo.com
 # ════════════════════════════════════════════════════════════════════
 
 {
-	email {$ACME_EMAIL}
-	# Para dominios públicos (DuckDNS, dominio comprado) Caddy genera
+	# Para dominios públicos (DuckDNS, sslip.io, dominio comprado) Caddy genera
 	# certificado válido. Para red interna, descomentar:
 	# local_certs
 }

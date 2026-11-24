@@ -45,7 +45,15 @@ git --no-pager log --oneline "$ACTUAL..$NUEVO" | sed 's/^/    /'
 
 # --------------------------------------------------- red de seguridad
 
+# OJO: `/health` de Caddy lo responde el propio Caddy con "ok", sin mirar el
+# backend. Por si solo no prueba nada: una version rota del backend o del
+# frontend pasaria la prueba y no se revertiria. Por eso se mira el estado de
+# salud de los dos contenedores, que si ejecutan su propio healthcheck.
 salud() {
+    local c
+    for c in ninjasec-backend ninjasec-frontend; do
+        [ "$(docker inspect -f '{{.State.Health.Status}}' "$c" 2>/dev/null)" = "healthy" ] || return 1
+    done
     curl -fsS -o /dev/null --max-time 5 http://localhost/health 2>/dev/null
 }
 
