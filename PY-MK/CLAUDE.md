@@ -43,6 +43,15 @@ docker compose -p ninjasec down -v                 # destructivo — borra DB
 API base: `http://localhost:8024/api/v1` (en producción Next.js hace proxy desde `/api/v1/*`)
 
 ### Credenciales seed
+
+> ⚠️ **Solo para desarrollo local.** Estas claves estan escritas en
+> `backend/app/db/seed.py` y este repositorio va a ser publico, asi que hay
+> que darlas por conocidas por cualquiera.
+>
+> En produccion no se pueden usar: desde el PR #140, `seed_initial_data()`
+> **se niega a correr** si `APP_ENV=production` y no hay `SEED_PASSWORD`.
+> Nunca levantes nada accesible desde fuera sin poner esa variable.
+
 | Rol | Email | Contraseña |
 |---|---|---|
 | super_admin | `admin@ninjasec.local` | `change-me` |

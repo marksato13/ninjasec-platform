@@ -60,6 +60,35 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
 
+  # ─── Respaldos de PostgreSQL ───────────────────────────────────────
+  # Hasta ahora ./backups era un punto de montaje vacio: estaba declarado y
+  # no habia nada que escribiera dentro. Esto es lo que escribe.
+  #
+  # Contenedor propio y no cron del anfitrion: viaja con el compose y
+  # funciona igual en cualquier maquina, sin que nadie tenga que acordarse
+  # de configurar nada en el servidor.
+  respaldos:
+    image: postgres:16-alpine
+    container_name: ninjasec-respaldos
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST:            postgres
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      RESPALDO_DESTINO:         /respaldos
+      RESPALDO_RETENCION_DIAS:  ${RESPALDO_RETENCION_DIAS:-14}
+      RESPALDO_INTERVALO_HORAS: ${RESPALDO_INTERVALO_HORAS:-24}
+    volumes:
+      - ./respaldos/respaldar.sh:/respaldar.sh:ro
+      - ./backups:/respaldos
+    entrypoint: ["sh", "/respaldar.sh"]
+    networks:
+      - ninjasec-net
+
   # ─── Backend FastAPI ───────────────────────────────────────────────
   backend:
     build:
@@ -80,6 +109,14 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
       CORS_ORIGINS:                "${CORS_ORIGINS:?CORS_ORIGINS requerido en .env, p.ej. https://tudominio.com}"
       SEED_ON_STARTUP:             "false"
+      # Sin esta variable, seed.py SE NIEGA a sembrar en produccion: las
+      # claves de desarrollo estan escritas en el codigo y el repositorio
+      # va a ser publico. Solo hace falta si de verdad quieres poblar este
+      # entorno; en una instalacion normal se deja vacia.
+      SEED_PASSWORD:               ${SEED_PASSWORD:-}
+      # Capsulas encendidas. Vacio = ninguna. "telemetria" esta apagada
+      # porque los conectores son simulados.
+      CAPSULAS_ACTIVAS:            ${CAPSULAS_ACTIVAS:-}
       # IS_PRODUCTION y APP_ENV son equivalentes: cualquiera de las dos
       # enciende settings.is_production (ver app/core/config.py).
       IS_PRODUCTION:               "true"

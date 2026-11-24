@@ -8,7 +8,7 @@ Plataforma de infraestructura y ciberseguridad para PYMEs, consultoras y MSPs. U
 
 **https://compression-solutions-encourages-specify.trycloudflare.com**
 
-Backend, frontend y base de datos reales — no es una demo estática. Un timer systemd reconstruye el stack automáticamente cada vez que `main` avanza (cada 5 min como máximo de retraso), así que este link siempre refleja el último merge. Login con las credenciales del seed (`admin@ninjasec.local` / `change-me` para super_admin; el resto de roles en `PY-MK/CLAUDE.md`).
+Backend, frontend y base de datos reales — no es una demo estática. Un timer systemd reconstruye el stack automáticamente cada vez que `main` avanza (cada 5 min como máximo de retraso), así que este link siempre refleja el último merge. Las credenciales de la vista previa **no se publican aqui**: este repositorio va a ser publico, y una credencial de super_admin escrita en el README es una credencial de super_admin regalada. Pidelas si necesitas entrar.
 
 ⚠️ **La URL puede cambiar.** Es un túnel gratuito de Cloudflare sin dominio propio (`trycloudflare.com`), y esos túneles no tienen hostname fijo: si el proceso se reinicia (crash, reboot), Cloudflare asigna una URL nueva al azar. El proceso se auto-reinicia solo (systemd), pero la URL de arriba puede quedar desactualizada — si no carga, avisa y se regenera el link.
 
