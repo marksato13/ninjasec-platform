@@ -25,6 +25,8 @@ export function SiteHeader() {
   // Mientras no llega, o si falla, se muestra todo: la barra nunca se queda
   // vacia por un fallo de red.
   const [visibles, setVisibles] = useState<string[] | null>(null);
+  // En pantallas chicas el menu va plegado detras de un boton.
+  const [abierto, setAbierto] = useState(false);
 
   useEffect(() => {
     let vivo = true;
@@ -66,11 +68,23 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="site-nav">
+        <button
+          type="button"
+          className="site-nav-toggle"
+          aria-expanded={abierto}
+          aria-controls="menu-publico"
+          aria-label={abierto ? "Cerrar el menú" : "Abrir el menú"}
+          onClick={() => setAbierto((v) => !v)}
+        >
+          <span aria-hidden>{abierto ? "✕" : "☰"}</span>
+        </button>
+
+        <nav id="menu-publico" className={`site-nav ${abierto ? "site-nav--open" : ""}`}>
           {enlaces.map((link) => (
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setAbierto(false)}
               className={`site-nav__link ${pathname === link.href ? "site-nav__link--active" : ""}`}
             >
               {etiqueta(link)}

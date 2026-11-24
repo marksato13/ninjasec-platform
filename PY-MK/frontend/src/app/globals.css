@@ -3767,3 +3767,55 @@ a {
 .react-flow__controls button { background: var(--surface); color: var(--text); border-color: var(--border); }
 .react-flow__minimap { background: var(--surface) !important; border: 1px solid var(--border); }
 @media (max-width: 850px) { .topology-shell { grid-template-columns: 1fr; } .topology-detail { width: auto; border-left: 0; border-top: 1px solid var(--border); } }
+
+/* ---- Responsive: pantallas pequenas ----
+   Una columna `1fr` equivale a minmax(auto, 1fr): una palabra larga o un contenido ancho la
+   ensancha y el texto se sale de su tarjeta. `minmax(0, 1fr)` deja que la columna se encoja. */
+.site-nav-toggle { display: none; }
+
+@media (max-width: 920px) {
+  /* Portada y cabecera publica */
+  .hero-marketing,
+  .content-hero { grid-template-columns: minmax(0, 1fr); }
+  .hero-marketing > *,
+  .content-hero > * { min-width: 0; }
+
+  .site-header__inner { display: flex; flex-wrap: wrap; align-items: center; }
+  .brand-mark { flex: 1 1 auto; min-width: 0; }
+  .site-nav-toggle {
+    display: inline-grid; place-items: center; width: 44px; height: 44px;
+    border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.04);
+    color: var(--text); cursor: pointer;
+  }
+  .site-nav { display: none; flex-basis: 100%; flex-direction: column; gap: 4px; padding-top: 8px; }
+  .site-nav--open { display: flex; }
+  .site-nav__link { padding: 12px 14px; }
+
+  /* Panel (admin, colaborador y portal). La barra superior tiene altura fija y en movil pasa a
+     columna: lo que no cabia se salia y se encimaba con el contenido. Ahora crece con su contenido. */
+  .admin-shell { grid-template-columns: minmax(0, 1fr); }
+  .workspace { min-width: 0; }
+  .topbar { height: auto; min-height: var(--topbar-h); padding: 14px 16px; gap: 12px; }
+  .topbar-actions { flex-wrap: wrap; justify-content: flex-start; gap: 8px; }
+  .topbar-actions .button { width: auto; flex: 1 1 130px; min-height: 44px; padding: 9px 16px; }
+  .workspace-content { padding: 16px 14px 32px; grid-template-columns: minmax(0, 1fr); }
+  .workspace-content > * { min-width: 0; }
+  .page-stack { padding: 14px 8px 20px; grid-template-columns: minmax(0, 1fr); }
+  .page-stack > * { min-width: 0; }
+}
+
+@media (max-width: 640px) {
+  .landing-hero-wrap { padding: 8px; border-radius: 22px; }
+  .hero-marketing { padding: 20px; border-radius: 22px; gap: 20px; }
+  .content-hero { padding: 20px; border-radius: 22px; }
+  .hero-marketing h1,
+  .content-hero h1,
+  .landing-card h1 {
+    font-size: clamp(1.45rem, 6.5vw, 2.3rem);
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  .brand-mark small { display: none; }
+  .hero-actions { flex-wrap: wrap; }
+  .hero-actions .button { flex: 1 1 100%; justify-content: center; text-align: center; }
+}
