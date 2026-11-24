@@ -1,0 +1,38 @@
+# Mismo motivo que en el frontend: el `COPY . .` del Dockerfile arrastra lo
+# que haya en el host. Aqui el riesgo son los bytecodes compilados para otra
+# version de Python, los entornos virtuales con rutas de Windows dentro y
+# -lo mas grave- el .env.
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.mypy_cache
+.ruff_cache
+htmlcov
+.coverage
+*.egg-info
+
+# Entornos virtuales: sus rutas y binarios son de la maquina que los creo
+.venv
+venv
+env
+
+# Variables de entorno y secretos: nunca entran en una imagen
+.env
+.env.*
+!.env.example
+
+# Base de datos de las pruebas
+tests/test.db
+
+# Control de versiones y editores
+.git
+.gitignore
+.vscode
+.idea
+
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,43 @@
+# Sin este archivo, el `COPY . .` del Dockerfile mete el node_modules del
+# HOST encima del que instalo `npm ci` en la etapa deps.
+#
+# No es teorico: paso. En una maquina Windows con node_modules de Next 15 y
+# el binario @next/swc-win32-x64-msvc, el build fallaba con
+#
+#     unknown field `disablePageConfig` at line 1 column 3831
+#
+# porque el JS de Next 16 se ejecutaba contra el SWC de Next 15, y encima un
+# binario de Windows dentro de una imagen Alpine.
+#
+# El CI no lo veia porque su checkout es nuevo y no hay node_modules que
+# copiar. Es decir: la imagen salia distinta segun la maquina.
+node_modules
+.next
+out
+build
+dist
+
+# Variables de entorno: nunca entran en una imagen
+.env
+.env.*
+!.env.example
+
+# Caches y artefactos de herramientas
+.turbo
+.swc
+coverage
+*.tsbuildinfo
+playwright-report
+test-results
+.eslintcache
+
+# Control de versiones y editores
+.git
+.gitignore
+.vscode
+.idea
+
+# Sistema operativo
+Thumbs.db
+desktop.ini
+.DS_Store

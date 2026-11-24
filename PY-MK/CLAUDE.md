@@ -20,13 +20,20 @@ Todo el desarrollo local pasa por Docker Compose en `infra/`:
 
 ```powershell
 # Desde la raíz del repo:
-cd infra
-docker compose up -d --build           # levantar todo
-docker compose up -d --build backend   # rebuild sólo backend
-docker compose up -d --build frontend  # rebuild sólo frontend
-docker compose down                    # detener (mantiene volumen Postgres)
-docker compose down -v                 # destructivo — borra DB
+cd PY-MK/infra
+docker compose -p ninjasec up -d --build           # levantar todo
+docker compose -p ninjasec up -d --build backend   # rebuild sólo backend
+docker compose -p ninjasec up -d --build frontend  # rebuild sólo frontend
+docker compose -p ninjasec down                    # detener (mantiene volumen Postgres)
+docker compose -p ninjasec down -v                 # destructivo — borra DB
 ```
+
+> **El `-p ninjasec` no es opcional.** Es lo que usa `PY-MK/up.ps1`, y sin él
+> Compose deriva el nombre del proyecto de la carpeta (`infra`) y crea un
+> stack paralelo con volúmenes vacíos: los contenedores chocan por nombre y
+> parece que la base de datos se perdió, cuando lo que pasa es que estás
+> mirando otra. El `docker-compose.yml` no lleva clave `name:`, así que el
+> nombre tiene que ir en el comando.
 
 **Puertos:**
 - Frontend (Next.js): http://localhost:3018
