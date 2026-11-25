@@ -1,25 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getSessionDisplayName, getStoredUser } from "@/lib/auth";
 
-const titles: Record<string, string> = {
-  "/portal": "Portal",
-  "/portal/profile": "Perfil",
-  "/portal/projects": "Proyectos",
-  "/portal/reports": "Reportes",
-  "/portal/support": "Soporte",
-  "/portal/company": "Empresa",
-  "/portal/inventory": "Inventario",
-  "/portal/tickets": "Tickets",
-  "/portal/reviews": "Revisiones",
-  "/portal/tasks": "Tareas",
-  "/portal/resources": "Recursos",
-  "/portal/documents": "Documentos",
-};
 
 function getInitials(name?: string | null) {
   if (!name) return "NS";
@@ -29,20 +14,18 @@ function getInitials(name?: string | null) {
 }
 
 export function PortalHeader({ onToggleSidebar }: { onToggleSidebar?: () => void }) {
-  const pathname = usePathname();
   const user = getStoredUser();
-  const title = titles[pathname] || "Portal";
 
   return (
     <header className="portal-header">
       <div className="portal-header__title">
-        <span className="eyebrow">Portal</span>
-        <h2>{title}</h2>
+        <strong style={{ fontSize: "0.95rem" }}>Portal de clientes</strong>
+        <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>Ninja Tech</span>
       </div>
 
       <div className="portal-header__actions">
         {onToggleSidebar ? (
-          <button className="sidebar-toggle" type="button" aria-label="Abrir menu" onClick={onToggleSidebar}>
+          <button className="sidebar-toggle" type="button" aria-label="Abrir menú" onClick={onToggleSidebar}>
             <span />
             <span />
             <span />

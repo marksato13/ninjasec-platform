@@ -20,8 +20,14 @@ import {
   getRisks,
   updateRiskFactors,
 } from "@/lib/api";
+import { capsulaActiva } from "@/lib/capsulas";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { QK } from "@/lib/query-keys";
+
+// Las consolas (integrations) y la puntuacion por host son de la capsula de
+// telemetria. Apagada, sus rutas no existen en el backend: no se consultan ni se
+// muestra lo que depende de ellas.
+const TELEMETRIA = capsulaActiva("telemetria");
 
 const LEVELS = [1, 2, 3, 4, 5];
 const ASSET_TYPES = ["hardware", "software", "information", "service", "people", "facility"];
@@ -53,7 +59,7 @@ export default function RisksPage() {
   const { data: hostScores = [] } = useQuery({
     queryKey: QK.hostScores(activeClientId),
     queryFn: () => getHostScores(activeClientId as number),
-    enabled: activeClientId !== undefined,
+    enabled: activeClientId !== undefined && TELEMETRIA,
   });
   const { data: threats = [] } = useQuery({ queryKey: QK.riskThreats(), queryFn: getRiskThreats });
   const { data: vulnerabilities = [] } = useQuery({ queryKey: QK.riskVulnerabilities(), queryFn: getRiskVulnerabilities });
