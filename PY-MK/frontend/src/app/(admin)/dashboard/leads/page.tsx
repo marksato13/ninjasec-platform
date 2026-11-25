@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Mail, Phone, Plus, TrendingUp, Users } from "lucide-react";
 
-import { createClient, createLead, deleteLead, getLeads, getMe, LeadItem, updateLead, updateLeadStatus } from "@/lib/api";
+import { convertLead, createLead, deleteLead, getLeads, LeadItem, updateLead, updateLeadStatus } from "@/lib/api";
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { Modal } from "@/components/ui/modal";
@@ -133,22 +133,10 @@ export default function LeadsPipelinePage() {
   async function handleConvert(lead: LeadItem) {
     setConverting(true);
     try {
-      const me = await getMe();
-      if (!me.organization_id) throw new Error("Organización no resuelta");
-      const created = await createClient({
-        organization_id: me.organization_id,
-        company_name: lead.company_name || lead.contact_name,
-        commercial_status: "active",
-        notes: [
-          lead.interest_area ? `Interés: ${lead.interest_area}` : null,
-          lead.email ? `Contacto: ${lead.contact_name} <${lead.email}>` : null,
-          lead.phone ? `Teléfono: ${lead.phone}` : null,
-          lead.source ? `Origen: ${lead.source}` : null,
-          lead.message || null,
-        ].filter(Boolean).join("\n") || null,
-      });
-      notifySuccess("Cliente creado", `${created.company_name} se agregó al directorio`);
+      const r = await convertLead(lead.id);
+      notifySuccess("Cliente creado", `${r.company_name} se agregó al directorio`);
       queryClient.invalidateQueries({ queryKey: QK.clients() });
+      queryClient.invalidateQueries({ queryKey: QK.leads() });
       setSelectedLead(null);
     } catch (err) {
       notifyError("No se pudo convertir", err instanceof Error ? err.message : undefined);
@@ -476,7 +464,7 @@ export default function LeadsPipelinePage() {
                   {editSaving ? "Guardando…" : "Guardar cambios"}
                 </button>
               )}
-              {isAdmin && (selectedLead.status ?? "").toUpperCase() === "CLOSED_WON" && (
+              {isAdmin && (selectedLead.status ?? "").toUpperCase() === "CLOSED_WON" && !selectedLead.converted_client_id && (
                 <button className="button button-success" type="button" disabled={converting} onClick={() => handleConvert(selectedLead)}>
                   {converting ? "Convirtiendo…" : "Convertir a cliente"}
                 </button>

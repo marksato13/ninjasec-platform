@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from fastapi import HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models.enums import LeadStatus
+from app.db.models.client import Client
+from app.db.models.client_contact import ClientContact
+from app.db.models.enums import ClientStatus, LeadStatus
 from app.db.models.lead import Lead
 from app.db.repositories.base import Repository
 from app.modules.audit.services.audit_service import AuditService
@@ -77,3 +80,50 @@ class LeadService:
                 self.current_user.id,
             )
         return lead
+
+    def convert(self, lead_id: int) -> tuple[Lead, Client]:
+        """Convierte el lead en cliente: cliente + contacto principal + lead ganado, todo o nada.
+
+        Antes lo hacia el navegador en dos pasos y el lead no quedaba marcado, asi que pulsar
+        dos veces creaba dos clientes. Aqui el lead se bloquea (`FOR UPDATE`) mientras se decide,
+        y queda enlazado a su cliente: un segundo intento recibe 409 en vez de un duplicado.
+
+        Los leads llegan por el formulario publico y no tienen organizacion: el cliente nace en la
+        del administrador que convierte.
+        """
+        lead = self.db.scalar(select(Lead).where(Lead.id == lead_id).with_for_update())
+        if lead is None:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        if lead.converted_client_id is not None:
+            raise HTTPException(status_code=409, detail="Este lead ya fue convertido en cliente")
+        if lead.status == LeadStatus.CLOSED_LOST:
+            raise HTTPException(status_code=409, detail="Un lead perdido no se convierte en cliente")
+
+        notas = " · ".join(
+            x for x in (
+                f"Interés: {lead.interest_area}" if lead.interest_area else None,
+                f"Origen: {lead.source}" if lead.source else None,
+                lead.message,
+            ) if x
+        )
+        client = Client(
+            organization_id=self.current_user.organization_id,
+            company_name=(lead.company_name or lead.contact_name)[:160],
+            commercial_status=ClientStatus.ACTIVE,
+            notes=notas[:255] or None,
+        )
+        self.db.add(client)
+        self.db.flush()
+        self.db.add(ClientContact(client_id=client.id, name=lead.contact_name, email=lead.email,
+                                  phone=lead.phone, is_primary=True))
+        lead.status = LeadStatus.CLOSED_WON
+        lead.converted_client_id = client.id
+        self.db.commit()
+        self.db.refresh(lead)
+        self.db.refresh(client)
+
+        AuditService(self.db).record(
+            self.current_user.organization_id, "lead.converted", "leads", str(lead.id), self.current_user.id,
+            metadata_json=f'{{"client_id": {client.id}}}',
+        )
+        return lead, client
