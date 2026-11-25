@@ -133,6 +133,26 @@ Sin deadline externo. Se ejecuta cuando la tanda 2 esté encaminada.
 
 ---
 
+## 💻 Tanda Dev — Operación y gestión de clientes de Ninja Dev
+
+Planificado el 2026-11-25 en `PLANIFICACION/35-NINJA-DEV-OPERACION-Y-CLIENTES.md`.
+Prioridad del usuario: que la plataforma sirva para la relación con el cliente
+y la gestión de proyectos con colaboradores. Un PR por fila; el backend (T4)
+antes que su pantalla (T3, la puede tomar un colaborador).
+
+| Orden | Trabajo | Esfuerzo | Valor |
+|---|---|---|---|
+| 1 | **35-P-01** Sistemas del cliente y entornos | M | Base: todo lo demás cuelga de aquí |
+| 2 | **35-P-02** Registro de despliegues | M | "¿Qué versión tiene producción?" deja de ser una pregunta |
+| 3 | **35-P-03** Solicitudes de cambio (tipo de ticket) | M | El cliente pide, el equipo estima, el cliente aprueba |
+| 4 | **35-P-05** Pruebas de aceptación (UAT) | M | Cierre de proyecto con evidencia |
+| 5 | **35-P-04** Estimador de costos → hitos de pago | M | Cotizar rápido y sin errores |
+| 6 | **35-P-06** Documentos desde plantilla | M | Propuesta, SOW y actas en minutos |
+| 7 | **35-P-08** Panel Ninja Dev | S | Vencimientos y pendientes de un vistazo |
+| — | **35-P-07** Mantenimiento y SLA | L | 🔒 Bloqueado: reglas comerciales de Mark |
+
+---
+
 ## 🔒 Tanda 4 — Alto riesgo (requiere puerta de seguridad)
 
 **No arrancan hasta cumplir sus requisitos previos.** Ambos manipulan infraestructura de clientes.
