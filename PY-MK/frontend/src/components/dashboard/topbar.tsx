@@ -36,7 +36,6 @@ const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard/hardening":          { title: "Hardening",             subtitle: "Evaluación de configuración" },
   "/dashboard/soc-report":         { title: "Informe SOC",           subtitle: "Resumen para el cliente" },
   "/dashboard/formacion":          { title: "Formación",             subtitle: "Rutas hacia una certificación" },
-  "/dashboard/work-windows":       { title: "Ventanas de trabajo",   subtitle: "Cambios autorizados por el cliente" },
   "/dashboard/settings":           { title: "Configuración",         subtitle: "Ajustes del sistema" },
 };
 
