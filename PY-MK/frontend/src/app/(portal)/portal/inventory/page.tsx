@@ -171,7 +171,7 @@ export default function PortalInventoryPage() {
                 border: `1px solid ${filterType === type ? "var(--primary)" : "var(--line)"}`,
                 color: filterType === type ? "#fff" : "var(--fg)",
                 cursor: "pointer", fontSize: "0.82rem", fontWeight: 500,
-                transition: "all 0.15s ease",
+                transition: "background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease",
               }}
             >
               <span style={{ opacity: 0.8 }}>{typeIcon(type)}</span>

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   AreaItem,
@@ -40,6 +40,7 @@ import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 import { getDocStatusLabel, getProjectStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
+import { ControlDocumento } from "@/components/docs/control-documento";
 import { WorkWindowsBoard } from "@/components/work-windows/work-windows-board";
 import { projectEditFormSchema, type ProjectEditFormValues } from "@/lib/validation";
 import { QK } from "@/lib/query-keys";
@@ -65,6 +66,7 @@ const statusOptions = [
 export default function ProjectDetailPage() {
   const params = useParams();
   const projectId = Number(params?.projectId);
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<TabKey>("info");
   const [editMode, setEditMode] = useState(false);
 
@@ -510,6 +512,8 @@ export default function ProjectDetailPage() {
                       Ver en GitHub
                     </a>
                   ) : null}
+                  <ControlDocumento doc={doc}
+                    onCambio={() => queryClient.invalidateQueries({ queryKey: QK.projectDocs({ project_id: projectId }) })} />
                 </article>
               ))}
             </div>
