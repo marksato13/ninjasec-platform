@@ -6,8 +6,8 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 
 export const metadata: Metadata = {
-  title: "NinjaSec",
-  description: "API reporting, infrastructure insights and professional portfolio",
+  title: "Ninja Tech",
+  description: "Ciberseguridad y desarrollo de software para pymes. Dos áreas: Ninja Sec y Ninja Dev.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

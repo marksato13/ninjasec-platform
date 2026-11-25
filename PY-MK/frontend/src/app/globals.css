@@ -3819,3 +3819,25 @@ a {
   .hero-actions { flex-wrap: wrap; }
   .hero-actions .button { flex: 1 1 100%; justify-content: center; text-align: center; }
 }
+
+/* ---- Marca Ninja Tech: cabecera, pie y las dos areas de la portada ---- */
+.brand-mark__logo--img { background: none; border-radius: 0; object-fit: contain; }
+.site-footer__logo { width: 150px; height: auto; border-radius: 16px; margin-bottom: 10px; }
+.hero-pose { width: min(100%, 420px); height: auto; filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.45)); }
+
+.branch-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.branch-card { display: grid; gap: 12px; align-content: start; overflow: hidden; min-width: 0; }
+.branch-card--sec { border-top: 3px solid var(--security, #22d3ee); }
+.branch-card--dev { border-top: 3px solid #8b5cf6; }
+.branch-card__head { display: flex; align-items: center; gap: 14px; }
+.branch-card__head h2 { margin: 0; }
+.branch-card__logo { width: 72px; height: 72px; border-radius: 50%; flex: none; }
+.branch-card__anim { justify-self: center; width: 150px; height: auto; }
+
+@media (max-width: 920px) {
+  .branch-cards { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Un WebP animado no se pausa con CSS: con «reducir movimiento» se retira, y quedan el logo y el texto. */
+  .branch-card__anim { display: none; }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 
 import { requestPublic } from "@/lib/api/client";
@@ -74,6 +75,9 @@ export function LeadForm({ title, endpoint, submitLabel, payloadType }: LeadForm
       <textarea placeholder="Describe tu necesidad *" value={message} onChange={(e) => setMessage(e.target.value)} rows={5} required />
       {status ? (
         <p className={status.kind === "ok" ? "form-success" : "form-error"}>{status.text}</p>
+      ) : null}
+      {status?.kind === "ok" ? (
+        <Image src="/brand/anim/celebra-envio.webp" alt="Kuro celebrando que tu mensaje llegó" width={120} height={120} unoptimized />
       ) : null}
       <button className="button button-primary" type="submit" disabled={loading}>
         {loading ? "Enviando..." : submitLabel}

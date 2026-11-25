@@ -10,7 +10,7 @@ export default function NosotrosPage() {
         <p className="eyebrow">Nosotros</p>
         <h1>Consultoría técnica con un equipo que aprende haciendo.</h1>
         <p>
-          NinjaSec reúne dirección técnica con experiencia en redes y seguridad, y un equipo de
+          Ninja Tech reúne dirección técnica con experiencia en redes y seguridad, y un equipo de
           estudiantes y profesionales de infraestructura, desarrollo y ciberseguridad que trabaja
           en casos reales con seguimiento.
         </p>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -55,15 +56,15 @@ export function SiteHeader() {
   // simulados: solo se dice con la capsula de telemetria encendida.
   const subtitulo = conApi
     ? "API Reporting Platform"
-    : "Consultoría de TI y ciberseguridad";
+    : "Ciberseguridad y desarrollo para pymes";
 
   return (
     <header className="site-header">
       <div className="site-header__inner">
         <Link className="brand-mark" href="/">
-          <span className="brand-mark__logo">NS</span>
+          <Image className="brand-mark__logo brand-mark__logo--img" src="/brand/icono-cabeza.webp" alt="" width={44} height={44} priority />
           <span>
-            <strong>NinjaSec</strong>
+            <strong>Ninja Tech</strong>
             <small>{subtitulo}</small>
           </span>
         </Link>

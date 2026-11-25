@@ -10,8 +10,8 @@ import {
 } from "@/lib/portafolio";
 
 export const metadata = {
-  title: "Proyectos · NinjaSec",
-  description: "Lo que NinjaSec ha construido en desarrollo e infraestructura, con su diagrama y el nivel de evidencia de cada trabajo.",
+  title: "Proyectos · Ninja Tech",
+  description: "Lo que Ninja Tech ha construido en desarrollo e infraestructura, con su diagrama y el nivel de evidencia de cada trabajo.",
 };
 
 const LINEAS: { id: Linea; titulo: string; texto: string }[] = [

@@ -109,7 +109,7 @@ export default function PortalInventoryPage() {
           color: "var(--warning)", fontSize: "0.88rem", fontWeight: 600,
         }}>
           <AlertTriangle size={16} />
-          {kpis.pending} activo{kpis.pending > 1 ? "s" : ""} pendiente{kpis.pending > 1 ? "s" : ""} de revisión — contacta a tu ejecutivo NinjaSec
+          {kpis.pending} activo{kpis.pending > 1 ? "s" : ""} pendiente{kpis.pending > 1 ? "s" : ""} de revisión — contacta a tu ejecutivo de Ninja Tech
         </div>
       )}
 

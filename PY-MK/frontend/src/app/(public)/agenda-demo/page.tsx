@@ -12,7 +12,7 @@ export default function AgendaDemoPage() {
     <PublicPageShell>
       <section className="content-hero">
         <p className="eyebrow">{conApi ? "Agenda Demo" : "Agenda una reunión"}</p>
-        <h1>{conApi ? "Solicita una demo de NinjaSec." : "Agendemos una primera conversación."}</h1>
+        <h1>{conApi ? "Solicita una demo de Ninja Tech." : "Agendemos una primera conversación."}</h1>
         <p>
           {conApi
             ? "Registra tu interés para evaluar cómo integrar reporting automatizado en tu entorno."

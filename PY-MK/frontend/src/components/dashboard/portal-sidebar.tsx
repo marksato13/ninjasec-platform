@@ -88,7 +88,7 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
         <div className="logo-space">NS</div>
         {!isCollapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>NinjaSec</p>
+            <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Ninja Tech</p>
             <span className="pill" style={{ fontSize: "0.65rem", padding: "2px 7px" }}>
               {formatRoleLabel(user?.role ?? "portal")}
             </span>
