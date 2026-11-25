@@ -5,7 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getProjects, ProjectItem } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
-import { getProjectStatusLabel } from "@/lib/labels";
+import { ProyectoResumen } from "@/components/portal/proyecto-resumen";
+import s from "@/components/portal/portal.module.css";
+
+const CERRADOS = new Set(["closed", "completed", "cancelled", "canceled"]);
 
 export default function PortalProjectsPage() {
   const { data: items = [], isLoading, error } = useQuery<ProjectItem[]>({
@@ -13,46 +16,53 @@ export default function PortalProjectsPage() {
     queryFn: () => getProjects(),
   });
 
+  const enCurso = items.filter((p) => !CERRADOS.has(p.status.toLowerCase()));
+  const cerrados = items.filter((p) => CERRADOS.has(p.status.toLowerCase()));
+
   return (
     <section className="page-stack">
-      <div className="section-heading">
-        <p className="eyebrow">Portal</p>
+      <header className={s.saludo}>
         <h2>Proyectos</h2>
-      </div>
+        <p>Toca un proyecto para ver su recorrido completo, el equipo y los avances.</p>
+      </header>
 
-      <article className="panel">
-        <div className="panel-head">
-          <div>
-            <p className="eyebrow">Listado</p>
-            <h3>Proyectos asociados</h3>
-          </div>
+      {error ? (
+        <p className="form-error">{error instanceof Error ? error.message : "No se pudieron cargar los proyectos."}</p>
+      ) : null}
+
+      {isLoading ? (
+        <div className={s.bloque}>
+          <div className={s.esqueleto} aria-hidden="true" />
+          <div className={s.esqueleto} aria-hidden="true" />
         </div>
-        {error ? <p className="form-error">{error instanceof Error ? error.message : "No se pudo cargar proyectos"}</p> : null}
-        {isLoading ? (
-          <div className="empty-state">Cargando proyectos...</div>
-        ) : items.length === 0 ? (
-          <div className="empty-state">No hay proyectos visibles.</div>
-        ) : (
-          <div className="table-like">
-            <div className="table-row table-head table-row-wide">
-              <span>Nombre</span>
-              <span>Estado</span>
-              <span>Descripcion</span>
-              <span />
-            </div>
-            {items.map((item) => (
-              <div className="table-row table-row-wide" key={item.id}>
-                <span>{item.name}</span>
-                <span>{getProjectStatusLabel(item.status)}</span>
-                <span>{item.description || "Sin descripcion"}</span>
-                <span>
-                  <Link className="button button-primary button-sm" href={`/portal/projects/${item.id}`}>Ver seguimiento</Link>
-                </span>
+      ) : items.length === 0 && !error ? (
+        <div className={s.vacio}>
+          <strong>Todavía no tienes proyectos.</strong>
+          <span>Cuando una solicitud de servicio se convierta en proyecto, aparecerá aquí con su avance.</span>
+          <Link className="button button-primary button-sm" href="/portal/services">
+            Ver servicios
+          </Link>
+        </div>
+      ) : (
+        <>
+          {enCurso.length > 0 ? (
+            <section className={s.bloque} aria-labelledby="en-curso">
+              <div className={s.bloqueTitulo}>
+                <h3 id="en-curso">En curso</h3>
               </div>
-            ))}
-          </div>
-        )}
-      </article>
+              {enCurso.map((p) => <ProyectoResumen key={p.id} proyecto={p} />)}
+            </section>
+          ) : null}
+          {cerrados.length > 0 ? (
+            <section className={s.bloque} aria-labelledby="terminados">
+              <div className={s.bloqueTitulo}>
+                <h3 id="terminados">Terminados</h3>
+              </div>
+              {cerrados.map((p) => <ProyectoResumen key={p.id} proyecto={p} />)}
+            </section>
+          ) : null}
+        </>
+      )}
     </section>
   );
 }

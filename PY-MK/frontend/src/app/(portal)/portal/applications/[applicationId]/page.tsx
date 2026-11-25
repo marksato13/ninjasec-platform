@@ -54,7 +54,7 @@ function formatStatus(value?: string | null) {
 }
 
 function formatRecommendation(value?: string | null) {
-  if (!value) return "Sin recomendacion";
+  if (!value) return "Sin recomendación";
   return recommendationLabelMap.get(value) || value.replaceAll("_", " ");
 }
 
@@ -180,7 +180,7 @@ export default function PortalApplicationDetailPage() {
     if (!application) return;
     const scoreValue = Number(reviewScore);
     if (!scoreValue || scoreValue < 1 || scoreValue > 5) {
-      notifyError("Score invalido", "Usa un valor entre 1 y 5.");
+      notifyError("Score inválido", "Usa un valor entre 1 y 5.");
       return;
     }
     setReviewSaving(true);
@@ -193,7 +193,7 @@ export default function PortalApplicationDetailPage() {
       await refreshReviews();
       await refreshTimeline();
       setReviewNotes("");
-      notifySuccess("Review registrada", "Se notifico a administracion.");
+      notifySuccess("Review registrada", "Se notificó a administración.");
     } catch (err) {
       notifyError("No se pudo registrar", err instanceof Error ? err.message : undefined);
     } finally {
@@ -217,7 +217,7 @@ export default function PortalApplicationDetailPage() {
       await refreshNotes();
       await refreshTimeline();
       setNoteText("");
-      notifySuccess("Nota enviada", "Disponible para administracion.");
+      notifySuccess("Nota enviada", "Disponible para administración.");
     } catch (err) {
       notifyError("No se pudo agregar", err instanceof Error ? err.message : undefined);
     } finally {
@@ -226,22 +226,22 @@ export default function PortalApplicationDetailPage() {
   }
 
   if (!isValidId) {
-    return <div className="state-panel state-error">Postulacion no encontrada</div>;
+    return <div className="state-panel state-error">Postulación no encontrada</div>;
   }
 
   if (loading) {
-    return <div className="state-panel">Cargando postulacion...</div>;
+    return <div className="state-panel">Cargando postulación...</div>;
   }
 
   if (error || !application) {
-    return <div className="state-panel state-error">{error instanceof Error ? error.message : "Postulacion no encontrada"}</div>;
+    return <div className="state-panel state-error">{error instanceof Error ? error.message : "Postulación no encontrada"}</div>;
   }
 
   return (
     <section className="page-stack">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Postulacion</p>
+          <p className="eyebrow">Postulación</p>
           <h2>{application.full_name}</h2>
         </div>
         <div className="panel-actions">
@@ -281,7 +281,7 @@ export default function PortalApplicationDetailPage() {
               <span>{application.email}</span>
             </div>
             <div>
-              <span className="card-label">Telefono</span>
+              <span className="card-label">Teléfono</span>
               <span>{application.phone || "-"}</span>
             </div>
             <div>
@@ -321,7 +321,7 @@ export default function PortalApplicationDetailPage() {
           <div className="panel-head">
             <div>
               <p className="eyebrow">Review</p>
-              <h3>Registrar recomendacion</h3>
+              <h3>Registrar recomendación</h3>
             </div>
           </div>
           <form className="entity-form" onSubmit={handleCreateReview}>
@@ -357,7 +357,7 @@ export default function PortalApplicationDetailPage() {
             </div>
           </div>
           {reviews.length === 0 ? (
-            <div className="empty-state">Aun no has registrado reviews.</div>
+            <div className="empty-state">Aún no has registrado reviews.</div>
           ) : (
             <div className="table-like">
               <div className="table-row table-head">
@@ -386,7 +386,7 @@ export default function PortalApplicationDetailPage() {
           <div className="panel-head">
             <div>
               <p className="eyebrow">Notas internas</p>
-              <h3>Comentarios para administracion</h3>
+              <h3>Comentarios para administración</h3>
             </div>
           </div>
           <form className="entity-form" onSubmit={handleCreateNote}>
@@ -400,7 +400,7 @@ export default function PortalApplicationDetailPage() {
               {noteSaving ? "Guardando..." : "Enviar nota"}
             </button>
           </form>
-          <p className="form-status">Las notas internas son visibles para administracion.</p>
+          <p className="form-status">Las notas internas son visibles para administración.</p>
 
           <div className="panel-head panel-head-spaced">
             <div>

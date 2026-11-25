@@ -1,0 +1,57 @@
+# GitFlow: cada PR llega a la rama correcta desde una rama con el nombre correcto.
+#
+# GitHub no deja restringir "desde que rama" se abre un PR; esta comprobacion lo
+# hace y es obligatoria en las reglas de `main` y `develop`. La especificacion
+# completa vive en ninjasec-dev-workspace/30-CICLO/Ramas-y-GitFlow.md.
+#
+#   develop  <- feature/* feat/* fix/* chore/* docs/* perf/* refactor/* test/* deps/*
+#               dependabot/*, y main (vuelta de un hotfix o resincronizacion)
+#   main     <- develop (version) o hotfix/*
+#
+# Los nombres de rama llegan por variables de entorno, nunca interpolados en el
+# script: una rama puede llamarse con caracteres que el shell interpretaria.
+name: GitFlow
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  origen:
+    name: GitFlow / origen
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Comprobar rama de origen y destino
+        env:
+          BASE: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          echo "PR: $HEAD_REF -> $BASE"
+          if [ "$HEAD_REPO" != "$REPO" ]; then
+            echo "::error::PR desde un fork ($HEAD_REPO). Solo se aceptan ramas de este repositorio."
+            exit 1
+          fi
+          case "$BASE" in
+            main)
+              case "$HEAD_REF" in
+                develop|hotfix/*) echo "OK: version o hotfix hacia main." ;;
+                *) echo "::error::A main solo llegan PR desde develop (version) o hotfix/<slug>. Abre este PR contra develop."; exit 1 ;;
+              esac ;;
+            develop)
+              case "$HEAD_REF" in
+                feature/*|feat/*|fix/*|chore/*|docs/*|perf/*|refactor/*|test/*|deps/*|dependabot/*|main)
+                  echo "OK: trabajo hacia develop." ;;
+                hotfix/*)
+                  echo "OK: vuelta de un hotfix a develop." ;;
+                *) echo "::error::Nombre de rama no reconocido: '$HEAD_REF'. Usa feature/, feat/, fix/, chore/, docs/, perf/, refactor/, test/ o deps/."; exit 1 ;;
+              esac ;;
+            *)
+              echo "OK: PR hacia '$BASE' (rama de trabajo apilada); la regla aplica al llegar a develop o main." ;;
+          esac

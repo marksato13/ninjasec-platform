@@ -20,6 +20,8 @@ import {
   type AlertItem,
   type AreaItem,
   type AuditItem,
+  type RiskItem,
+  type SecurityReviewItem,
   type AuthUser,
   type CollaboratorProfile,
   type DashboardClient,
@@ -36,11 +38,15 @@ import {
   getLeads,
   getMe,
   getProjects,
+  getRisks,
+  getSecurityReviews,
   getServiceRequests,
   getServices,
   getSupportTickets,
 } from "@/lib/api";
 import { capsulaActiva } from "@/lib/capsulas";
+import { clientesEnModo, lineaDeProyecto, mapaDeAreas, proyectoEnModo } from "@/lib/lineas";
+import { NOMBRE_MODO, useModo } from "@/lib/modo";
 import { QK } from "@/lib/query-keys";
 
 import { Actividad } from "./inicio/actividad";
@@ -49,18 +55,12 @@ import { Embudo, type Etapa } from "./inicio/embudo";
 import { fechaLarga, nombreDeUsuario, saludoSegunHora } from "./inicio/formato";
 import { PrimerosPasos, type Paso } from "./inicio/primeros-pasos";
 import styles from "./inicio/inicio.module.css";
+import { VistaDev, VistaSec } from "./inicio/vista-linea";
 
 const TICKET_ABIERTO = new Set(["open", "in_progress", "pending"]);
 const PROYECTO_VIVO = new Set(["planning", "active", "paused"]);
 const LEAD_CERRADO = new Set(["WON", "LOST", "CONVERTED"]);
 const TELEMETRIA = capsulaActiva("telemetria");
-
-function areaDe(area?: AreaItem): "sec" | "dev" | "otra" {
-  const texto = `${area?.slug ?? ""} ${area?.name ?? ""}`.toLowerCase();
-  if (texto.includes("sec")) return "sec";
-  if (texto.includes("dev")) return "dev";
-  return "otra";
-}
 
 export function DashboardShell() {
   const yo = useQuery<AuthUser>({ queryKey: QK.me(), queryFn: getMe });
@@ -75,19 +75,28 @@ export function DashboardShell() {
   const auditoria = useQuery<AuditItem[]>({ queryKey: QK.auditLogs(8), queryFn: () => getAuditLogs(8) });
   const alertas = useQuery<AlertItem[]>({ queryKey: QK.alerts(undefined), queryFn: () => getAlerts(), enabled: TELEMETRIA });
 
+  // Modo Ninja Sec / Ninja Dev (plan 34): filtra lo que se muestra, no lo que se puede hacer.
+  // Lo comercial (solicitudes y leads) es común a las dos líneas y no se filtra.
+  const modo = useModo();
+  const revisiones = useQuery<SecurityReviewItem[]>({ queryKey: QK.reviews(undefined), queryFn: () => getSecurityReviews(), enabled: modo === "sec" });
+  const riesgos = useQuery<RiskItem[]>({ queryKey: QK.risks(undefined), queryFn: () => getRisks(), enabled: modo === "sec" });
+
   const nombre = nombreDeUsuario(yo.data?.full_name ?? yo.data?.name);
 
   // ── El embudo ───────────────────────────────────────────────
   const nuevas = (solicitudes.data ?? []).filter((s) => s.status === "NEW").length;
   const leadsAbiertos = (leads.data ?? []).filter((l) => !LEAD_CERRADO.has(l.status));
   const leadsNuevos = leadsAbiertos.filter((l) => l.status === "NEW").length;
-  const vivos = (proyectos.data ?? []).filter((p) => PROYECTO_VIVO.has(p.status));
-  const areaPorId = new Map((areas.data ?? []).map((a) => [a.id, a]));
+  const areaPorId = mapaDeAreas(areas.data);
+  const proyectosDelModo = (proyectos.data ?? []).filter((p) => proyectoEnModo(p, areaPorId, modo));
+  const vivos = proyectosDelModo.filter((p) => PROYECTO_VIVO.has(p.status));
   const porArea = { sec: 0, dev: 0, otra: 0 };
-  for (const p of vivos) porArea[areaDe(p.area_id ? areaPorId.get(p.area_id) : undefined)] += 1;
-  const abiertos = (tickets.data ?? []).filter((t) => TICKET_ABIERTO.has(t.status));
+  for (const p of vivos) porArea[lineaDeProyecto(p, areaPorId) ?? "otra"] += 1;
+  const clienteEnModo = clientesEnModo(proyectos.data, areaPorId, modo);
+  const abiertos = (tickets.data ?? []).filter((t) => TICKET_ABIERTO.has(t.status) && clienteEnModo(t.client_id));
   const sinAsignar = abiertos.filter((t) => !t.assigned_to).length;
-  const clientesActivos = (clientes.data ?? []).filter((c) => c.commercial_status !== "inactive").length;
+  const clientesActivos = (clientes.data ?? []).filter((c) => c.commercial_status !== "inactive" && clienteEnModo(c.id)).length;
+  const clientesDeProyectos = new Set(proyectosDelModo.map((p) => p.client_id).filter((id): id is number => Boolean(id)));
 
   const etapas: Etapa[] = [
     {
@@ -207,13 +216,25 @@ export function DashboardShell() {
             {saludoSegunHora(hoy)}
             {nombre ? `, ${nombre}` : ""}
           </h1>
-          <p className={styles.date} suppressHydrationWarning>{fechaLarga(hoy)}</p>
+          <p className={styles.date} suppressHydrationWarning>
+            {fechaLarga(hoy)}
+            {modo !== "todo" ? ` · Vista ${NOMBRE_MODO[modo]}` : ""}
+          </p>
         </div>
       </header>
 
       {faltaAlgo ? <PrimerosPasos pasos={pasos} /> : null}
 
       <Embudo etapas={etapas} />
+
+      {modo === "dev" ? (
+        <VistaDev
+          proyectos={{ data: proyectosDelModo, isLoading: proyectos.isLoading || areas.isLoading, isError: proyectos.isError }}
+          tickets={tickets}
+          clientesDeProyectos={clientesDeProyectos}
+        />
+      ) : null}
+      {modo === "sec" ? <VistaSec revisiones={revisiones} riesgos={riesgos} /> : null}
 
       <div className={styles.columns}>
         <Atencion

@@ -10,6 +10,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 
+/** Fondo suave del color dado. Funciona con hex y con var(--x); el viejo `${color}1A` no
+ *  servia con variables CSS (generaba "var(--primary)1A", que el navegador descarta). */
+function tint(color: string, pct: number) {
+  return `color-mix(in srgb, ${color} ${pct}%, transparent)`;
+}
+
 type KpiCardProps = {
   icon: ReactNode;
   label: string;
@@ -23,22 +29,23 @@ export function KpiCard({ icon, label, value, sublabel, color, trend }: KpiCardP
   return (
     <article className="metric-card panel kpi-card">
       <div className="kpi-card__head">
-        <span className="kpi-card__icon" style={{ background: `${color ?? "var(--primary)"}1A`, color: color ?? "var(--primary)" }}>
+        <span className="kpi-card__icon" style={{ background: tint(color ?? "var(--primary)", 12), color: color ?? "var(--primary)" }}>
           {icon}
         </span>
         <span className="kpi-card__label">{label}</span>
       </div>
       <div className="kpi-card__value-row">
-        <strong className="kpi-card__value" style={{ color: color ?? "var(--text)" }}>{value}</strong>
+        <strong className="kpi-card__value">{value}</strong>
         {trend ? (
           <span
             className="kpi-card__trend"
             style={{
               color: trend.direction === "up" ? "var(--success)" : "var(--danger)",
-              background: trend.direction === "up" ? "rgba(52,211,153,0.10)" : "rgba(248,113,113,0.10)",
+              background: tint(trend.direction === "up" ? "var(--success)" : "var(--danger)", 12),
             }}
           >
-            {trend.direction === "up" ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
+            {trend.direction === "up" ? <TrendingUp size={11} aria-hidden="true" /> : <TrendingDown size={11} aria-hidden="true" />}
+            <span className="sr-only">{trend.direction === "up" ? "Sube" : "Baja"}</span>
             {trend.value}%
           </span>
         ) : null}
@@ -52,20 +59,29 @@ type SparkBarProps = {
   data: number[];
   color?: string;
   height?: number;
+  /** Que mide la serie, para el lector de pantalla (p. ej. "Tickets por semana"). */
+  label?: string;
 };
 
-export function SparkBar({ data, color = "var(--primary)", height = 36 }: SparkBarProps) {
-  const max = Math.max(...data, 1);
+/**
+ * Mini grafico de barras. Un solo tono: la magnitud la dice la altura, no la
+ * opacidad. La ultima barra (el periodo actual) se resalta. Sin datos, lo dice.
+ */
+export function SparkBar({ data, color = "var(--primary)", height = 36, label = "Serie" }: SparkBarProps) {
+  const max = Math.max(...data, 0);
+  if (data.length === 0 || max === 0) {
+    return <div className="sparkbar sparkbar--empty" style={{ height }}>Sin datos todavía</div>;
+  }
   return (
-    <div className="sparkbar" style={{ height }}>
+    <div className="sparkbar" style={{ height }} role="img" aria-label={`${label}: ${data.join(", ")}`}>
       {data.map((v, i) => (
         <span
           key={i}
-          className="sparkbar__bar"
+          className={`sparkbar__bar${i === data.length - 1 ? " is-current" : ""}`}
+          title={String(v)}
           style={{
-            height: `${Math.max(8, (v / max) * 100)}%`,
-            background: color,
-            opacity: 0.35 + 0.65 * (v / max),
+            height: `${Math.max(4, (v / max) * 100)}%`,
+            background: i === data.length - 1 ? color : tint(color, 45),
           }}
         />
       ))}
@@ -89,9 +105,19 @@ export function ProgressRow({ label, value, total, color = "var(--primary)", hre
     <Wrapper {...wrapperProps}>
       <div className="progress-row__head">
         <span className="progress-row__label">{label}</span>
-        <span className="progress-row__count">{value}</span>
+        <span className="progress-row__count">
+          {value}
+          {total > 0 ? <span className="progress-row__pct"> · {pct} %</span> : null}
+        </span>
       </div>
-      <div className="progress-row__track">
+      <div
+        className="progress-row__track"
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={value}
+      >
         <div className="progress-row__fill" style={{ width: `${pct}%`, background: color }} />
       </div>
     </Wrapper>
@@ -110,7 +136,7 @@ type ListRowProps = {
 export function ListRow({ icon, iconColor, title, subtitle, meta, badge }: ListRowProps) {
   return (
     <div className="list-row">
-      <span className="list-row__icon" style={{ background: `${iconColor ?? "var(--primary)"}1A`, color: iconColor ?? "var(--primary)" }}>
+      <span className="list-row__icon" style={{ background: tint(iconColor ?? "var(--primary)", 12), color: iconColor ?? "var(--primary)" }}>
         {icon}
       </span>
       <div className="list-row__body">
@@ -119,7 +145,7 @@ export function ListRow({ icon, iconColor, title, subtitle, meta, badge }: ListR
       </div>
       <div className="list-row__right">
         {badge ? (
-          <span className="list-row__badge" style={{ color: badge.color, background: `${badge.color}1A`, borderColor: `${badge.color}55` }}>
+          <span className="list-row__badge" style={{ color: badge.color, background: tint(badge.color, 12), borderColor: tint(badge.color, 34) }}>
             {badge.label}
           </span>
         ) : null}

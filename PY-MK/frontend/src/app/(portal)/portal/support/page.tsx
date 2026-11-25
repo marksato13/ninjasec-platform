@@ -112,7 +112,6 @@ export default function PortalSupportPage() {
       {/* Encabezado */}
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Portal</p>
           <h2>Soporte</h2>
         </div>
         <button className="button button-primary" type="button" onClick={() => setCreateOpen(true)}>

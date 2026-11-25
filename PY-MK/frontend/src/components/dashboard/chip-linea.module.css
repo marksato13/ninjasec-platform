@@ -1,0 +1,35 @@
+.chip {
+  --linea: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, var(--linea) 40%, transparent);
+  border-radius: 999px;
+  color: var(--linea);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.chip[data-linea="sec"] {
+  --linea: var(--security, #10b981);
+}
+
+.chip[data-linea="dev"] {
+  --linea: #8b5cf6;
+}
+
+.punto {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--linea);
+}
+
+.aviso {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}

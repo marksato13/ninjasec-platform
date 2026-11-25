@@ -2,7 +2,7 @@
 
 import { Pencil, Plus, Power } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -57,6 +57,8 @@ export default function DashboardSettingsPage() {
   const [tab,        setTab]        = useState<Tab>("project-types");
   const [showCreate, setShowCreate] = useState(false);
   const [editingId,  setEditingId]  = useState<number | null>(null);
+  // Línea de negocio de un área nueva (plan 34). Vacía = de las dos líneas.
+  const [nuevaLinea, setNuevaLinea] = useState<"" | "sec" | "dev">("");
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<DocTypeFormValues>({
     resolver: zodResolver(docTypeSchema),
@@ -99,10 +101,14 @@ export default function DashboardSettingsPage() {
   });
 
   const createCatalogMutation = useMutation({
-    mutationFn: (v: CatalogFormValues) => CATALOG_API[tab as CatalogTab].create({ name: v.name }),
+    mutationFn: (v: CatalogFormValues) =>
+      tab === "areas"
+        ? createArea({ name: v.name, business_line: nuevaLinea || null })
+        : CATALOG_API[tab as CatalogTab].create({ name: v.name }),
     onSuccess: () => {
       notifySuccess(tab === "areas" ? "Área creada" : "Tipo de proyecto creado");
       catalogForm.reset();
+      setNuevaLinea("");
       setShowCreate(false);
       queryClient.invalidateQueries({ queryKey: [tab] });
     },
@@ -119,6 +125,16 @@ export default function DashboardSettingsPage() {
       queryClient.invalidateQueries({ queryKey: [tab] });
     },
     onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
+  });
+
+  const lineaMutation = useMutation({
+    mutationFn: ({ id, linea }: { id: number; linea: "" | "sec" | "dev" }) =>
+      updateArea(id, { business_line: linea || null }),
+    onSuccess: (_data, { linea }) => {
+      notifySuccess(linea ? `Área asignada a ${linea === "sec" ? "Ninja Sec" : "Ninja Dev"}` : "Área de las dos líneas");
+      queryClient.invalidateQueries({ queryKey: ["areas"] });
+    },
+    onError: (err) => notifyError("No se pudo cambiar la línea", err instanceof Error ? err.message : undefined),
   });
 
   const toggleActiveMutation = useMutation({
@@ -206,10 +222,11 @@ export default function DashboardSettingsPage() {
             onSubmit={catalogForm.handleSubmit((v) => createCatalogMutation.mutate(v))}
             style={{ borderTop: "1px solid var(--line)", paddingTop: 14, marginBottom: 14 }}
           >
-            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "start" }}>
+            <div style={{ display: "grid", gridTemplateColumns: tab === "areas" ? "1fr 200px auto" : "1fr auto", gap: 10, alignItems: "start" }}>
               <div>
                 <input
                   type="text"
+                  aria-label={tab === "areas" ? "Nombre del área" : "Nombre del tipo de proyecto"}
                   placeholder={tab === "areas" ? "Nombre del área" : "Nombre del tipo de proyecto"}
                   {...catalogForm.register("name")}
                 />
@@ -217,6 +234,9 @@ export default function DashboardSettingsPage() {
                   <p className="form-error">{catalogForm.formState.errors.name.message}</p>
                 )}
               </div>
+              {tab === "areas" ? (
+                <SelectorLinea value={nuevaLinea} onChange={setNuevaLinea} />
+              ) : null}
               <button
                 className="button button-success button-sm"
                 type="submit"
@@ -283,8 +303,12 @@ export default function DashboardSettingsPage() {
 
             {tab === "areas" && (
               <>
-                <div className="table-row table-head" style={{ gridTemplateColumns: "1fr auto auto" }}>
-                  <span>Área</span><span>Estado</span><span></span>
+                <p className="muted-small" style={{ margin: "0 0 10px" }}>
+                  La línea de negocio decide en qué modo del panel (Ninja Sec o Ninja Dev) aparecen los proyectos y
+                  servicios del área. Un área de las dos líneas aparece en ambos.
+                </p>
+                <div className="table-row table-head" style={{ gridTemplateColumns: "1fr 200px auto auto" }}>
+                  <span>Área</span><span>Línea de negocio</span><span>Estado</span><span></span>
                 </div>
                 {areas.map((item) => (
                   <CatalogRow
@@ -300,6 +324,13 @@ export default function DashboardSettingsPage() {
                       item.is_active
                         ? handleDeactivate("areas", id, item.name)
                         : toggleActiveMutation.mutate({ catalogTab: "areas", id, isActive: true })
+                    }
+                    extra={
+                      <SelectorLinea
+                        value={(item as AreaItem).business_line ?? ""}
+                        disabled={!isAdmin || lineaMutation.isPending}
+                        onChange={(linea) => lineaMutation.mutate({ id: item.id, linea })}
+                      />
                     }
                   />
                 ))}
@@ -377,6 +408,7 @@ function CatalogRow({
   editForm,
   onRename,
   onToggleActive,
+  extra,
 }: {
   item: AreaItem | ProjectTypeItem;
   catalogTab: CatalogTab;
@@ -386,14 +418,17 @@ function CatalogRow({
   editForm: ReturnType<typeof useForm<CatalogFormValues>>;
   onRename: (id: number, name: string) => void;
   onToggleActive: (id: number) => void;
+  /** Columna adicional entre el nombre y el estado (la línea de negocio de las áreas). */
+  extra?: ReactNode;
 }) {
   const isEditing = editingId === item.id;
+  const columnas = extra ? "1fr 200px auto auto" : "1fr auto auto";
 
   if (isEditing) {
     return (
       <form
         className="table-row"
-        style={{ gridTemplateColumns: "1fr auto auto", alignItems: "center" }}
+        style={{ gridTemplateColumns: columnas, alignItems: "center" }}
         onSubmit={editForm.handleSubmit((v) => onRename(item.id, v.name))}
       >
         <div>
@@ -402,6 +437,7 @@ function CatalogRow({
             <p className="form-error">{editForm.formState.errors.name.message}</p>
           )}
         </div>
+        {extra}
         <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
           {item.is_active ? "Activo" : "Inactivo"}
         </span>
@@ -420,8 +456,9 @@ function CatalogRow({
   }
 
   return (
-    <div className="table-row" style={{ gridTemplateColumns: "1fr auto auto", alignItems: "center" }}>
+    <div className="table-row" style={{ gridTemplateColumns: columnas, alignItems: "center" }}>
       <span>{item.name}</span>
+      {extra}
       <span className={`badge ${item.is_active ? "badge-active" : "badge-archived"}`}>
         {item.is_active ? "Activo" : "Inactivo"}
       </span>
@@ -448,5 +485,28 @@ function CatalogRow({
         <span />
       )}
     </div>
+  );
+}
+
+function SelectorLinea({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: "" | "sec" | "dev";
+  onChange: (linea: "" | "sec" | "dev") => void;
+  disabled?: boolean;
+}) {
+  return (
+    <select
+      aria-label="Línea de negocio"
+      value={value}
+      disabled={disabled}
+      onChange={(e) => onChange(e.target.value as "" | "sec" | "dev")}
+    >
+      <option value="">Ambas líneas</option>
+      <option value="sec">Ninja Sec</option>
+      <option value="dev">Ninja Dev</option>
+    </select>
   );
 }

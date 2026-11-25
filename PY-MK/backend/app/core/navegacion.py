@@ -99,6 +99,7 @@ OPCIONES: tuple[Opcion, ...] = (
     _staff("/dashboard/netdoctor", "NetDoctor", "Herramientas Ninja Sec"),
     _staff("/dashboard/catalog-devices", "Catálogo de equipos", "Herramientas Ninja Sec"),
     _staff("/dashboard/soc-report", "Informe SOC", "Herramientas Ninja Sec", capsula="telemetria"),
+    _staff("/dashboard/ninja-dev", "Guía Ninja Dev", "Herramientas Ninja Dev"),
     _staff("/dashboard/support-tickets", "Tickets", "Operación"),
     _staff("/dashboard/work-windows", "Ventanas de trabajo", "Operación"),
     _staff("/dashboard/clients", "Clientes", "Comercial"),

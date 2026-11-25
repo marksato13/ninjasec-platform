@@ -42,7 +42,7 @@ function typeKey(deviceType?: string | null): string {
   if (lower.includes("firewall")) return "Firewall";
   if (lower.includes("server"))   return "Servidor";
   if (lower.includes("switch"))   return "Switch";
-  if (lower.includes("endpoint") || lower.includes("pc") || lower.includes("laptop")) return "Endpoint";
+  if (lower.includes("endpoint") || lower.includes("pc") || lower.includes("laptop")) return "Equipo de usuario";
   if (lower.includes("printer"))  return "Impresora";
   return deviceType || "Otro";
 }
@@ -96,7 +96,7 @@ export default function PortalInventoryPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <div><p className="eyebrow">Portal</p><h2>Inventario de activos</h2></div>
+        <div><h2>Inventario</h2></div>
         <span style={{ color: "var(--muted)", fontSize: "0.88rem" }}>{kpis.total} dispositivo{kpis.total !== 1 ? "s" : ""}</span>
       </div>
 
@@ -115,27 +115,27 @@ export default function PortalInventoryPage() {
 
       {/* KPI cards */}
       <div className="metrics-grid">
-        <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => { setFilterStatus(""); setFilterType(""); }}>
+        <button type="button" className="metric-card panel" style={{ cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit" }} onClick={() => { setFilterStatus(""); setFilterType(""); }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Server size={16} style={{ color: "var(--primary)", opacity: 0.7 }} />
             <span className="eyebrow" style={{ margin: 0 }}>Total activos</span>
           </div>
           <strong style={{ fontSize: "2rem" }}>{kpis.total}</strong>
           <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{typeOptions.length} tipo{typeOptions.length !== 1 ? "s" : ""}</span>
-        </article>
+        </button>
 
-        <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setFilterStatus("active")}>
+        <button type="button" className="metric-card panel" style={{ cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit" }} onClick={() => setFilterStatus("active")}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "0.9rem", color: "var(--success)" }}>●</span>
-            <span className="eyebrow" style={{ margin: 0 }}>Online</span>
+            <span className="eyebrow" style={{ margin: 0 }}>Activos</span>
           </div>
           <strong style={{ fontSize: "2rem", color: "var(--success)" }}>{kpis.active}</strong>
           <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
             {kpis.total > 0 ? `${Math.round((kpis.active / kpis.total) * 100)}% del total` : "—"}
           </span>
-        </article>
+        </button>
 
-        <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setFilterStatus("pending_review")}>
+        <button type="button" className="metric-card panel" style={{ cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit" }} onClick={() => setFilterStatus("pending_review")}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <AlertTriangle size={16} style={{ color: "var(--warning)", opacity: 0.7 }} />
             <span className="eyebrow" style={{ margin: 0 }}>Pendientes</span>
@@ -144,16 +144,16 @@ export default function PortalInventoryPage() {
             {kpis.pending}
           </strong>
           <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>requieren revisión</span>
-        </article>
+        </button>
 
-        <article className="metric-card panel" style={{ cursor: "pointer" }} onClick={() => setFilterStatus("retired")}>
+        <button type="button" className="metric-card panel" style={{ cursor: "pointer", textAlign: "left", font: "inherit", color: "inherit" }} onClick={() => setFilterStatus("retired")}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: "0.9rem", color: "var(--muted)" }}>●</span>
             <span className="eyebrow" style={{ margin: 0 }}>Retirados</span>
           </div>
           <strong style={{ fontSize: "2rem", color: "var(--muted)" }}>{kpis.retired}</strong>
           <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>fuera de servicio</span>
-        </article>
+        </button>
       </div>
 
       {/* Type breakdown strip */}
@@ -230,9 +230,9 @@ export default function PortalInventoryPage() {
           <div className="table-like">
             <div className="table-row table-head" style={{ gridTemplateColumns: "24px 1fr 130px 160px 120px" }}>
               <span></span>
-              <span>Hostname</span>
+              <span>Nombre del equipo</span>
               <span>Tipo</span>
-              <span>Vendor / Modelo</span>
+              <span>Marca / Modelo</span>
               <span>Estado</span>
             </div>
             {devices.map((device) => {

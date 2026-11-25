@@ -17,7 +17,6 @@ export default function PortalProyectoPage() {
     <section className="page-stack">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Portal</p>
           <h2>Seguimiento de tu proyecto</h2>
         </div>
         <Link className="button button-ghost" href="/portal/projects">Volver a mis proyectos</Link>
