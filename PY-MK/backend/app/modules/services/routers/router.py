@@ -27,10 +27,25 @@ router = APIRouter(prefix="/services", tags=["services"])
 
 
 @router.get("/", response_model=list[ServiceRead])
-def list_services(db: Session = Depends(get_db)) -> list[ServiceRead]:
-    return [
-        ServiceRead.model_validate(item) for item in Repository(db).list_all(Service)
-    ]
+def list_services(
+    current_user: CurrentUser | None = Depends(get_current_user_optional),
+    db: Session = Depends(get_db),
+) -> list[ServiceRead]:
+    """Catalogo de servicios.
+
+    - Staff: todos los de su organizacion, tambien inactivos (los administra).
+    - Cliente: los activos y publicos de su organizacion.
+    - Sin sesion (sitio web): solo los activos y publicos.
+    """
+    stmt = select(Service).order_by(Service.id)
+    staff = (RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    if current_user is not None and current_user.role in staff:
+        stmt = stmt.where(Service.organization_id == current_user.organization_id)
+    else:
+        stmt = stmt.where(Service.active.is_(True), Service.is_public.is_(True))
+        if current_user is not None:
+            stmt = stmt.where(Service.organization_id == current_user.organization_id)
+    return [ServiceRead.model_validate(item) for item in db.scalars(stmt).all()]
 
 
 @router.post("/", response_model=ServiceRead, status_code=status.HTTP_201_CREATED)
