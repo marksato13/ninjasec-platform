@@ -47,8 +47,8 @@ def upgrade() -> None:
         sa.Column("client_decision_at", sa.DateTime(), nullable=True),
         sa.Column("client_comment", sa.String(1000), nullable=True),
         sa.Column("execution_note", sa.String(1000), nullable=True),
-        sa.Column("created_at", sa.DateTime(), nullable=True),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("updated_at", sa.DateTime(), nullable=False),
     )
     op.create_index("ix_work_windows_org", "work_windows", ["organization_id"])
     op.create_index("ix_work_windows_project", "work_windows", ["project_id"])
