@@ -15,10 +15,10 @@ cualquier trabajo transversal conserva su par en `PLANIFICACION/` e
 | [`05-STAGING-GRATUITO-ESXI.md`](05-STAGING-GRATUITO-ESXI.md) | Como preparar staging gratis, aislado y listo para CD futuro |
 | [`06-DECISION-HOSTING-STAGING.md`](06-DECISION-HOSTING-STAGING.md) | Que host elegir para staging y cuando usar Cloudflare Tunnel u Oracle |
 | [`07-PROVISIONAMIENTO-UBUNTU-STAGING.md`](07-PROVISIONAMIENTO-UBUNTU-STAGING.md) | Que instalar y como preparar Ubuntu Server para staging privado |
-| [`08-DECISION-HOSTING.md`](08-DECISION-HOSTING.md) | Donde se despliega NinjaSec en produccion, con costes en soles y por periodo |
+| [`08-DECISION-HOSTING.md`](08-DECISION-HOSTING.md) | Donde se despliega Ninja Tech en produccion, con costes en soles y por periodo |
 | [`09-STAGING-MULTIPROYECTO.md`](09-STAGING-MULTIPROYECTO.md) | Staging publico para varios proyectos: VM en ESXi sobre red plana ahora, Oracle Cloud despues |
 | [`10-MODULOS-ACTIVABLES.md`](10-MODULOS-ACTIVABLES.md) | Que modulos se despliegan y cuales esperan apagados, con el interruptor para encenderlos |
-| [`11-DESPLIEGUE-GOOGLE-CLOUD.md`](11-DESPLIEGUE-GOOGLE-CLOUD.md) | Poner NinjaSec en linea con los 300 USD de prueba, y el plan de salida a los 90 dias |
+| [`11-DESPLIEGUE-GOOGLE-CLOUD.md`](11-DESPLIEGUE-GOOGLE-CLOUD.md) | Poner Ninja Tech en linea con los 300 USD de prueba, y el plan de salida a los 90 dias |
 | [`../PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md`](../PLANIFICACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md) | Que se debe construir y con que criterios |
 | [`../IMPLEMENTACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md`](../IMPLEMENTACION/33-PLATAFORMA-ENTREGA-Y-AUTOMATIZACION.md) | Que esta pendiente y que evidencia lo cierra |
 

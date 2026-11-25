@@ -13,7 +13,7 @@ Proceso completo de atención desde que el cliente reporta un problema hasta el 
 | Actor | Rol |
 |-------|-----|
 | Responsable TI del cliente | Abre el ticket desde el portal |
-| Admin NinjaSec | Asigna y supervisa |
+| Admin Ninja Tech | Asigna y supervisa |
 | Técnico (collaborator) | Atiende y resuelve |
 
 ---

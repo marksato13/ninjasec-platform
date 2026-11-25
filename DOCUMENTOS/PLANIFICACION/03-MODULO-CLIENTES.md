@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-Gestión centralizada de todas las empresas clientes de NinjaSec. Cada cliente tiene su perfil completo con integaciones, dispositivos, tickets, servicios contratados y revisiones de seguridad.
+Gestión centralizada de todas las empresas clientes de Ninja Tech. Cada cliente tiene su perfil completo con integaciones, dispositivos, tickets, servicios contratados y revisiones de seguridad.
 
 ---
 

@@ -142,4 +142,4 @@ Job periódico que comprueba los `url` y marca los caídos para actualizar con e
 
 ## Nota sobre el origen de la idea
 
-La versión estática en GitHub Pages (JSON + Fuse.js + filtros en el navegador) sigue siendo válida **como proyecto de portafolio independiente**. Dentro de NinjaSec el módulo justifica su lugar por una sola razón: el cruce con el inventario real de clientes. Sin ese cruce, es una wiki y no debería vivir aquí.
+La versión estática en GitHub Pages (JSON + Fuse.js + filtros en el navegador) sigue siendo válida **como proyecto de portafolio independiente**. Dentro de Ninja Tech el módulo justifica su lugar por una sola razón: el cruce con el inventario real de clientes. Sin ese cruce, es una wiki y no debería vivir aquí.

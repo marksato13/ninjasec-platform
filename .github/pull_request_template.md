@@ -1,6 +1,6 @@
 <!--
 Esta plantilla se rellena sola en cada PR. Borra las secciones que no
-apliquen, pero no borres la de "Superficie de ataque" sin leerla: NinjaSec
+apliquen, pero no borres la de "Superficie de ataque" sin leerla: Ninja Tech
 es una plataforma multi-tenant con 4 roles, y ahi es donde se cuelan los
 fallos caros.
 -->

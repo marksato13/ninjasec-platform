@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-Pipeline de proyectos activos y en planificación. Gestiona los proyectos de implementación, configuración y consultoría que NinjaSec ejecuta para sus clientes.
+Pipeline de proyectos activos y en planificación. Gestiona los proyectos de implementación, configuración y consultoría que Ninja Tech ejecuta para sus clientes.
 
 ---
 

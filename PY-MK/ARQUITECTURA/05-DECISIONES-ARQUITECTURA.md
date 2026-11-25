@@ -1,4 +1,4 @@
-# Decisiones de Arquitectura (ADRs) — NinjaSec
+# Decisiones de Arquitectura (ADRs) — Ninja Tech
 
 > Architecture Decision Records: registro de decisiones técnicas importantes,  
 > el contexto en que se tomaron y sus consecuencias.

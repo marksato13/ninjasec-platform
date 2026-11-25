@@ -1,4 +1,4 @@
-# Roles y Accesos — NinjaSec
+# Roles y Accesos — Ninja Tech
 
 ## Los 4 roles del sistema
 
@@ -81,7 +81,7 @@
 
 ## Aislamiento multi-tenant (`organization_id`)
 
-NinjaSec es multi-tenant desde el modelo de datos: **24 de los 41 modelos llevan `organization_id`**. No hay un módulo que documente esto, así que vive aquí.
+Ninja Tech es multi-tenant desde el modelo de datos: **24 de los 41 modelos llevan `organization_id`**. No hay un módulo que documente esto, así que vive aquí.
 
 ### Cómo funciona
 

@@ -73,7 +73,7 @@ Elementos ArchiMate. Un solo modelo de datos para las cuatro capas.
 
 ## Derivación de la capa de Tecnología
 
-| Dato NinjaSec | Elemento ArchiMate generado |
+| Dato Ninja Tech | Elemento ArchiMate generado |
 |---|---|
 | `Device` tipo `server` | `Node` |
 | `Device` tipo `firewall` / `router` / `switch` | `Device` + `CommunicationNetwork` |

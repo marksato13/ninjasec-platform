@@ -1,4 +1,4 @@
-# FIX — Plataforma NinjaSec
+# FIX — Plataforma Ninja Tech
 
 Esta carpeta contiene ajustes funcionales y de flujo solicitados para la plataforma.
 

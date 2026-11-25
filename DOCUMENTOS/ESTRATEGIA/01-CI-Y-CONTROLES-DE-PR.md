@@ -105,7 +105,7 @@ flowchart LR
     end
     subgraph Produccion[Red de produccion]
         RUNNER[Runner de despliegue]
-        APP[Servicios NinjaSec]
+        APP[Servicios Ninja Tech]
     end
     PR --> CI
     CI --> MAIN

@@ -1,4 +1,4 @@
-# Plan de Refactoring — NinjaSec
+# Plan de Refactoring — Ninja Tech
 
 > Roadmap priorizado de mejoras arquitectónicas.  
 > Cada fase es independiente y entregable. Completar en orden.

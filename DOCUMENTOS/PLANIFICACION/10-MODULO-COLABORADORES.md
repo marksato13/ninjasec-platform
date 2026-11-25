@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-Directorio del equipo interno de NinjaSec. Muestra perfiles de todos los profesionales con sus skills, certificaciones, disponibilidad y especialidad.
+Directorio del equipo interno de Ninja Tech. Muestra perfiles de todos los profesionales con sus skills, certificaciones, disponibilidad y especialidad.
 
 ---
 

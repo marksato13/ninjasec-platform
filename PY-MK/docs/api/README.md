@@ -1,6 +1,6 @@
 # docs/api
 
-Documentación y colecciones de la API REST de NinjaSec.
+Documentación y colecciones de la API REST de Ninja Tech.
 
 ## Qué va aquí
 

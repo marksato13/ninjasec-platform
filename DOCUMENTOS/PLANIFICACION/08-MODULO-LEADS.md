@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-Sistema CRM de captación y seguimiento comercial. Los leads son prospectos (empresas o personas interesadas en los servicios de NinjaSec) que avanzan por un pipeline visual tipo Kanban hasta convertirse en clientes o descartarse.
+Sistema CRM de captación y seguimiento comercial. Los leads son prospectos (empresas o personas interesadas en los servicios de Ninja Tech) que avanzan por un pipeline visual tipo Kanban hasta convertirse en clientes o descartarse.
 
 ---
 
