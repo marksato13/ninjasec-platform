@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AuditItem, DashboardUser, exportAuditLogs, getAuditLogs, getUsers } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
 import { notifyError } from "@/lib/alerts";
+import { getAuditActionLabel, getAuditEntityLabel } from "@/lib/audit-labels";
 
 const ACTION_BADGE: Record<string, string> = {
   "client.created":       "badge-active",
@@ -28,9 +29,9 @@ const ACTION_BADGE: Record<string, string> = {
 };
 
 function actionColor(action: string): string {
-  if (action.includes("deleted") || action.includes("retired")) return "var(--danger)";
-  if (action.includes("created")) return "var(--success)";
-  if (action.includes("updated") || action.includes("closed") || action.includes("resolved")) return "var(--warning)";
+  if (action.includes("delete") || action.includes("retired")) return "var(--danger)";
+  if (action.includes("create")) return "var(--success)";
+  if (action.includes("update") || action.includes("closed") || action.includes("resolved")) return "var(--warning)";
   return "var(--primary)";
 }
 
@@ -122,11 +123,11 @@ function AuditPageInner() {
         <div className="filters-grid">
           <select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
             <option value="">Todas las acciones</option>
-            {actionTypes.map((a) => <option key={a} value={a}>{a}</option>)}
+            {actionTypes.map((a) => <option key={a} value={a}>{getAuditActionLabel(a)}</option>)}
           </select>
           <select value={filterEntity} onChange={(e) => setFilterEntity(e.target.value)}>
             <option value="">Todas las entidades</option>
-            {entityTypes.map((e) => <option key={e} value={e}>{e}</option>)}
+            {entityTypes.map((e) => <option key={e} value={e}>{getAuditEntityLabel(e)}</option>)}
           </select>
           <input
             placeholder="ID específico"
@@ -173,10 +174,10 @@ function AuditPageInner() {
                     className={`badge ${ACTION_BADGE[item.action] ?? "badge-draft"}`}
                     style={{ fontSize: "0.68rem", borderLeft: `3px solid ${actionColor(item.action)}` }}
                   >
-                    {item.action}
+                    {getAuditActionLabel(item.action)}
                   </span>
                 </span>
-                <span className="muted-small">{item.entity_type || "—"}</span>
+                <span className="muted-small" title={item.entity_type || undefined}>{getAuditEntityLabel(item.entity_type)}</span>
                 <span className="muted-small">{item.entity_id || "—"}</span>
                 <span style={{ fontSize: "0.82rem" }}>{userName(item.user_id)}</span>
               </div>

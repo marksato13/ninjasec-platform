@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Bug, Building2, ShieldCheck } from "lucide-react";
+
+import { EmptyState } from "@/components/ui/empty-state";
 import { DeviceCveEntry, getClients, getDeviceCves } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
 import { getSeverityLabel } from "@/lib/labels";
@@ -30,26 +33,56 @@ export default function VulnerabilitiesPage() {
 
   return (
     <section className="page-stack">
-      <div className="flex items-center justify-between">
-        <h2>Inventario de vulnerabilidades (CVE + EPSS)</h2>
-        <select className="input w-64" value={clientId} onChange={(e) => setClientId(e.target.value ? Number(e.target.value) : "")}>
-          <option value="">Seleccionar cliente</option>
-          {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
-        </select>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Ninja Sec</p>
+          <h2>Inventario de vulnerabilidades</h2>
+        </div>
       </div>
 
-      <p className="muted-small">
-        Cruza el vendor/modelo de cada dispositivo con CVEs conocidos (CIRCL) y los prioriza por EPSS —
-        probabilidad real de explotación (FIRST.org) — en vez de solo por severidad CVSS. Un CVE con CVSS
-        alto pero EPSS bajo puede quedar por debajo de uno con CVSS medio pero EPSS alto.
-      </p>
+      <article className="panel filters-panel">
+        <div className="filters-grid" style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 2fr)", marginBottom: 0 }}>
+          <select
+            aria-label="Cliente"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value ? Number(e.target.value) : "")}
+          >
+            <option value="">Selecciona un cliente</option>
+            {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
+          </select>
+          <p className="muted-small" style={{ margin: 0, alignSelf: "center" }}>
+            Cruza la marca y el modelo de cada equipo con CVE conocidas (CIRCL) y las ordena por EPSS, la
+            probabilidad real de explotación (FIRST.org), no solo por la severidad CVSS.
+          </p>
+        </div>
+      </article>
 
-      {!activeClientId && <p>Selecciona un cliente para ver su inventario de vulnerabilidades.</p>}
-      {isLoading && <p>Cargando…</p>}
-      {activeClientId && !isLoading && devices.length === 0 && <p>Sin CVEs conocidos para los dispositivos de este cliente.</p>}
+      {!activeClientId && (
+        clients.length === 0 ? (
+          <EmptyState
+            icon={Building2}
+            title="Todavía no hay clientes"
+            description="El inventario se arma con los equipos de cada cliente. Registra uno y sus equipos para empezar."
+          />
+        ) : (
+          <EmptyState
+            icon={Bug}
+            title="Elige un cliente"
+            description="Verás sus equipos con las vulnerabilidades conocidas, de la más probable de explotar a la menos."
+          />
+        )
+      )}
+      {isLoading && <div className="empty-state">Cargando vulnerabilidades…</div>}
+      {activeClientId && !isLoading && devices.length === 0 && (
+        <EmptyState
+          icon={ShieldCheck}
+          title="Sin vulnerabilidades conocidas"
+          description="Ningún equipo de este cliente coincide con CVE publicadas. Revisa que marca y modelo estén bien escritos."
+        />
+      )}
 
       {devices.map((device: DeviceCveEntry) => (
-        <div className="panel overflow-x-auto" key={device.device_id}>
+        <div className="panel" style={{ overflowX: "auto" }} key={device.device_id}>
           <h3>{device.hostname} <span style={{ fontSize: "0.8rem", color: "var(--muted)", fontWeight: 400 }}>({device.vendor} {device.model})</span></h3>
           <div className="table-like">
             <div className="table-row table-head" style={{ gridTemplateColumns: "1fr 3fr 0.8fr 0.8fr 0.8fr" }}>

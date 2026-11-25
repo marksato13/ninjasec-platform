@@ -28,3 +28,9 @@ export async function createServiceRequest(payload: { service_id: number; reques
 export async function updateServiceRequestStatus(requestId: number, status: string): Promise<ServiceRequestItem> {
   return request<ServiceRequestItem>(`/services/requests/${requestId}`, { method: "PATCH", body: JSON.stringify({ status }) });
 }
+
+// Solicitud aprobada -> proyecto, con el area del servicio. `client_id` solo hace
+// falta si la solicitud llego del formulario publico (sin cliente).
+export async function convertServiceRequest(requestId: number, payload: { project_type_id: number; client_id?: number | null; name?: string | null; description?: string | null }): Promise<ServiceRequestItem> {
+  return request<ServiceRequestItem>(`/services/requests/${requestId}/convert`, { method: "POST", body: JSON.stringify(payload) });
+}

@@ -96,30 +96,39 @@ export default function NetdoctorPage() {
 
   return (
     <section className="page-stack">
-      <div className="flex items-center justify-between">
-        <h2>NetDoctor — diagnóstico multi-vendor</h2>
-        <div style={{ display: "flex", gap: 12 }}>
-          <select className="input" value={vendor} onChange={(e) => setVendor(e.target.value)}>
-            {VENDORS.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
-          </select>
-          <button type="button" className={`button ${mode === "guided" ? "button-primary" : "button-secondary"}`} onClick={() => setMode("guided")}>Modo guiado</button>
-          <button type="button" className={`button ${mode === "catalog" ? "button-primary" : "button-secondary"}`} onClick={() => setMode("catalog")}>Catálogo</button>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Ninja Sec</p>
+          <h2>NetDoctor</h2>
+        </div>
+        <div className="tab-list" role="tablist" aria-label="Modo">
+          <button type="button" role="tab" aria-selected={mode === "guided"} className={`tab ${mode === "guided" ? "tab-active" : ""}`} onClick={() => setMode("guided")}>Diagnóstico guiado</button>
+          <button type="button" role="tab" aria-selected={mode === "catalog"} className={`tab ${mode === "catalog" ? "tab-active" : ""}`} onClick={() => setMode("catalog")}>Catálogo de fallas</button>
         </div>
       </div>
 
-      <p className="muted-small">
-        Sin conexión SSH real — el comando se muestra como texto para ejecutarlo manualmente. La conexión directa a
-        dispositivos (28-P3) requiere credenciales cifradas y autorización escrita del cliente, todavía no implementada.
-      </p>
+      <article className="panel filters-panel">
+        <div className="filters-grid" style={{ gridTemplateColumns: mode === "catalog" ? "1fr 1fr 2fr" : "1fr 3fr", marginBottom: 0 }}>
+          <select aria-label="Marca del equipo" value={vendor} onChange={(e) => setVendor(e.target.value)}>
+            {VENDORS.map((v) => <option key={v.value} value={v.value}>{v.label}</option>)}
+          </select>
+          {mode === "catalog" && (
+            <select aria-label="Categoría" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <option value="">Todas las categorías</option>
+              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          )}
+          <p className="muted-small" style={{ margin: 0, alignSelf: "center" }}>
+            No se conecta a los equipos: muestra el comando para que lo ejecutes tú. La conexión directa necesita
+            credenciales cifradas y autorización escrita del cliente.
+          </p>
+        </div>
+      </article>
 
       {mode === "guided" && tree && <GuidedWizard tree={tree} vendor={vendor} />}
 
       {mode === "catalog" && (
         <>
-          <select className="input w-64" value={category} onChange={(e) => setCategory(e.target.value)}>
-            <option value="">Todas las categorías</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
           {issues.map((issue) => <IssueCard key={issue.code} issue={issue} vendor={vendor} />)}
         </>
       )}

@@ -65,6 +65,7 @@ from app.db.models.study_plan import (
     StudyProgress,
 )
 from app.db.models.support_ticket import SupportTicket, SupportTicketEvent, TicketLink
+from app.db.models.work_window import WorkWindow
 from app.db.models.user import User
 from app.db.models.user_certification import UserCertification
 from app.db.models.user_skill import UserSkill
@@ -141,5 +142,6 @@ __all__ = [
     "User",
     "UserCertification",
     "UserSkill",
+    "WorkWindow",
     "CveInventoryCache",
 ]

@@ -6,7 +6,9 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { DashboardClient, deleteClient, exportClientsXlsx, getClients, updateClient } from "@/lib/api";
-import { FileDown, MapPin, Server, Ticket as TicketIcon } from "lucide-react";
+import { Building2, FileDown, MapPin, Server, Ticket as TicketIcon } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 import { getStoredUser } from "@/lib/auth";
 import { ClientForm } from "@/components/forms/client-form";
 import { Modal } from "@/components/ui/modal";
@@ -126,7 +128,12 @@ export default function ClientsPage() {
       {isLoading ? (
         <div className="empty-state">Cargando clientes...</div>
       ) : clients.length === 0 ? (
-        <div className="empty-state">No hay clientes registrados.</div>
+        <EmptyState
+          icon={Building2}
+          title="Aún no hay clientes"
+          description="Cada cliente reúne sus equipos, revisiones y tickets. Registra el primero para empezar."
+          action={isAdmin ? { label: "Nuevo cliente", onClick: () => setCreateOpen(true) } : undefined}
+        />
       ) : (
         <div className="card-grid">
           {clients.map((client) => (

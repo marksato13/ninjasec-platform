@@ -38,10 +38,16 @@ import {
   updateClientService,
   deleteClientService,
 } from "@/lib/api";
+import { capsulaActiva } from "@/lib/capsulas";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { formatClientStatus, getStatusBadgeClass } from "@/lib/role-utils";
 import { getDeviceStatusLabel, getReviewStatusLabel, getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { QK } from "@/lib/query-keys";
+
+// Las consolas (integrations) y la puntuacion por host son de la capsula de
+// telemetria. Apagada, sus rutas no existen en el backend: no se consultan ni se
+// muestra lo que depende de ellas.
+const TELEMETRIA = capsulaActiva("telemetria");
 
 type TabKey = "resumen" | "info" | "sites" | "contacts" | "services" | "access" | "integrations" | "inventory" | "tickets" | "reviews";
 
@@ -52,7 +58,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "contacts",     label: "Contactos" },
   { key: "services",     label: "Servicios" },
   { key: "access",       label: "Acceso" },
-  { key: "integrations", label: "Consolas" },
+  ...(TELEMETRIA ? [{ key: "integrations" as TabKey, label: "Consolas" }] : []),
   { key: "inventory",    label: "Inventario" },
   { key: "tickets",      label: "Tickets" },
   { key: "reviews",      label: "Revisiones" },
@@ -100,7 +106,7 @@ export default function ClientDetailPage() {
   const { data: integrations = [] } = useQuery<IntegrationItem[]>({
     queryKey: QK.integrations(clientId),
     queryFn: () => getIntegrations(clientId),
-    enabled: !!clientId,
+    enabled: !!clientId && TELEMETRIA,
   });
 
   const { data: devices = [] } = useQuery<DeviceItem[]>({
@@ -323,6 +329,7 @@ export default function ClientDetailPage() {
                 </span>
               </article>
 
+              {TELEMETRIA && (
               <article className="metric-card panel">
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <Shield size={16} style={{ color: "var(--security)", opacity: 0.7 }} />
@@ -335,6 +342,7 @@ export default function ClientDetailPage() {
                   {integrations.length} consola{integrations.length !== 1 ? "s" : ""} total
                 </span>
               </article>
+              )}
 
               <article className="metric-card panel">
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -457,7 +465,7 @@ export default function ClientDetailPage() {
         </article>
       ) : null}
 
-      {activeTab === "integrations" ? (
+      {TELEMETRIA && activeTab === "integrations" ? (
         <article className="panel">
           <div className="card-grid">
             {integrations.map((item) => (

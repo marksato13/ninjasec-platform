@@ -80,6 +80,9 @@ export const QK = {
   // Seguimiento de proyectos
   tracking:        (id: number)                => ["tracking", id]               as const,
 
+  // Ventanas de trabajo
+  workWindows:     (f?: object)               => ["work-windows", f]            as const,
+
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
   projectDocs:     (f?: object)               => ["project-docs", f]            as const,
