@@ -11,7 +11,7 @@ from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
 from app.common.email import avisar_lead_nuevo
 from app.db.models.enums import RoleCode
-from app.modules.leads.schemas import LeadCreate, LeadInfoUpdate, LeadRead, LeadUpdate
+from app.modules.leads.schemas import LeadConvertido, LeadCreate, LeadInfoUpdate, LeadRead, LeadUpdate
 from app.modules.leads.services.lead_service import LeadService
 
 router = APIRouter(prefix="/leads", tags=["leads"])
@@ -157,3 +157,17 @@ def update_lead_status(
     db: Session = Depends(get_db),
 ) -> LeadRead:
     return LeadRead.model_validate(LeadService(db, current_user).update_status(lead_id, payload))
+
+
+@router.post("/{lead_id}/convert", response_model=LeadConvertido, status_code=status.HTTP_201_CREATED)
+def convert_lead(
+    lead_id: int,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)
+    ),
+    db: Session = Depends(get_db),
+) -> LeadConvertido:
+    lead, client = LeadService(db, current_user).convert(lead_id)
+    return LeadConvertido(
+        lead=LeadRead.model_validate(lead), client_id=client.id, company_name=client.company_name
+    )
