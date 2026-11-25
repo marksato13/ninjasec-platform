@@ -74,7 +74,7 @@ def create_integration(
     # Regla 2 (doc 30): client_id obligatorio y debe pertenecer a la misma org
     client = db.get(Client, payload.client_id)
     if not client or client.organization_id != current_user.organization_id:
-        raise HTTPException(status_code=403, detail="Client not found or access denied")
+        raise HTTPException(status_code=404, detail="Client not found")
 
     integration = Integration(**payload.model_dump())
     db.add(integration)
