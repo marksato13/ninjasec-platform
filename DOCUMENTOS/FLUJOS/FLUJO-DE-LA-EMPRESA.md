@@ -104,3 +104,25 @@ Pantallas: cliente en **Proyectos → Ver seguimiento** (`/portal/projects/{id}`
 | **Alta de un usuario de portal para el cliente** | Hoy se hace en Usuarios; no hay invitación por correo |
 | **Aviso por correo o WhatsApp** cuando avanza el proyecto | Hoy el cliente lo ve al entrar; no se le empuja |
 | **Subida de entregables por el colaborador** | Los documentos los publica quien tenga permiso en el proyecto |
+
+## Proyecto de ejemplo, para enseñar el seguimiento
+
+La base de producción nace vacía. Para mostrarle a un cliente cómo verá su proyecto sin cargar datos a mano:
+
+```bash
+# En la VM, desde /opt/ninjasec/PY-MK/infra
+sudo docker compose exec -T backend python -m app.db.seed_demo_proyecto            # crea
+sudo docker compose exec -T backend python -m app.db.seed_demo_proyecto --borrar   # lo quita
+```
+
+Crea un cliente ficticio con dos proyectos: uno de infraestructura (en *Implementación*) y uno de desarrollo
+(en *Planificación*), con equipo, tareas y bitácora. Se abre como administrador en
+**Proyectos → «[EJEMPLO] …» → Centro de mando → «Ver como lo ve el cliente»**.
+
+Garantías, comprobadas con pruebas:
+
+- Todo lleva `[EJEMPLO]` en el nombre.
+- Los usuarios (el equipo y el contacto del cliente) están **inactivos**, con correos `@ejemplo.invalid`
+  (dominio reservado que no existe) y una contraseña aleatoria que no se guarda: nadie puede entrar con ellos.
+- `--borrar` quita solo lo marcado; un cliente o usuario real en la misma organización no se toca.
+- Si ya está creado, se niega a duplicarlo.
