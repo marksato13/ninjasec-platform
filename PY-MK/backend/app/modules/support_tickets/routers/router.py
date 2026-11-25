@@ -196,6 +196,21 @@ async def import_tickets_xlsx(
             continue
 
         try:
+            # Las mismas comprobaciones que el alta normal: un Excel no puede
+            # colar clientes, integraciones ni equipos de otra organizacion.
+            TicketService(db, current_user)._validar_referencias(SupportTicketCreate(
+                client_id=int(client_id_val),
+                title=str(title_val).strip(),
+                priority=priority_val,
+                integration_id=int(_cell(row, "integration_id")) if _cell(row, "integration_id") else None,
+                device_id=int(_cell(row, "device_id")) if _cell(row, "device_id") else None,
+            ))
+        except HTTPException as exc:
+            errors.append(f"Fila {row_num}: {exc.detail}")
+            skipped += 1
+            continue
+
+        try:
             db.add(SupportTicket(
                 organization_id=current_user.organization_id,
                 client_id=int(client_id_val),

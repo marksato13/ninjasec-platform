@@ -9,7 +9,10 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
+from app.db.models.device import Device
+from app.db.models.integration import Integration
 from app.db.models.client_system import ClientSystem
 from app.db.models.project import Project
 from app.db.models.project_member import ProjectMember
@@ -162,8 +165,52 @@ class TicketService:
         ):
             raise HTTPException(status_code=404, detail="System not found")
 
+    def _validar_cliente(self, client_id: int | None) -> None:
+        """El cliente tiene que ser de esta organización: si no, 404."""
+        cliente = self.db.get(Client, client_id) if client_id is not None else None
+        if cliente is None or cliente.organization_id != self.current_user.organization_id:
+            raise HTTPException(status_code=404, detail="Client not found")
+
+    def _validar_responsable(self, user_id: int | None) -> None:
+        """Solo se asigna a alguien del equipo de esta organización."""
+        if user_id is None:
+            return
+        u = self.db.get(User, user_id)
+        if u is None or u.organization_id != self.current_user.organization_id or u.role_code == RoleCode.CLIENT:
+            raise HTTPException(status_code=404, detail="User not found")
+
+    def _validar_referencias(self, payload: SupportTicketCreate) -> None:
+        """Todo lo que el ticket enlaza tiene que ser de esta organización y de este cliente.
+
+        Sin esto, alguien podía abrir un ticket contra el cliente, el equipo, la
+        revisión o el hallazgo de otra organización, o un cliente enlazar los de otro.
+        """
+        org, cid = self.current_user.organization_id, payload.client_id
+        self._validar_cliente(cid)
+        if payload.integration_id is not None:
+            integ = self.db.get(Integration, payload.integration_id)
+            if integ is None or integ.organization_id != org or integ.client_id not in (None, cid):
+                raise HTTPException(status_code=404, detail="Integration not found")
+        if payload.device_id is not None:
+            dev = self.db.get(Device, payload.device_id)
+            integ = self.db.get(Integration, dev.integration_id) if dev and dev.integration_id else None
+            if integ is None or integ.organization_id != org or integ.client_id not in (None, cid):
+                raise HTTPException(status_code=404, detail="Device not found")
+        if payload.review_id is not None:
+            rev = self.db.get(SecurityReview, payload.review_id)
+            if rev is None or rev.organization_id != org or rev.client_id != cid:
+                raise HTTPException(status_code=404, detail="Review not found")
+        if payload.finding_id is not None:
+            hallazgo = self.db.get(ReviewFinding, payload.finding_id)
+            rev = self.db.get(SecurityReview, hallazgo.review_id) if hallazgo else None
+            if (rev is None or rev.organization_id != org or rev.client_id != cid
+                    or (payload.review_id is not None and hallazgo.review_id != payload.review_id)):
+                raise HTTPException(status_code=404, detail="Finding not found")
+        self._validar_responsable(payload.assigned_to)
+        self._validar_sistema(payload.system_id, cid)
+
     def create(self, payload: SupportTicketCreate) -> SupportTicket:
-        self._validar_sistema(payload.system_id, payload.client_id)
+        self._validar_referencias(payload)
         ticket = SupportTicket(
             organization_id=self.current_user.organization_id,
             client_id=payload.client_id,
@@ -233,6 +280,8 @@ class TicketService:
             raise HTTPException(status_code=404, detail="Ticket not found")
 
         data = payload.model_dump(exclude_unset=True)
+        if "assigned_to" in data:
+            self._validar_responsable(data["assigned_to"])
         new_status = data.get("status") or str(ticket.status)
 
         if new_status == TicketStatus.CLOSED and not (data.get("resolution") or ticket.resolution):
