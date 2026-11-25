@@ -95,6 +95,9 @@ jobs:
       JWT_SECRET_KEY: ci-solo-para-pruebas-no-es-un-secreto-real
       SEED_ON_STARTUP: "true"
       IS_PRODUCTION: "false"
+      # El e2e inicia sesion ~12 veces en pocos minutos desde la misma IP; en
+      # produccion el limite es 10 cada 5 minutos.
+      LOGIN_RATE_LIMIT_MAX: "500"
     # Solo tiene sentido levantar el stack si el codigo compila y los tests
     # unitarios pasan. Sin esta puerta se gastarian ~5 minutos de runner
     # construyendo imagenes de codigo que ya se sabe roto.

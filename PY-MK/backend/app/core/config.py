@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     # falla abierto -- ver el docstring del modulo.
     redis_url: str = ""
 
+    # Auditoria 2026-11-25 (B1): intentos de login por IP cada 5 minutos.
+    # Solo el e2e del CI lo sube, porque inicia sesion muchas veces seguidas.
+    login_rate_limit_max: int = 10
+
     # Login con Google (issue #83). Vacio por defecto -> el boton de Google
     # no aparece en el frontend (GET /auth/google/config reporta enabled=false)
     # y POST /auth/google responde 503. El client_id NO es secreto -- viaja
