@@ -14,6 +14,8 @@ class ServiceRead(ORMModel):
     price_label: str | None = None
     is_public: bool = True
     active: bool
+    # Area del servicio: el panel lo usa para filtrar por modo Ninja Sec / Ninja Dev.
+    area_id: int | None = None
 
 
 class ServiceCreate(ORMModel):

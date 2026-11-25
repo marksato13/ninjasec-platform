@@ -24,6 +24,9 @@ import {
 } from "@/lib/api";
 import { FolderKanban, LayoutGrid, List as ListIcon } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AvisoModo, ChipLinea } from "@/components/dashboard/chip-linea";
+import { lineaDeProyecto, mapaDeAreas, proyectoEnModo } from "@/lib/lineas";
+import { useModo } from "@/lib/modo";
 
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
@@ -164,7 +167,12 @@ export default function DashboardProjectsPage() {
     return 10;
   }
 
-  const filteredItems = items.filter((item) => {
+  // Modo Ninja Sec / Ninja Dev (plan 34): solo filtra la vista.
+  const modo = useModo();
+  const areasPorId = mapaDeAreas(data?.areas);
+  const itemsDelModo = items.filter((item) => proyectoEnModo(item, areasPorId, modo));
+
+  const filteredItems = itemsDelModo.filter((item) => {
     const statusMatch = statusFilter === "all" ? true : item.status === statusFilter;
     const typeMatch = typeFilter === "all" ? true : String(item.project_type_id || "") === typeFilter;
     const clientMatch = clientFilter === "all" ? true : String(item.client_id || "") === clientFilter;
@@ -178,6 +186,7 @@ export default function DashboardProjectsPage() {
         <div>
           <p className="eyebrow">Admin</p>
           <h2>Proyectos</h2>
+          <AvisoModo modo={modo} visibles={itemsDelModo.length} total={items.length} />
         </div>
       </div>
 
@@ -273,6 +282,7 @@ export default function DashboardProjectsPage() {
                   )}
                   <p className="card-subtitle">{item.description || "Sin descripcion"}</p>
                   <div className="card-tags">
+                    <ChipLinea linea={lineaDeProyecto(item, areasPorId)} />
                     {item.project_type_id ? <span className="tag">{typeMap.get(item.project_type_id) || `Tipo #${item.project_type_id}`}</span> : null}
                     {item.area_id ? <span className="tag">{areaMap.get(item.area_id) || `Area #${item.area_id}`}</span> : null}
                     {item.service_id ? <span className="tag">{serviceMap.get(item.service_id) || `Servicio #${item.service_id}`}</span> : null}

@@ -9,6 +9,7 @@ import {
   BriefcaseBusiness,
   Building2,
   CheckSquare,
+  Code2,
   ChevronDown,
   ChevronUp,
   Cpu,
@@ -42,12 +43,15 @@ import { formatRoleLabel, getInitials } from "@/lib/role-utils";
 import { getMisMenus, getPendingApprovalsCount } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
 import { rutaDisponible } from "@/lib/capsulas";
+import { type Linea, useModo, visibleEnModo } from "@/lib/modo";
 
 type NavItem = {
   label: string;
   href: string;
   icon: React.ReactNode;
   adminOnly?: boolean; // si true, no visible para collaborator
+  // Linea de negocio de la opcion (plan 34). Sin linea = comun a los dos modos.
+  line?: Linea;
 };
 type NavGroup = {
   id: string;
@@ -98,15 +102,25 @@ const navGroups: NavGroup[] = [
     label: "Herramientas Ninja Sec",
     staffAllowed: true,
     items: [
-      { label: "Riesgos",             href: "/dashboard/risks",           icon: IC(AlertTriangle) },
-      { label: "Vulnerabilidades",    href: "/dashboard/vulnerabilities", icon: IC(ShieldAlert) },
-      { label: "Dispositivos",        href: "/dashboard/devices",         icon: IC(Server) },
-      { label: "Catálogo de equipos", href: "/dashboard/catalog-devices", icon: IC(Boxes) },
-      { label: "NetDoctor",           href: "/dashboard/netdoctor",       icon: IC(Stethoscope) },
-      { label: "Guía SGSI",           href: "/dashboard/sgsi",            icon: IC(BookOpen) },
-      { label: "Integraciones",       href: "/dashboard/integrations",    icon: IC(Plug) },
-      { label: "Hardening",           href: "/dashboard/hardening",       icon: IC(Lock) },
-      { label: "Informe SOC",         href: "/dashboard/soc-report",      icon: IC(Gauge) },
+      { label: "Riesgos",             href: "/dashboard/risks",           icon: IC(AlertTriangle), line: "sec" },
+      { label: "Vulnerabilidades",    href: "/dashboard/vulnerabilities", icon: IC(ShieldAlert), line: "sec" },
+      { label: "Dispositivos",        href: "/dashboard/devices",         icon: IC(Server), line: "sec" },
+      { label: "Catálogo de equipos", href: "/dashboard/catalog-devices", icon: IC(Boxes), line: "sec" },
+      { label: "NetDoctor",           href: "/dashboard/netdoctor",       icon: IC(Stethoscope), line: "sec" },
+      { label: "Guía SGSI",           href: "/dashboard/sgsi",            icon: IC(BookOpen), line: "sec" },
+      { label: "Integraciones",       href: "/dashboard/integrations",    icon: IC(Plug), line: "sec" },
+      { label: "Hardening",           href: "/dashboard/hardening",       icon: IC(Lock), line: "sec" },
+      { label: "Informe SOC",         href: "/dashboard/soc-report",      icon: IC(Gauge), line: "sec" },
+    ],
+  },
+  {
+    // Ninja Dev: la guia del area. El estimador, el registro de despliegues y los
+    // documentos desde plantilla llegaran aqui como modulos (plan 34).
+    id: "dev-tools",
+    label: "Herramientas Ninja Dev",
+    staffAllowed: true,
+    items: [
+      { label: "Guía Ninja Dev", href: "/dashboard/ninja-dev", icon: IC(Code2), line: "dev" },
     ],
   },
   {
@@ -149,6 +163,9 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
   const isAdmin = role === "super_admin" || role === "admin";
   const isCollaborator = role === "collaborator";
   const isSuperAdmin = role === "super_admin";
+  // El modo filtra solo para quien puede elegirlo; el resto ve su menu completo.
+  const modoElegido = useModo();
+  const modo = isAdmin ? modoElegido : "todo";
   const { data: pendingApprovals } = useQuery({
     queryKey: QK.pendingApprovals(),
     queryFn: getPendingApprovalsCount,
@@ -223,6 +240,8 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
             // Pantallas de una capsula apagada: no se pintan. La pagina
             // ademas devuelve notFound(), porque esconder el menu no basta.
             if (!rutaDisponible(item.href)) return false;
+            // Modo Ninja Sec / Ninja Dev: preferencia de vista, no permiso.
+            if (!visibleEnModo(item.line, modo)) return false;
             return true;
           });
 
