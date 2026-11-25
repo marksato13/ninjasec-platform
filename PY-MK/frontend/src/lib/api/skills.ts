@@ -1,4 +1,5 @@
-import { clearSession, getStoredToken, isTokenExpired } from "@/lib/auth";
+import { getStoredToken, isTokenExpired } from "@/lib/auth";
+import { notifySessionExpired, SessionExpiredError } from "@/lib/session-expired";
 
 import { request } from "./client";
 
@@ -64,13 +65,17 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8024/api/v
 export async function getCertificateFileUrl(id: number): Promise<{ url: string; type: string }> {
   const token = getStoredToken();
   if (token && isTokenExpired(token)) {
-    clearSession();
-    throw new Error("Sesión expirada");
+    notifySessionExpired();
+    throw new SessionExpiredError();
   }
   const response = await fetch(`${API_BASE}/user-certifications/${id}/file`, {
     cache: "no-store",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
+  if (response.status === 401 && token) {
+    notifySessionExpired();
+    throw new SessionExpiredError();
+  }
   if (!response.ok) throw new Error(response.status === 404 ? "El certificado no tiene archivo" : `Error ${response.status}`);
   const blob = await response.blob();
   return { url: URL.createObjectURL(blob), type: blob.type };

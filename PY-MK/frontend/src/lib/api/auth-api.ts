@@ -10,8 +10,12 @@ export type LoginResponse = {
   user: { id: number; name: string; role: string; email: string; job_title?: string };
 };
 
+/**
+ * Pública: el login no necesita sesión, y con `request` una sesión vieja guardada
+ * convertía «contraseña incorrecta» (401) en «sesión expirada».
+ */
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  return request<LoginResponse>("/auth/login", {
+  return requestPublic<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
