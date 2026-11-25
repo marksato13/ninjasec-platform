@@ -22,14 +22,14 @@ router = APIRouter(prefix="/client-services", tags=["client-services"])
 def _assert_client_in_org(client_id: int, org_id: int, db: Session) -> Client:
     client = db.get(Client, client_id)
     if not client or client.organization_id != org_id:
-        raise HTTPException(status_code=403, detail="Client not found or access denied")
+        raise HTTPException(status_code=404, detail="Client not found")
     return client
 
 
 def _assert_service_in_org(service_id: int, org_id: int, db: Session) -> Service:
     service = db.get(Service, service_id)
     if not service or service.organization_id != org_id:
-        raise HTTPException(status_code=403, detail="Service not found or access denied")
+        raise HTTPException(status_code=404, detail="Service not found")
     return service
 
 
