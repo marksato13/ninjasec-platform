@@ -131,11 +131,35 @@ class DeviceService:
 
         return device
 
+    def _assert_same_org(self, device: Device) -> None:
+        """404 si el equipo no pertenece a la organizacion del usuario.
+
+        `devices` no lleva `organization_id`: el tenant se deriva por su
+        integracion o por el cliente de su sede. 404 y no 403, para no
+        confirmar que existe.
+        """
+        integration = self.db.get(Integration, device.integration_id) if device.integration_id else None
+        site = self.db.get(ClientSite, device.site_id) if device.site_id else None
+        if integration and integration.organization_id == self.current_user.organization_id:
+            return
+        if site and site.client and site.client.organization_id == self.current_user.organization_id:
+            return
+        raise HTTPException(status_code=404, detail="Device not found")
+
+    def _assert_site_in_org(self, site_id: int | None) -> None:
+        """Una sede ajena (o inexistente) no se puede asignar a un equipo."""
+        if site_id is None:
+            return
+        site = self.db.get(ClientSite, site_id)
+        if not site or not site.client or site.client.organization_id != self.current_user.organization_id:
+            raise HTTPException(status_code=404, detail="Site not found")
+
     def create(self, payload: DeviceCreate) -> Device:
         if payload.integration_id is not None:
             integration = self.db.get(Integration, payload.integration_id)
             if not integration or integration.organization_id != self.current_user.organization_id:
                 raise HTTPException(status_code=403, detail="Integration not found or access denied")
+        self._assert_site_in_org(payload.site_id)
 
         device = Device(**payload.model_dump())
         self.db.add(device)
@@ -154,8 +178,11 @@ class DeviceService:
         device = Repository(self.db).get_by_id(Device, device_id)
         if not device:
             raise HTTPException(status_code=404, detail="Device not found")
+        self._assert_same_org(device)
 
         data = payload.model_dump(exclude_unset=True)
+        if "site_id" in data:
+            self._assert_site_in_org(data["site_id"])
         if "integration_id" in data and data["integration_id"] is not None:
             new_integration = self.db.get(Integration, data["integration_id"])
             if not new_integration or new_integration.organization_id != self.current_user.organization_id:
