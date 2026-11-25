@@ -43,7 +43,6 @@ export default function PortalTasksPage() {
       {/* Encabezado */}
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Portal</p>
           <h2>Mis tareas</h2>
         </div>
         <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>

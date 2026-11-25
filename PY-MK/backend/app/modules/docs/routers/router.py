@@ -80,6 +80,7 @@ def _get_accessible_doc(
             or project.client_id != profile.client_id
             or not doc.enabled
             or doc.visibility != DocVisibility.CLIENT
+            or doc.status == DocStatus.DRAFT
         ):
             raise HTTPException(status_code=404, detail="Document not found")
     return doc, project
@@ -171,6 +172,7 @@ def list_project_docs(
             Client.commercial_status == ClientStatus.ACTIVE,
             ProjectDoc.enabled == True,
             ProjectDoc.visibility == DocVisibility.CLIENT,
+            ProjectDoc.status != DocStatus.DRAFT,
         )
 
     if visibility:

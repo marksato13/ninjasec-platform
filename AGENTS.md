@@ -97,7 +97,26 @@ añaden ceremonia sin aportar nada.
 
 **Borrado de ramas:** usar `git cherry` para comprobar que el contenido ya
 está integrado. `git diff` da falsos negativos cuando el merge fue squash,
-que es el modo que usamos.
+que es el modo que usamos. GitHub borra la rama de trabajo al fusionar el PR.
+
+**Cómo se fusiona en cada rama** (lo imponen las reglas de GitHub, no la
+costumbre):
+
+| PR | Método | Por qué |
+|---|---|---|
+| trabajo → `develop` | *squash* | Un commit por cambio, con el título del PR |
+| `develop` → `main` (versión) | *merge commit* | Con squash, `main` tendría commits que `develop` no tiene y cada versión siguiente traería conflictos |
+| `hotfix/*` → `main`, y luego `main` → `develop` | *merge commit* | El arreglo llega a producción y vuelve a integración sin duplicarse |
+
+**Publicar una versión:** PR de `develop` a `main` titulado
+`release: <resumen>`, con la lista de PR que incluye. Al fusionarlo, el
+despliegue continuo lo sube a producción (`PY-MK/infra/actualizar.sh` sigue
+`main`). Si trae migraciones de Alembic, antes se toma un respaldo verificado.
+
+La comprobación **GitFlow / origen** (`.github/workflows/gitflow.yml`) rechaza
+el PR que llega desde una rama equivocada. La especificación completa, las
+reglas de protección y el script que las aplica están en
+`ninjasec-dev-workspace/30-CICLO/Ramas-y-GitFlow.md`.
 
 **Formato de commit:** `tipo(ámbito): descripción en español`. El ámbito es
 el módulo (`auth`, `leads`, `catalogs`…) o el área (`config`, `ci`, `deps`).

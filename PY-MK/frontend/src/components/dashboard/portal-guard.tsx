@@ -9,7 +9,7 @@ import { clearSession, getStoredToken, isPortalRole } from "@/lib/auth";
 export function PortalGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [allowed, setAllowed] = useState(false);
-  const [message, setMessage] = useState("Validando sesion...");
+  const [message, setMessage] = useState("Validando sesión...");
 
   useEffect(() => {
     const token = getStoredToken();
@@ -28,7 +28,7 @@ export function PortalGuard({ children }: { children: ReactNode }) {
         setAllowed(true);
       } catch {
         clearSession();
-        setMessage("Sesion invalida. Redirigiendo...");
+        setMessage("Sesión inválida. Redirigiendo...");
         router.replace("/login");
       }
     }

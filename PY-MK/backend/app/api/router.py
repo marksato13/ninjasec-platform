@@ -37,6 +37,7 @@ from app.modules.netdoctor.routers.router import router as netdoctor_router
 from app.modules.health_score.routers.router import router as health_score_router
 from app.modules.services.routers.router import router as services_router
 from app.modules.support_tickets.routers.router import router as support_tickets_router
+from app.modules.work_windows.routers.router import router as work_windows_router
 from app.modules.users.routers.router import router as users_router
 from app.modules.navigation.router import router as navigation_router
 from app.modules.study.router import router as study_router
@@ -101,6 +102,7 @@ _registrar(integrations_router)
 _registrar(collection_router)
 _registrar(security_reviews_router)
 _registrar(support_tickets_router)
+_registrar(work_windows_router)
 _registrar(alerts_router)
 _registrar(reports_router)
 _registrar(risks_router)

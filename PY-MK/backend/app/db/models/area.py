@@ -30,6 +30,9 @@ class Area(Base):
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     slug: Mapped[str] = mapped_column(String(120), nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
+    # Linea de negocio: "sec" (Ninja Sec), "dev" (Ninja Dev) o vacia (de las dos).
+    # Decide en que modo del panel aparecen los proyectos y servicios del area.
+    business_line: Mapped[str | None] = mapped_column(String(10), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     services = relationship("Service", back_populates="area")
