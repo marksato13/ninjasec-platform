@@ -158,7 +158,7 @@ class DeviceService:
         if payload.integration_id is not None:
             integration = self.db.get(Integration, payload.integration_id)
             if not integration or integration.organization_id != self.current_user.organization_id:
-                raise HTTPException(status_code=403, detail="Integration not found or access denied")
+                raise HTTPException(status_code=404, detail="Integration not found")
         self._assert_site_in_org(payload.site_id)
 
         device = Device(**payload.model_dump())
@@ -186,7 +186,7 @@ class DeviceService:
         if "integration_id" in data and data["integration_id"] is not None:
             new_integration = self.db.get(Integration, data["integration_id"])
             if not new_integration or new_integration.organization_id != self.current_user.organization_id:
-                raise HTTPException(status_code=403, detail="Integration not found or access denied")
+                raise HTTPException(status_code=404, detail="Integration not found")
 
         for field, value in data.items():
             setattr(device, field, value)
