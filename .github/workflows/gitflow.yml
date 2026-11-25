@@ -4,7 +4,7 @@
 # hace y es obligatoria en las reglas de `main` y `develop`. La especificacion
 # completa vive en ninjasec-dev-workspace/30-CICLO/Ramas-y-GitFlow.md.
 #
-#   develop  <- feature/* fix/* chore/* docs/* perf/* refactor/* test/* deps/*
+#   develop  <- feature/* feat/* fix/* chore/* docs/* perf/* refactor/* test/* deps/*
 #               dependabot/*, y main (vuelta de un hotfix o resincronizacion)
 #   main     <- develop (version) o hotfix/*
 #
@@ -46,11 +46,11 @@ jobs:
               esac ;;
             develop)
               case "$HEAD_REF" in
-                feature/*|fix/*|chore/*|docs/*|perf/*|refactor/*|test/*|deps/*|dependabot/*|main)
+                feature/*|feat/*|fix/*|chore/*|docs/*|perf/*|refactor/*|test/*|deps/*|dependabot/*|main)
                   echo "OK: trabajo hacia develop." ;;
                 hotfix/*)
                   echo "OK: vuelta de un hotfix a develop." ;;
-                *) echo "::error::Nombre de rama no reconocido: '$HEAD_REF'. Usa feature/, fix/, chore/, docs/, perf/, refactor/, test/ o deps/."; exit 1 ;;
+                *) echo "::error::Nombre de rama no reconocido: '$HEAD_REF'. Usa feature/, feat/, fix/, chore/, docs/, perf/, refactor/, test/ o deps/."; exit 1 ;;
               esac ;;
             *)
               echo "OK: PR hacia '$BASE' (rama de trabajo apilada); la regla aplica al llegar a develop o main." ;;
