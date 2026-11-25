@@ -1,0 +1,14 @@
+# Copia este archivo FUERA del repositorio y rellenalo:
+#   C:\Users\<tu usuario>\.oci\terraform\arm.tfvars
+# Los OCID identifican tu cuenta: no los subas a git. (*.tfvars esta en .gitignore.)
+
+compartment_id      = "ocid1.tenancy.oc1..XXXXXXXX"
+availability_domain = "XXXX:SA-SANTIAGO-1-AD-1"
+subnet_id           = "ocid1.subnet.oc1.sa-santiago-1.XXXXXXXX"
+image_id            = "ocid1.image.oc1.sa-santiago-1.XXXXXXXX"   # Ubuntu aarch64
+ssh_public_key      = "ssh-ed25519 AAAA... usuario@equipo"
+
+# Opcionales (los valores por defecto ya son los de abajo)
+# ocpus           = 2
+# memory_gbs      = 12
+# boot_volume_gbs = 100
