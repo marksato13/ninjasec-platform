@@ -62,7 +62,7 @@ export default function LoginPage() {
               Inicia sesión en <span className="login-headline-accent">Ninja Tech</span>
             </h1>
             <p className="login-subhead">
-              Accedé al dashboard administrativo o al portal según el rol asignado a tu cuenta.
+              Accede al panel administrativo o al portal según el rol asignado a tu cuenta.
             </p>
             <div className="login-card-cyber">
               <div className="login-card-scan" aria-hidden />
