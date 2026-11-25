@@ -40,7 +40,7 @@ _docs_publicos = not settings.is_production
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="NinjaSec platform API",
+    description="Ninja Tech platform API",
     lifespan=lifespan,
     docs_url="/docs" if _docs_publicos else None,
     redoc_url="/redoc" if _docs_publicos else None,
@@ -100,7 +100,7 @@ app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 @app.get("/", tags=["root"])
 def root() -> dict[str, object]:
     return {
-        "message": "Welcome to NinjaSec backend",
+        "message": "Welcome to Ninja Tech backend",
         "health": "/health",
         "docs": "/docs",
         "api": settings.api_prefix,

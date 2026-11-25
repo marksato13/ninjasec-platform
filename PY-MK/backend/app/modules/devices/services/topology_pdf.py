@@ -94,7 +94,7 @@ def generate_topology_pdf(topology: TopologyResponse) -> bytes:
         pagesize=landscape(A4),
         leftMargin=_MARGIN, rightMargin=_MARGIN, topMargin=_MARGIN, bottomMargin=_MARGIN,
         title=f"Topología — {topology.client_name or topology.client_id}",
-        author="NinjaSec Platform",
+        author="Ninja Tech",
     )
     base = getSampleStyleSheet()
     title_style = ParagraphStyle("topo_title", parent=base["Normal"], fontSize=16, fontName="Helvetica-Bold", textColor=colors.HexColor("#0f172a"))

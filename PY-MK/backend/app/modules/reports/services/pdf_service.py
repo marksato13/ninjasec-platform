@@ -19,7 +19,7 @@ from reportlab.platypus import (
 from app.db.models.client import Client
 
 # ---------------------------------------------------------------------------
-# Paleta corporativa NinjaSec
+# Paleta corporativa Ninja Tech
 # ---------------------------------------------------------------------------
 _DARK    = colors.HexColor("#1E293B")
 _DARKER  = colors.HexColor("#0F172A")
@@ -159,7 +159,7 @@ def generate_consolidated_pdf(
         topMargin=_MARGIN,
         bottomMargin=_MARGIN,
         title=f"Informe Consolidado — {client.company_name}",
-        author="NinjaSec Platform",
+        author="Ninja Tech",
     )
 
     st = _styles()
@@ -173,7 +173,7 @@ def generate_consolidated_pdf(
         Table(
             [[
                 Paragraph("INFORME EJECUTIVO CONSOLIDADO", st["title"]),
-                Paragraph("NinjaSec Platform", st["subtitle"]),
+                Paragraph("Ninja Tech", st["subtitle"]),
             ]],
             colWidths=[usable_w * 0.72, usable_w * 0.28],
             style=TableStyle([
@@ -335,7 +335,7 @@ def generate_consolidated_pdf(
     story.append(HRFlowable(width="100%", thickness=0.5, color=_BORDER))
     story.append(Spacer(1, 2 * mm))
     story.append(Paragraph(
-        f"Generado por NinjaSec Platform · {utcnow().strftime('%Y-%m-%d %H:%M UTC')} · Confidencial",
+        f"Generado por Ninja Tech · {utcnow().strftime('%Y-%m-%d %H:%M UTC')} · Confidencial",
         st["footer"],
     ))
 
@@ -365,7 +365,7 @@ def generate_security_review_pdf(
         topMargin=_MARGIN,
         bottomMargin=_MARGIN,
         title=f"Revisión #{review.id} — {client.company_name if client else 'Cliente'}",
-        author="NinjaSec Platform",
+        author="Ninja Tech",
     )
     st = _styles()
     usable_w = _PAGE_W - 2 * _MARGIN
@@ -376,7 +376,7 @@ def generate_security_review_pdf(
         Table(
             [[
                 Paragraph(f"INFORME DE REVISIÓN #{review.id}", st["title"]),
-                Paragraph("NinjaSec Platform", st["subtitle"]),
+                Paragraph("Ninja Tech", st["subtitle"]),
             ]],
             colWidths=[usable_w * 0.72, usable_w * 0.28],
             style=TableStyle([
@@ -545,7 +545,7 @@ def generate_security_review_pdf(
     story.append(HRFlowable(width="100%", thickness=0.5, color=_BORDER))
     story.append(Spacer(1, 2 * mm))
     story.append(Paragraph(
-        f"Generado por NinjaSec Platform · {utcnow().strftime('%Y-%m-%d %H:%M UTC')} · Confidencial",
+        f"Generado por Ninja Tech · {utcnow().strftime('%Y-%m-%d %H:%M UTC')} · Confidencial",
         st["footer"],
     ))
 

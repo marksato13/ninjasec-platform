@@ -542,7 +542,7 @@ def add_attachment(
 
 
 # ---------------------------------------------------------------------------
-# Helper: workbook con 3 hojas — plantilla corporativa NinjaSec
+# Helper: workbook con 3 hojas — plantilla corporativa Ninja Tech
 # ---------------------------------------------------------------------------
 
 def _build_reviews_workbook(reviews: list) -> openpyxl.Workbook:

@@ -22,7 +22,7 @@ _RESULT_LABEL = {"pass": "Cumple", "fail": "No cumple", "manual": "Manual", "not
 
 def generate_hardening_pdf(client_name: str, evaluations: list[dict], summary: dict) -> bytes:
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=_MARGIN, rightMargin=_MARGIN, topMargin=_MARGIN, bottomMargin=_MARGIN, title=f"Gap Analysis — {client_name}", author="NinjaSec Platform")
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=_MARGIN, rightMargin=_MARGIN, topMargin=_MARGIN, bottomMargin=_MARGIN, title=f"Gap Analysis — {client_name}", author="Ninja Tech")
 
     base = getSampleStyleSheet()
     title_style = ParagraphStyle("hard_title", parent=base["Normal"], fontSize=16, fontName="Helvetica-Bold", textColor=colors.HexColor("#0f172a"))
