@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.time_utils import utcnow
 from app.db.models.client import Client
 from app.db.models.collection_snapshot import CollectionSnapshot
 from app.db.models.integration import Integration
@@ -56,7 +57,7 @@ class RiskScoringService:
     def _external_score(self, ip: str) -> tuple[int, list[dict[str, object]]]:
         details: list[dict[str, object]] = []
         scores: list[int] = []
-        cutoff = datetime.utcnow() - _CACHE_TTL
+        cutoff = utcnow() - _CACHE_TTL
         for checker in REPUTATION_CHECKERS:
             source = checker.__name__.replace("check_", "")
             cached = self.db.scalar(
@@ -76,7 +77,7 @@ class RiskScoringService:
             if entry:
                 entry.score = result["score"]
                 entry.category = result["category"]
-                entry.checked_at = datetime.utcnow()
+                entry.checked_at = utcnow()
             else:
                 self.db.add(IpReputationCache(ip_address=ip, source=source, score=result["score"], category=result["category"]))
             self.db.commit()

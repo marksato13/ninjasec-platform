@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import CertificationStatus
 
@@ -31,7 +32,7 @@ class UserCertification(Base):
     rejection_reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
     issued_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     user = relationship("User", foreign_keys=[user_id], back_populates="certifications")
     verified_by_user = relationship("User", foreign_keys=[verified_by])
