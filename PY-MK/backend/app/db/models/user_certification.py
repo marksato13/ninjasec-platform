@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.time_utils import utcnow
@@ -33,6 +33,14 @@ class UserCertification(Base):
     issued_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    # Area a la que aporta: "sec", "dev" o "both". Opcional (migracion 20261129_01).
+    area: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    # Certificado adjunto. Lo ven su duenio y los administradores; nunca el cliente.
+    file_key: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    file_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    file_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    file_size: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     user = relationship("User", foreign_keys=[user_id], back_populates="certifications")
     verified_by_user = relationship("User", foreign_keys=[verified_by])
