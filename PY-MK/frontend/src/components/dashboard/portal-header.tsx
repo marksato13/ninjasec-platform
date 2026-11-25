@@ -17,6 +17,7 @@ const titles: Record<string, string> = {
   "/portal/tickets": "Tickets",
   "/portal/reviews": "Revisiones",
   "/portal/tasks": "Tareas",
+  "/portal/work-windows": "Ventanas de trabajo",
   "/portal/resources": "Recursos",
   "/portal/documents": "Documentos",
 };

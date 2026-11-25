@@ -1,15 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Shield, ShieldCheck, Zap } from "lucide-react";
+import { FolderPlus, Inbox, Layers, Shield, ShieldCheck, Trash2, X, Zap } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 import {
   createService,
+  convertServiceRequest,
   createServiceRequest,
+  DashboardClient,
   deleteService,
+  getClients,
+  getProjectTypes,
   getServiceRequests,
   getServices,
+  ProjectTypeItem,
   ServiceItem,
   ServiceRequestItem,
   updateServiceRequestStatus,
@@ -56,9 +63,14 @@ export default function DashboardServicesPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterServiceId, setFilterServiceId] = useState<number | null>(null);
+  const requestsRef = useRef<HTMLElement>(null);
   const [createOpen, setCreateOpen]   = useState(false);
   const [createForm, setCreateForm]   = useState({ title: "", category: "", summary: "", description: "", price_label: "", is_public: true, active: true });
   const [createSaving, setCreateSaving] = useState(false);
+  const [convertReq, setConvertReq] = useState<ServiceRequestItem | null>(null);
+  const [convertForm, setConvertForm] = useState({ project_type_id: "", client_id: "", name: "" });
+  const [converting, setConverting] = useState(false);
 
   const { data: services = [] } = useQuery<ServiceItem[]>({
     queryKey: QK.services(),
@@ -71,6 +83,18 @@ export default function DashboardServicesPage() {
     enabled: isAdmin,
   });
 
+  const { data: projectTypes = [] } = useQuery<ProjectTypeItem[]>({
+    queryKey: QK.projectTypes(),
+    queryFn: () => getProjectTypes(),
+    enabled: isAdmin && !!convertReq,
+  });
+
+  const { data: clients = [] } = useQuery<DashboardClient[]>({
+    queryKey: QK.clients(),
+    queryFn: () => getClients(),
+    enabled: isAdmin && !!convertReq && !convertReq.client_id,
+  });
+
   const serviceMap = useMemo(() => {
     const m: Record<number, string> = {};
     services.forEach((s) => { m[s.id] = s.title; });
@@ -78,8 +102,19 @@ export default function DashboardServicesPage() {
   }, [services]);
 
   const filteredRequests = useMemo(() =>
-    requests.filter((r) => !filterStatus || r.status === filterStatus),
-  [requests, filterStatus]);
+    requests.filter((r) => (!filterStatus || r.status === filterStatus) && (filterServiceId === null || r.service_id === filterServiceId)),
+  [requests, filterStatus, filterServiceId]);
+
+  const requestCountByService = useMemo(() => {
+    const m: Record<number, number> = {};
+    requests.forEach((r) => { m[r.service_id] = (m[r.service_id] ?? 0) + 1; });
+    return m;
+  }, [requests]);
+
+  function showRequestsFor(serviceId: number) {
+    setFilterServiceId(serviceId);
+    requestsRef.current?.scrollIntoView({ block: "start" });
+  }
 
   // KPIs
   const newCount    = requests.filter((r) => r.status === "NEW").length;
@@ -158,6 +193,33 @@ export default function DashboardServicesPage() {
     }
   }
 
+  async function handleConvert() {
+    if (!convertReq || !convertForm.project_type_id) return;
+    if (!convertReq.client_id && !convertForm.client_id) {
+      notifyError("Falta el cliente", "La solicitud llegó del formulario público: elige a qué cliente pertenece.");
+      return;
+    }
+    setConverting(true);
+    try {
+      const updated = await convertServiceRequest(convertReq.id, {
+        project_type_id: Number(convertForm.project_type_id),
+        client_id: convertReq.client_id ? null : Number(convertForm.client_id),
+        name: convertForm.name.trim() || null,
+      });
+      queryClient.setQueryData<ServiceRequestItem[]>(QK.serviceRequests(), (prev = []) =>
+        prev.map((r) => r.id === updated.id ? updated : r)
+      );
+      queryClient.invalidateQueries({ queryKey: QK.projects() });
+      notifySuccess("Proyecto creado", `La solicitud quedó enlazada al proyecto #${updated.project_id}.`);
+      setConvertReq(null);
+      setConvertForm({ project_type_id: "", client_id: "", name: "" });
+    } catch (err) {
+      notifyError("No se pudo convertir", err instanceof Error ? err.message : undefined);
+    } finally {
+      setConverting(false);
+    }
+  }
+
   return (
     <section className="page-stack">
       <div className="section-heading">
@@ -177,7 +239,12 @@ export default function DashboardServicesPage() {
         </div>
 
         {services.length === 0 ? (
-          <div className="empty-state">No hay servicios registrados.</div>
+          <EmptyState
+            icon={Layers}
+            title="Aún no hay servicios"
+            description="El catálogo es lo que los clientes ven y pueden solicitar desde su portal."
+            action={isAdmin ? { label: "Nuevo servicio", onClick: () => setCreateOpen(true) } : undefined}
+          />
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
             {services.filter((s) => s.active).map((service) => (
@@ -235,22 +302,35 @@ export default function DashboardServicesPage() {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                  <button
-                    className="button button-primary"
-                    type="button"
-                    onClick={() => setRequestService(service)}
-                    style={{ flex: 1, gap: 6 }}
-                  >
-                    <Shield size={13} /> Solicitar
-                  </button>
+                <div style={{ display: "flex", gap: 8, marginTop: "auto", alignItems: "center" }}>
+                  {isAdmin ? (
+                    <button
+                      className="button button-secondary"
+                      type="button"
+                      onClick={() => showRequestsFor(service.id)}
+                      style={{ flex: 1, gap: 6 }}
+                    >
+                      <Inbox size={13} /> Ver solicitudes ({requestCountByService[service.id] ?? 0})
+                    </button>
+                  ) : (
+                    <button
+                      className="button button-primary"
+                      type="button"
+                      onClick={() => setRequestService(service)}
+                      style={{ flex: 1, gap: 6 }}
+                    >
+                      <Shield size={13} /> Solicitar
+                    </button>
+                  )}
                   {isSuperAdmin && (
                     <button
-                      className="button button-danger button-sm"
+                      className="button button-ghost button-sm"
                       type="button"
                       onClick={() => handleDeleteService(service)}
+                      aria-label={`Eliminar ${service.title}`}
+                      title="Eliminar del catálogo"
                     >
-                      Eliminar
+                      <Trash2 size={14} />
                     </button>
                   )}
                 </div>
@@ -262,10 +342,15 @@ export default function DashboardServicesPage() {
 
       {/* ── REQUESTS (admin only) ── */}
       {isAdmin && (
-        <article className="panel">
+        <article className="panel" ref={requestsRef} style={{ scrollMarginTop: 80 }}>
           <div className="panel-head">
             <div><p className="eyebrow">Gestión</p><h3>Solicitudes recibidas</h3></div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              {filterServiceId !== null && (
+                <button className="button button-ghost button-sm" type="button" onClick={() => setFilterServiceId(null)} style={{ gap: 6 }}>
+                  {serviceMap[filterServiceId] ?? "Servicio"} <X size={12} aria-label="Quitar filtro" />
+                </button>
+              )}
               {newCount > 0 && <span className="badge badge-pending">{newCount} nuevas</span>}
               {reviewCount > 0 && <span className="badge badge-draft">{reviewCount} en revisión</span>}
               <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{ fontSize: "0.82rem" }}>
@@ -279,7 +364,7 @@ export default function DashboardServicesPage() {
 
           {filteredRequests.length === 0 ? (
             <div className="empty-state">
-              {filterStatus ? `Sin solicitudes con estado "${STATUS_CFG[filterStatus]?.label ?? filterStatus}".` : "No hay solicitudes recibidas aún."}
+              {filterStatus ? `Sin solicitudes con estado "${STATUS_CFG[filterStatus]?.label ?? filterStatus}".` : filterServiceId !== null ? "Este servicio aún no recibe solicitudes." : "No hay solicitudes recibidas aún."}
             </div>
           ) : (
             <div className="table-like">
@@ -305,8 +390,19 @@ export default function DashboardServicesPage() {
                     </span>
                     <span><span className={`badge ${cfg.cls}`}>{cfg.label}</span></span>
                     <span style={{ color: "var(--muted)", fontSize: "0.75rem" }}>{relDate(req.created_at)}</span>
-                    <span style={{ display: "flex", gap: 4 }}>
-                      {cfg.next.map((ns) => (
+                    <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                      {req.project_id ? (
+                        <Link className="button button-sm button-secondary" href={`/dashboard/projects/${req.project_id}`}>
+                          Proyecto #{req.project_id}
+                        </Link>
+                      ) : (
+                        <button type="button" className="button button-sm button-primary" style={{ gap: 4 }}
+                          onClick={() => { setConvertReq(req); setConvertForm({ project_type_id: "", client_id: "", name: "" }); }}
+                        >
+                          <FolderPlus size={12} /> Convertir en proyecto
+                        </button>
+                      )}
+                      {!req.project_id && cfg.next.map((ns) => (
                         <button key={ns} type="button"
                           className={`button button-sm ${ns === "CLOSED" ? "button-ghost" : "button-secondary"}`}
                           onClick={() => handleStatusChange(req, ns)}
@@ -322,6 +418,37 @@ export default function DashboardServicesPage() {
           )}
         </article>
       )}
+
+      {/* ── CONVERT REQUEST MODAL ── */}
+      <Modal isOpen={!!convertReq} title="Convertir solicitud en proyecto" onClose={() => setConvertReq(null)}>
+        {convertReq && (
+          <div className="entity-form">
+            <p className="muted-small" style={{ margin: 0 }}>
+              {convertReq.requester_name} pidió <strong>{serviceMap[convertReq.service_id] ?? `el servicio #${convertReq.service_id}`}</strong>.
+              El proyecto se crea en planificación, con el área del servicio, y la solicitud queda cerrada y enlazada.
+            </p>
+            <select value={convertForm.project_type_id} onChange={(e) => setConvertForm((f) => ({ ...f, project_type_id: e.target.value }))}>
+              <option value="">Tipo de proyecto *</option>
+              {projectTypes.filter((t) => t.is_active).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+            {!convertReq.client_id && (
+              <select value={convertForm.client_id} onChange={(e) => setConvertForm((f) => ({ ...f, client_id: e.target.value }))}>
+                <option value="">Cliente * (llegó del formulario público)</option>
+                {clients.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
+              </select>
+            )}
+            <input
+              value={convertForm.name}
+              onChange={(e) => setConvertForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="Nombre del proyecto (opcional: servicio · cliente)"
+              maxLength={160}
+            />
+            <button className="button button-primary" type="button" disabled={converting || !convertForm.project_type_id} onClick={handleConvert}>
+              {converting ? "Creando proyecto…" : "Crear proyecto"}
+            </button>
+          </div>
+        )}
+      </Modal>
 
       {/* ── CREATE SERVICE MODAL ── */}
       <Modal isOpen={createOpen} title="Nuevo servicio" onClose={() => setCreateOpen(false)}>

@@ -22,7 +22,9 @@ import {
   ServiceItem,
   updateProject,
 } from "@/lib/api";
-import { LayoutGrid, List as ListIcon } from "lucide-react";
+import { FolderKanban, LayoutGrid, List as ListIcon } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { QK } from "@/lib/query-keys";
@@ -173,8 +175,10 @@ export default function DashboardProjectsPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Admin</p>
-        <h2>Proyectos</h2>
+        <div>
+          <p className="eyebrow">Admin</p>
+          <h2>Proyectos</h2>
+        </div>
       </div>
 
       <div className="split-grid">
@@ -339,7 +343,14 @@ export default function DashboardProjectsPage() {
               return <div className="empty-state">Cargando proyectos...</div>;
             }
             if (filteredItems.length === 0) {
-              return <div className="empty-state">No hay proyectos registrados.</div>;
+              return (
+                <EmptyState
+                  icon={FolderKanban}
+                  title="Aún no hay proyectos"
+                  description="Un proyecto agrupa el trabajo para un cliente: miembros, requerimientos y entregables."
+                  action={isAdmin ? { label: "Nuevo proyecto", onClick: () => setCreateOpen(true) } : undefined}
+                />
+              );
             }
             if (viewMode === "kanban") {
               const KANBAN_COLUMNS: { key: string; label: string }[] = [

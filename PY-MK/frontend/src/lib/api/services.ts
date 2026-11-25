@@ -1,7 +1,7 @@
 import { request } from "./client";
 
 export type ServiceItem = { id: number; title: string; slug: string; category?: string | null; summary?: string | null; description?: string | null; price_label?: string | null; is_public?: boolean; active: boolean };
-export type ServiceRequestItem = { id: number; service_id: number; requester_name: string; requester_email: string; status: string; request_type?: string | null; message?: string | null; created_at?: string | null; client_id?: number | null };
+export type ServiceRequestItem = { id: number; service_id: number; requester_name: string; requester_email: string; status: string; request_type?: string | null; message?: string | null; created_at?: string | null; client_id?: number | null; project_id?: number | null };
 
 export async function getServices(): Promise<ServiceItem[]> {
   return request<ServiceItem[]>("/services/");
@@ -27,4 +27,10 @@ export async function createServiceRequest(payload: { service_id: number; reques
 
 export async function updateServiceRequestStatus(requestId: number, status: string): Promise<ServiceRequestItem> {
   return request<ServiceRequestItem>(`/services/requests/${requestId}`, { method: "PATCH", body: JSON.stringify({ status }) });
+}
+
+// Solicitud aprobada -> proyecto, con el area del servicio. `client_id` solo hace
+// falta si la solicitud llego del formulario publico (sin cliente).
+export async function convertServiceRequest(requestId: number, payload: { project_type_id: number; client_id?: number | null; name?: string | null; description?: string | null }): Promise<ServiceRequestItem> {
+  return request<ServiceRequestItem>(`/services/requests/${requestId}/convert`, { method: "POST", body: JSON.stringify(payload) });
 }

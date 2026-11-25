@@ -22,6 +22,7 @@ import {
   retireDevice,
   updateDevice,
 } from "@/lib/api";
+import { capsulaActiva } from "@/lib/capsulas";
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
@@ -30,6 +31,11 @@ import { Modal } from "@/components/ui/modal";
 import { NetworkTopology } from "@/components/devices/network-topology";
 import { ConfigVisualizer } from "@/components/devices/config-visualizer";
 import { QK } from "@/lib/query-keys";
+
+// Las consolas (integrations) y la puntuacion por host son de la capsula de
+// telemetria. Apagada, sus rutas no existen en el backend: no se consultan ni se
+// muestra lo que depende de ellas.
+const TELEMETRIA = capsulaActiva("telemetria");
 
 const DEVICE_TYPES = ["firewall", "switch", "server", "endpoint", "router", "ap", "camera", "other"];
 const STATUS_OPTIONS = ["active", "maintenance", "pending_review", "offline", "decommissioned"];
@@ -108,6 +114,7 @@ export default function DashboardDevicesPage() {
   const { data: integrations = [] } = useQuery<IntegrationItem[]>({
     queryKey: QK.integrations(),
     queryFn: () => getIntegrations(),
+    enabled: TELEMETRIA,
   });
 
   const { data: sites = [] } = useQuery<ClientSiteItem[]>({
@@ -310,10 +317,12 @@ export default function DashboardDevicesPage() {
             <option value="">Todos los clientes</option>
             {clients.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
           </select>
+          {TELEMETRIA && (
           <select value={integFilter} onChange={(e) => setIntegFilter(e.target.value)}>
             <option value="">Todas las consolas</option>
             {visibleIntegrations.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
           </select>
+          )}
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="">Todos los estados</option>
             {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{getDeviceStatusLabel(s)}</option>)}
@@ -461,7 +470,7 @@ export default function DashboardDevicesPage() {
                   )}
                   <div className="card-meta" style={{ fontSize: "0.8rem" }}>
                     <div><span className="card-label">Cliente</span><span>{clientName(device.integration_id)}</span></div>
-                    <div><span className="card-label">Consola</span><span>{integrationName(device.integration_id)}</span></div>
+                    {TELEMETRIA && <div><span className="card-label">Consola</span><span>{integrationName(device.integration_id)}</span></div>}
                     {siteName(device.site_id) && <div><span className="card-label">Sede</span><span>{siteName(device.site_id)}</span></div>}
                     {device.vendor && <div><span className="card-label">Fabricante</span><span>{device.vendor}{device.model ? ` · ${device.model}` : ""}</span></div>}
                     {userName(device.responsible_user_id) && (
@@ -493,10 +502,12 @@ export default function DashboardDevicesPage() {
       {/* Modal: crear */}
       <Modal isOpen={createOpen} title="Agregar activo" onClose={() => setCreateOpen(false)}>
         <div className="entity-form">
+          {TELEMETRIA && (
           <select value={form.integration_id} onChange={(e) => setForm((f) => ({ ...f, integration_id: e.target.value }))}>
             <option value="">Sin integración (inventario base)</option>
             {integrations.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
           </select>
+          )}
           <input value={form.hostname} onChange={(e) => setForm((f) => ({ ...f, hostname: e.target.value }))} placeholder="Hostname *" />
           <select value={form.device_type} onChange={(e) => setForm((f) => ({ ...f, device_type: e.target.value }))}>
             <option value="">Tipo de dispositivo</option>
