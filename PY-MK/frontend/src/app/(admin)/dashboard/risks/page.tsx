@@ -17,25 +17,34 @@ import {
   getRiskHeatmap,
   getRiskThreats,
   getRiskVulnerabilities,
-  getRisks,
   updateRiskFactors,
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { QK } from "@/lib/query-keys";
+import { ChipPicker } from "@/components/ui/chip-picker";
+import { ScalePicker } from "@/components/ui/scale-picker";
+import { SeverityBadge } from "@/components/ui/severity-badge";
+import { levelTone, riskTone, SEVERITY_LABEL } from "@/components/ui/severity";
 
 const LEVELS = [1, 2, 3, 4, 5];
-const ASSET_TYPES = ["hardware", "software", "information", "service", "people", "facility"];
 
-function cellColor(score: number) {
-  if (score >= 20) return "#fecaca";
-  if (score >= 12) return "#fed7aa";
-  if (score >= 6) return "#fef08a";
-  return "#bbf7d0";
-}
+// El valor que viaja al backend se queda en ingles; solo cambia lo que se lee.
+const ASSET_TYPES: { value: string; label: string }[] = [
+  { value: "information", label: "Información" },
+  { value: "hardware", label: "Hardware" },
+  { value: "software", label: "Software" },
+  { value: "service", label: "Servicio" },
+  { value: "people", label: "Personas" },
+  { value: "facility", label: "Instalaciones" },
+];
 
 const emptyAssetForm = { client_id: 0, name: "", asset_type: "information", confidentiality: 3, integrity: 3, availability: 3 };
 const emptyRiskForm = { client_id: 0, asset_id: 0, title: "", likelihood: 3, impact: 3, threat_ids: [] as number[], vulnerability_ids: [] as number[] };
 const emptyCatalogForm = { code: "", name: "", category: "" };
+
+function errorText(error: unknown) {
+  return error instanceof Error ? error.message : undefined;
+}
 
 export default function RisksPage() {
   const queryClient = useQueryClient();
@@ -67,10 +76,10 @@ export default function RisksPage() {
     mutationFn: () => createRiskAsset(assetForm),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QK.riskAssets(activeClientId) });
-      setAssetForm(emptyAssetForm);
+      setAssetForm({ ...emptyAssetForm, client_id: assetForm.client_id });
       notifySuccess("Activo registrado");
     },
-    onError: (error) => notifyError("No se pudo registrar el activo", error instanceof Error ? error.message : undefined),
+    onError: (error) => notifyError("No se pudo registrar el activo", errorText(error)),
   });
 
   const saveRisk = useMutation({
@@ -80,25 +89,25 @@ export default function RisksPage() {
       setRiskForm({ ...emptyRiskForm, client_id: riskForm.client_id });
       notifySuccess("Riesgo registrado");
     },
-    onError: (error) => notifyError("No se pudo registrar el riesgo", error instanceof Error ? error.message : undefined),
+    onError: (error) => notifyError("No se pudo registrar el riesgo", errorText(error)),
   });
 
   const moveFactors = useMutation({
     mutationFn: ({ id, likelihood, impact }: { id: number; likelihood: number; impact: number }) => updateRiskFactors(id, likelihood, impact),
     onSuccess: () => invalidateRisks(),
-    onError: (error) => notifyError("No se pudo actualizar", error instanceof Error ? error.message : undefined),
+    onError: (error) => notifyError("No se pudo mover el riesgo", errorText(error)),
   });
 
   const saveThreat = useMutation({
     mutationFn: () => createRiskThreat(threatForm),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: QK.riskThreats() }); setThreatForm(emptyCatalogForm); notifySuccess("Amenaza agregada al catálogo"); },
-    onError: (error) => notifyError("No se pudo agregar la amenaza", error instanceof Error ? error.message : undefined),
+    onError: (error) => notifyError("No se pudo agregar la amenaza", errorText(error)),
   });
 
   const saveVulnerability = useMutation({
     mutationFn: () => createRiskVulnerability(vulnForm),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: QK.riskVulnerabilities() }); setVulnForm(emptyCatalogForm); notifySuccess("Vulnerabilidad agregada al catálogo"); },
-    onError: (error) => notifyError("No se pudo agregar la vulnerabilidad", error instanceof Error ? error.message : undefined),
+    onError: (error) => notifyError("No se pudo agregar la vulnerabilidad", errorText(error)),
   });
 
   const assetsForRiskClient = useMemo(
@@ -114,6 +123,12 @@ export default function RisksPage() {
   const submitThreat = (event: FormEvent) => { event.preventDefault(); if (threatForm.code && threatForm.name && threatForm.category) saveThreat.mutate(); };
   const submitVulnerability = (event: FormEvent) => { event.preventDefault(); if (vulnForm.code && vulnForm.name && vulnForm.category) saveVulnerability.mutate(); };
 
+  const assetValue = Math.max(assetForm.confidentiality, assetForm.integrity, assetForm.availability);
+  const inherent = riskForm.likelihood * riskForm.impact;
+  const totalRisks = heatmap.reduce((sum, cell) => sum + (cell.risks?.length ?? 0), 0);
+
+  const toChip = (item: RiskCatalogItem) => ({ id: item.id, code: item.code, name: item.name, group: item.category });
+
   return (
     <section className="page-stack">
       <div className="section-heading">
@@ -121,145 +136,163 @@ export default function RisksPage() {
           <p className="eyebrow">Ninja Sec</p>
           <h2>Gestión de riesgos</h2>
         </div>
-        <select aria-label="Cliente" className="input" style={{ width: 260, marginTop: 0 }} value={clientFilter} onChange={(e) => setClientFilter(e.target.value ? Number(e.target.value) : "")}>
-          <option value="">Todos los clientes</option>
-          {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
-        </select>
+        <label className="form-field form-field--inline">
+          <span className="form-label">Ver riesgos de</span>
+          <select className="input" value={clientFilter} onChange={(e) => setClientFilter(e.target.value ? Number(e.target.value) : "")}>
+            <option value="">Todos los clientes</option>
+            {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
+          </select>
+        </label>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="panel">
-          <h3>Nuevo activo de riesgo</h3>
-          <form onSubmit={submitAsset} className="risk-form grid gap-3">
-            <label>Cliente
-              <select className="input" required value={assetForm.client_id} onChange={(e) => setAssetForm({ ...assetForm, client_id: Number(e.target.value) })}>
-                <option value={0}>Seleccionar</option>
-                {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
-              </select>
-            </label>
-            <label>Nombre<input className="input" required value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} /></label>
-            <label>Tipo
-              <select className="input" value={assetForm.asset_type} onChange={(e) => setAssetForm({ ...assetForm, asset_type: e.target.value })}>
-                {ASSET_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </label>
-            <div className="grid grid-cols-3 gap-2">
-              <label>Confid.
-                <select className="input" value={assetForm.confidentiality} onChange={(e) => setAssetForm({ ...assetForm, confidentiality: Number(e.target.value) })}>
-                  {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-              <label>Integr.
-                <select className="input" value={assetForm.integrity} onChange={(e) => setAssetForm({ ...assetForm, integrity: Number(e.target.value) })}>
-                  {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-              <label>Disp.
-                <select className="input" value={assetForm.availability} onChange={(e) => setAssetForm({ ...assetForm, availability: Number(e.target.value) })}>
-                  {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-            </div>
-            <button className="button button-primary" disabled={saveAsset.isPending}>Registrar activo</button>
-          </form>
-        </div>
+      <div className="risk-forms">
+        <form className="panel form-card" onSubmit={submitAsset}>
+          <header className="form-card__head">
+            <h3>Registrar un activo</h3>
+            <p>Lo que hay que proteger. Su valor es la mayor de sus tres notas.</p>
+          </header>
 
-        <div className="panel">
-          <h3>Nuevo riesgo</h3>
-          <form onSubmit={submitRisk} className="risk-form grid gap-3">
-            <label>Cliente
-              <select className="input" required value={riskForm.client_id} onChange={(e) => setRiskForm({ ...riskForm, client_id: Number(e.target.value), asset_id: 0 })}>
-                <option value={0}>Seleccionar</option>
+          <div className="form-grid form-grid--2">
+            <label className="form-field">
+              <span className="form-label">Cliente</span>
+              <select className="input" required value={assetForm.client_id} onChange={(e) => setAssetForm({ ...assetForm, client_id: Number(e.target.value) })}>
+                <option value={0} disabled>Elige un cliente</option>
                 {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
               </select>
             </label>
-            <label>Activo
-              <select className="input" required value={riskForm.asset_id} onChange={(e) => setRiskForm({ ...riskForm, asset_id: Number(e.target.value) })}>
-                <option value={0}>Seleccionar</option>
+            <label className="form-field">
+              <span className="form-label">Tipo de activo</span>
+              <select className="input" value={assetForm.asset_type} onChange={(e) => setAssetForm({ ...assetForm, asset_type: e.target.value })}>
+                {ASSET_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <label className="form-field">
+            <span className="form-label">Nombre</span>
+            <input className="input" required placeholder="Ej.: Base de datos de facturación" value={assetForm.name} onChange={(e) => setAssetForm({ ...assetForm, name: e.target.value })} />
+          </label>
+
+          <div className="form-grid form-grid--3">
+            <ScalePicker label="Confidencialidad" value={assetForm.confidentiality} onChange={(v) => setAssetForm({ ...assetForm, confidentiality: v })} />
+            <ScalePicker label="Integridad" value={assetForm.integrity} onChange={(v) => setAssetForm({ ...assetForm, integrity: v })} />
+            <ScalePicker label="Disponibilidad" value={assetForm.availability} onChange={(v) => setAssetForm({ ...assetForm, availability: v })} />
+          </div>
+
+          <footer className="form-card__foot">
+            <p className="form-result" aria-live="polite">
+              Valor del activo <strong>{assetValue}</strong> <SeverityBadge tone={levelTone(assetValue)} />
+            </p>
+            <button className="button button-primary" disabled={!assetForm.client_id || !assetForm.name} aria-busy={saveAsset.isPending}>
+              Registrar activo
+            </button>
+          </footer>
+        </form>
+
+        <form className="panel form-card" onSubmit={submitRisk}>
+          <header className="form-card__head">
+            <h3>Registrar un riesgo</h3>
+            <p>Qué le puede pasar a un activo, qué tan probable es y cuánto dolería.</p>
+          </header>
+
+          <div className="form-grid form-grid--2">
+            <label className="form-field">
+              <span className="form-label">Cliente</span>
+              <select className="input" required value={riskForm.client_id} onChange={(e) => setRiskForm({ ...riskForm, client_id: Number(e.target.value), asset_id: 0 })}>
+                <option value={0} disabled>Elige un cliente</option>
+                {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
+              </select>
+            </label>
+            <label className="form-field">
+              <span className="form-label">Activo</span>
+              <select className="input" required disabled={!riskForm.client_id} value={riskForm.asset_id} onChange={(e) => setRiskForm({ ...riskForm, asset_id: Number(e.target.value) })}>
+                <option value={0} disabled>{riskForm.client_id ? (assetsForRiskClient.length ? "Elige un activo" : "Este cliente no tiene activos") : "Primero elige un cliente"}</option>
                 {assetsForRiskClient.map((asset: RiskAsset) => <option key={asset.id} value={asset.id}>{asset.name}</option>)}
               </select>
             </label>
-            <label>Título<input className="input" required value={riskForm.title} onChange={(e) => setRiskForm({ ...riskForm, title: e.target.value })} /></label>
-            <div className="grid grid-cols-2 gap-2">
-              <label>Probabilidad
-                <select className="input" value={riskForm.likelihood} onChange={(e) => setRiskForm({ ...riskForm, likelihood: Number(e.target.value) })}>
-                  {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-              <label>Impacto
-                <select className="input" value={riskForm.impact} onChange={(e) => setRiskForm({ ...riskForm, impact: Number(e.target.value) })}>
-                  {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </label>
-            </div>
-            <fieldset className="rounded-lg border border-slate-200 p-2">
-              <legend className="px-1 text-sm font-medium">Amenazas del catálogo</legend>
-              <div className="max-h-28 overflow-y-auto">
-                {threats.map((item: RiskCatalogItem) => (
-                  <label key={item.id} className="block text-sm">
-                    <input type="checkbox" checked={riskForm.threat_ids.includes(item.id)} onChange={() => toggleCatalog("threat_ids", item.id)} /> {item.code} · {item.name}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <fieldset className="rounded-lg border border-slate-200 p-2">
-              <legend className="px-1 text-sm font-medium">Vulnerabilidades del catálogo</legend>
-              <div className="max-h-28 overflow-y-auto">
-                {vulnerabilities.map((item: RiskCatalogItem) => (
-                  <label key={item.id} className="block text-sm">
-                    <input type="checkbox" checked={riskForm.vulnerability_ids.includes(item.id)} onChange={() => toggleCatalog("vulnerability_ids", item.id)} /> {item.code} · {item.name}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <button className="button button-primary" disabled={saveRisk.isPending}>Registrar riesgo</button>
-          </form>
-        </div>
+          </div>
+          <label className="form-field">
+            <span className="form-label">Título</span>
+            <input className="input" required placeholder="Ej.: Pérdida de datos por ransomware" value={riskForm.title} onChange={(e) => setRiskForm({ ...riskForm, title: e.target.value })} />
+          </label>
+
+          <div className="form-grid form-grid--2">
+            <ScalePicker label="Probabilidad" ends={["Rara", "Casi segura"]} value={riskForm.likelihood} onChange={(v) => setRiskForm({ ...riskForm, likelihood: v })} />
+            <ScalePicker label="Impacto" ends={["Leve", "Grave"]} value={riskForm.impact} onChange={(v) => setRiskForm({ ...riskForm, impact: v })} />
+          </div>
+
+          <ChipPicker label="Amenazas" options={threats.map(toChip)} selected={riskForm.threat_ids} onToggle={(id) => toggleCatalog("threat_ids", id)} emptyText="Ninguna amenaza coincide." />
+          <ChipPicker label="Vulnerabilidades" options={vulnerabilities.map(toChip)} selected={riskForm.vulnerability_ids} onToggle={(id) => toggleCatalog("vulnerability_ids", id)} emptyText="Ninguna vulnerabilidad coincide." />
+
+          <footer className="form-card__foot">
+            <p className="form-result" aria-live="polite">
+              Riesgo inherente <strong>{riskForm.likelihood} × {riskForm.impact} = {inherent}</strong> <SeverityBadge tone={riskTone(inherent)} />
+            </p>
+            <button className="button button-primary" disabled={!riskForm.client_id || !riskForm.asset_id || !riskForm.title} aria-busy={saveRisk.isPending}>
+              Registrar riesgo
+            </button>
+          </footer>
+        </form>
       </div>
 
-      <div className="panel overflow-x-auto">
-        <h3>Mapa de calor — riesgo inherente</h3>
-        {loadingHeatmap ? <p>Cargando…</p> : (
-          <div className="grid min-w-[700px] grid-cols-5 gap-2">
-            {LEVELS.slice().reverse().map((likelihood) =>
-              LEVELS.map((impact) => {
-                const cell = heatmap.find((c) => c.likelihood === likelihood && c.impact === impact);
-                const risks = cell?.risks ?? [];
-                return (
-                  <div key={`${likelihood}-${impact}`} className="min-h-32 rounded-lg p-2" style={{ background: cellColor(likelihood * impact) }}>
-                    <strong className="text-xs text-slate-800">P{likelihood} × I{impact} = {likelihood * impact}</strong>
-                    {risks.map((risk: RiskItem) => (
-                      <div key={risk.id} className="mt-2 rounded bg-white/85 p-2 text-xs text-slate-900">
-                        <div className="font-semibold">{risk.title}</div>
-                        <div className="risk-cell-factors mt-1 flex gap-1">
-                          <select aria-label={`Probabilidad de ${risk.title}`} className="input" value={risk.likelihood}
-                            onChange={(e) => moveFactors.mutate({ id: risk.id, likelihood: Number(e.target.value), impact: risk.impact })}>
-                            {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                          </select>
-                          <select aria-label={`Impacto de ${risk.title}`} className="input" value={risk.impact}
-                            onChange={(e) => moveFactors.mutate({ id: risk.id, likelihood: risk.likelihood, impact: Number(e.target.value) })}>
-                            {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
-                          </select>
-                        </div>
+      <article className="panel">
+        <header className="form-card__head">
+          <h3>Mapa de calor del riesgo inherente</h3>
+          <p>{totalRisks === 0 ? "Aún no hay riesgos registrados para esta vista." : `${totalRisks} riesgo${totalRisks === 1 ? "" : "s"}. Cambia probabilidad o impacto desde cada tarjeta para moverlo.`}</p>
+        </header>
+        {loadingHeatmap ? <p className="muted-small">Cargando el mapa…</p> : (
+          <div className="heatmap" role="table" aria-label="Riesgos por probabilidad e impacto">
+            <span className="heatmap__axis heatmap__axis--y" aria-hidden="true">Probabilidad</span>
+            <div className="heatmap__grid" role="rowgroup">
+              {LEVELS.slice().reverse().map((likelihood) => (
+                <div className="heatmap__row" role="row" key={likelihood}>
+                  <span className="heatmap__tick" role="rowheader">{likelihood}</span>
+                  {LEVELS.map((impact) => {
+                    const cell = heatmap.find((c) => c.likelihood === likelihood && c.impact === impact);
+                    const risks = cell?.risks ?? [];
+                    const score = likelihood * impact;
+                    const tone = riskTone(score);
+                    return (
+                      <div key={impact} role="cell" className={`heatmap__cell sev-${tone}${risks.length ? " has-risks" : ""}`} aria-label={`Probabilidad ${likelihood}, impacto ${impact}: ${SEVERITY_LABEL[tone]}, ${risks.length} riesgos`}>
+                        <span className="heatmap__score">{score}</span>
+                        {risks.map((risk: RiskItem) => (
+                          <div key={risk.id} className="heatmap__risk">
+                            <span className="heatmap__risk-title">{risk.title}</span>
+                            <div className="heatmap__risk-factors">
+                              <select aria-label={`Probabilidad de ${risk.title}`} className="input input--xs" value={risk.likelihood}
+                                onChange={(e) => moveFactors.mutate({ id: risk.id, likelihood: Number(e.target.value), impact: risk.impact })}>
+                                {LEVELS.map((v) => <option key={v} value={v}>P{v}</option>)}
+                              </select>
+                              <select aria-label={`Impacto de ${risk.title}`} className="input input--xs" value={risk.impact}
+                                onChange={(e) => moveFactors.mutate({ id: risk.id, likelihood: risk.likelihood, impact: Number(e.target.value) })}>
+                                {LEVELS.map((v) => <option key={v} value={v}>I{v}</option>)}
+                              </select>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                );
-              }),
-            )}
+                    );
+                  })}
+                </div>
+              ))}
+              <div className="heatmap__row heatmap__row--ticks" aria-hidden="true">
+                <span className="heatmap__tick" />
+                {LEVELS.map((impact) => <span key={impact} className="heatmap__tick">{impact}</span>)}
+              </div>
+            </div>
+            <span className="heatmap__axis heatmap__axis--x" aria-hidden="true">Impacto</span>
           </div>
         )}
-      </div>
+      </article>
 
       {activeClientId !== undefined && hostScores.length > 0 && (
-        <div className="panel overflow-x-auto">
-          <h3>Prioridad de hosts (reputación externa + alertas internas)</h3>
-          <p style={{ fontSize: "0.8rem", color: "var(--muted)", marginBottom: 12 }}>
-            Combina AbuseIPDB/VirusTotal/GreyNoise con la frecuencia y severidad de eventos internos (30-P1/30-P2).
-          </p>
+        <article className="panel" style={{ overflowX: "auto" }}>
+          <header className="form-card__head">
+            <h3>Prioridad de hosts</h3>
+            <p>Combina la reputación externa (AbuseIPDB, VirusTotal, GreyNoise) con la frecuencia y severidad de las alertas internas.</p>
+          </header>
           <div className="table-like">
             <div className="table-row table-head" style={{ gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr" }}>
-              <span>IP</span><span>Alertas internas</span><span>Score interno</span><span>Score externo</span><span>Score compuesto</span>
+              <span>IP</span><span>Alertas internas</span><span>Puntaje interno</span><span>Puntaje externo</span><span>Puntaje combinado</span>
             </div>
             {hostScores.map((host: HostScore) => (
               <div className="table-row" key={host.ip_address} style={{ gridTemplateColumns: "1.3fr 1fr 1fr 1fr 1fr" }}>
@@ -267,42 +300,49 @@ export default function RisksPage() {
                 <span>{host.internal_alert_count}</span>
                 <span>{host.internal_score}</span>
                 <span>{host.external_score}</span>
-                <span className="badge" style={{ background: cellColor(host.composite_score / 4) }}>{host.composite_score}</span>
+                <span><SeverityBadge tone={riskTone(host.composite_score / 4)}>{host.composite_score}</SeverityBadge></span>
               </div>
             ))}
           </div>
-        </div>
+        </article>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="panel">
-          <h3>Catálogo de amenazas</h3>
-          <form onSubmit={submitThreat} className="risk-form mb-3 grid grid-cols-3 gap-2">
-            <input className="input" placeholder="Código" value={threatForm.code} onChange={(e) => setThreatForm({ ...threatForm, code: e.target.value })} />
-            <input className="input" placeholder="Nombre" value={threatForm.name} onChange={(e) => setThreatForm({ ...threatForm, name: e.target.value })} />
-            <input className="input" placeholder="Categoría" value={threatForm.category} onChange={(e) => setThreatForm({ ...threatForm, category: e.target.value })} />
-            <button className="button button-primary col-span-3" disabled={saveThreat.isPending}>Agregar amenaza</button>
-          </form>
-          <ul className="max-h-48 overflow-y-auto text-sm">
-            {threats.map((item: RiskCatalogItem) => (
-              <li key={item.id} className="border-b border-slate-100 py-1">{item.code} · {item.name} {item.is_global && <span className="text-xs text-slate-500">(global)</span>}</li>
-            ))}
-          </ul>
-        </div>
-        <div className="panel">
-          <h3>Catálogo de vulnerabilidades</h3>
-          <form onSubmit={submitVulnerability} className="risk-form mb-3 grid grid-cols-3 gap-2">
-            <input className="input" placeholder="Código" value={vulnForm.code} onChange={(e) => setVulnForm({ ...vulnForm, code: e.target.value })} />
-            <input className="input" placeholder="Nombre" value={vulnForm.name} onChange={(e) => setVulnForm({ ...vulnForm, name: e.target.value })} />
-            <input className="input" placeholder="Categoría" value={vulnForm.category} onChange={(e) => setVulnForm({ ...vulnForm, category: e.target.value })} />
-            <button className="button button-primary col-span-3" disabled={saveVulnerability.isPending}>Agregar vulnerabilidad</button>
-          </form>
-          <ul className="max-h-48 overflow-y-auto text-sm">
-            {vulnerabilities.map((item: RiskCatalogItem) => (
-              <li key={item.id} className="border-b border-slate-100 py-1">{item.code} · {item.name} {item.is_global && <span className="text-xs text-slate-500">(global)</span>}</li>
-            ))}
-          </ul>
-        </div>
+      <div className="risk-forms">
+        {([
+          { title: "Catálogo de amenazas", items: threats, form: threatForm, setForm: setThreatForm, submit: submitThreat, pending: saveThreat.isPending, cta: "Agregar amenaza", codeHint: "T-DEL-06" },
+          { title: "Catálogo de vulnerabilidades", items: vulnerabilities, form: vulnForm, setForm: setVulnForm, submit: submitVulnerability, pending: saveVulnerability.isPending, cta: "Agregar vulnerabilidad", codeHint: "V-TEC-04" },
+        ] as const).map((c) => (
+          <article className="panel form-card" key={c.title}>
+            <header className="form-card__head">
+              <h3>{c.title}</h3>
+              <p>{c.items.length} en el catálogo. Los globales vienen con la plataforma.</p>
+            </header>
+            <form onSubmit={c.submit} className="form-grid form-grid--catalog">
+              <label className="form-field">
+                <span className="form-label">Código</span>
+                <input className="input" placeholder={c.codeHint} value={c.form.code} onChange={(e) => c.setForm({ ...c.form, code: e.target.value })} />
+              </label>
+              <label className="form-field">
+                <span className="form-label">Nombre</span>
+                <input className="input" value={c.form.name} onChange={(e) => c.setForm({ ...c.form, name: e.target.value })} />
+              </label>
+              <label className="form-field">
+                <span className="form-label">Categoría</span>
+                <input className="input" value={c.form.category} onChange={(e) => c.setForm({ ...c.form, category: e.target.value })} />
+              </label>
+              <button className="button button-secondary" disabled={!c.form.code || !c.form.name || !c.form.category} aria-busy={c.pending}>{c.cta}</button>
+            </form>
+            <ul className="catalog-list">
+              {c.items.map((item: RiskCatalogItem) => (
+                <li key={item.id}>
+                  <span className="chip__code">{item.code}</span>
+                  <span>{item.name}</span>
+                  {item.is_global ? <span className="catalog-list__tag">Global</span> : null}
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))}
       </div>
     </section>
   );
