@@ -7,7 +7,7 @@
 ## Objetivo
 
 Construir una cadena de entrega reproducible, segura y de bajo costo para
-NinjaSec. Debe validar cada cambio, detectar riesgos antes del merge, promover
+Ninja Tech. Debe validar cada cambio, detectar riesgos antes del merge, promover
 versiones trazables y permitir automatizacion asistida por IA sin entregar a un
 agente permisos de merge, despliegue o administracion de secretos.
 

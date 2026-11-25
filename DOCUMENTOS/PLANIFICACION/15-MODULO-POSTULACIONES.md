@@ -8,7 +8,7 @@
 
 ## ¿Qué es?
 
-Pipeline de reclutamiento de NinjaSec. Captura postulaciones desde el sitio público (formulario "Colabora"), las asigna a revisores del equipo, recoge evaluaciones con puntaje y recomendación, y mantiene una bitácora inmutable de todo el proceso.
+Pipeline de reclutamiento de Ninja Tech. Captura postulaciones desde el sitio público (formulario "Colabora"), las asigna a revisores del equipo, recoge evaluaciones con puntaje y recomendación, y mantiene una bitácora inmutable de todo el proceso.
 
 Nace del origen del proyecto: incorporar estudiantes UPeU de Desarrollo, Infraestructura y Ciberseguridad como colaboradores.
 

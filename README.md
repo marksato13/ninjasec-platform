@@ -119,7 +119,7 @@ LinkedIn o por el formulario de contacto del sitio.
 
 ## Autor
 
-**Rubén Mark Salazar Tocas** — fundador de NinjaSec.
+**Rubén Mark Salazar Tocas** — fundador de Ninja Tech.
 
 ## Licencia
 

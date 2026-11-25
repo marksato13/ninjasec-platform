@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-El portal cliente es el espacio exclusivo para los usuarios de las empresas clientes de NinjaSec. Permite al personal TI del cliente ver el estado de su infraestructura, sus documentos, solicitar servicios y gestionar sus tickets de soporte — sin acceso al backoffice.
+El portal cliente es el espacio exclusivo para los usuarios de las empresas clientes de Ninja Tech. Permite al personal TI del cliente ver el estado de su infraestructura, sus documentos, solicitar servicios y gestionar sus tickets de soporte — sin acceso al backoffice.
 
 ---
 
