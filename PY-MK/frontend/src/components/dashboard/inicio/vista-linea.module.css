@@ -1,0 +1,147 @@
+.vista {
+  --linea: var(--primary);
+  padding: 18px 20px 20px;
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--linea);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.vista[data-linea="sec"] {
+  --linea: var(--security, #10b981);
+}
+
+.vista[data-linea="dev"] {
+  --linea: #8b5cf6;
+}
+
+.titulo {
+  margin: 0 0 14px;
+  color: var(--linea);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px 28px;
+}
+
+.bloque h3 {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.nota {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.barras,
+.lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.barras li {
+  display: grid;
+  grid-template-columns: 96px 1fr 2.5ch;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 0.875rem;
+}
+
+.barraNombre {
+  color: var(--muted);
+}
+
+.barraPista {
+  block-size: 6px;
+  border-radius: 3px;
+  background: var(--row-hover);
+  overflow: hidden;
+}
+
+.barraValor {
+  display: block;
+  block-size: 100%;
+  border-radius: 3px;
+  background: var(--linea);
+}
+
+.barraNumero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.lista li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.875rem;
+}
+
+.lista li:last-child {
+  border-bottom: 0;
+}
+
+.lista a {
+  color: var(--text);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lista a:hover {
+  text-decoration: underline;
+}
+
+.cuando {
+  color: var(--muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.vencido {
+  color: var(--danger);
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.cifra {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+}
+
+.cifra a {
+  color: var(--text);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.cifra span {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.lista a:focus-visible,
+.cifra a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 3px;
+}

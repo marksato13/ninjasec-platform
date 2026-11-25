@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AvisoModo } from "@/components/dashboard/chip-linea";
+import { getAreas, getProjects } from "@/lib/api";
+import { clientesEnModo, mapaDeAreas } from "@/lib/lineas";
+import { useModo } from "@/lib/modo";
 
 import {
   createSupportTicket,
@@ -81,10 +85,18 @@ export default function SupportTicketsPage() {
     date_to: filters.date_to || undefined,
   };
 
-  const { data: tickets = [] } = useQuery<SupportTicketItem[]>({
+  const { data: ticketsTodos = [] } = useQuery<SupportTicketItem[]>({
     queryKey: QK.tickets(ticketFilters),
     queryFn: () => getSupportTickets(ticketFilters),
   });
+
+  // Modo Ninja Sec / Ninja Dev (plan 34). Los tickets no tienen proyecto: siguen la
+  // línea de los proyectos de su cliente; un cliente sin proyectos cuenta para las dos.
+  const modo = useModo();
+  const { data: proyectosModo } = useQuery({ queryKey: ["modo", "proyectos"], queryFn: getProjects, enabled: modo !== "todo" });
+  const { data: areasModo } = useQuery({ queryKey: QK.areas(), queryFn: getAreas, enabled: modo !== "todo" });
+  const clienteEnModo = clientesEnModo(proyectosModo, mapaDeAreas(areasModo), modo);
+  const tickets = ticketsTodos.filter((t) => clienteEnModo(t.client_id));
 
   const bulk = useBulkSelection(tickets.map((t) => t.id));
 
@@ -167,7 +179,7 @@ export default function SupportTicketsPage() {
 
   return (
     <section className="page-stack">
-      <div className="section-heading"><div><p className="eyebrow">Admin</p><h2>Bandeja de tickets</h2></div></div>
+      <div className="section-heading"><div><p className="eyebrow">Admin</p><h2>Bandeja de tickets</h2><AvisoModo modo={modo} visibles={tickets.length} total={ticketsTodos.length} /></div></div>
 
       {/* KPI strip (P-02 stats) */}
       {stats ? (

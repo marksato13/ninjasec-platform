@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { getInitials } from "@/lib/role-utils";
 import { NotificationCenter } from "./alerts-widget";
+import { SelectorModo } from "./selector-modo";
 
 type TopbarProps = {
   user: { name: string; role: string; email: string } | null;
@@ -13,6 +14,7 @@ type TopbarProps = {
 
 const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard":                    { title: "Dashboard",             subtitle: "Indicadores y seguimiento operativo" },
+  "/dashboard/ninja-dev":          { title: "Guía Ninja Dev",        subtitle: "Cómo trabaja el área de desarrollo" },
   "/dashboard/clients":            { title: "Clientes",              subtitle: "Empresas, sedes y servicios" },
   "/dashboard/integrations":       { title: "Integraciones",         subtitle: "Conectores, licencias y salud" },
   "/dashboard/devices":            { title: "Dispositivos",          subtitle: "Activos monitoreados por consola" },
@@ -73,6 +75,7 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
       </div>
 
       <div className="topbar-actions">
+        {user && (user.role === "super_admin" || user.role === "admin") ? <SelectorModo /> : null}
         <NotificationCenter />
         <ThemeToggle />
         {user && (
