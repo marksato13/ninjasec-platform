@@ -1,6 +1,6 @@
 # docs/diagrams
 
-Diagramas de arquitectura, flujos y modelo de datos del sistema NinjaSec.
+Diagramas de arquitectura, flujos y modelo de datos del sistema Ninja Tech.
 
 ## Qué va aquí
 

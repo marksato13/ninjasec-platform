@@ -1,4 +1,4 @@
-# Checklist de Verificación — NinjaSec
+# Checklist de Verificación — Ninja Tech
 
 > Usar este checklist antes de cada PR y como auditoría periódica.  
 > Estado: ✅ Cumple | ❌ No cumple | ⚠️ Parcial | 🔲 No aplica

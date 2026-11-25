@@ -6,7 +6,7 @@ Guía para Claude Code al trabajar en este repositorio.
 
 ## Project Overview
 
-**NinjaSec** es una plataforma full-stack de infraestructura + ciberseguridad para PYMEs, consultoras y MSPs. Genera reportes automáticos desde pfSense, FortiGate, Suricata IDS y similares, y sirve como portafolio de servicios profesionales.
+**Ninja Tech** es una plataforma full-stack de infraestructura + ciberseguridad para PYMEs, consultoras y MSPs. Genera reportes automáticos desde pfSense, FortiGate, Suricata IDS y similares, y sirve como portafolio de servicios profesionales.
 
 **Estado:** MVP avanzado (backend v0.2.0). Se ejecutó un seed masivo con data peruana realista (17 clientes, 73 dispositivos, 28 revisiones con 62 hallazgos, 15 proyectos, etc.). Todos los módulos del checklist `IMPLEMENTACION/01–14.md` están cerrados.
 
@@ -375,7 +375,7 @@ done
 
 ## 🚨 Seguridad y conducta
 
-- NinjaSec es una **plataforma de seguridad** — extra cuidado con endpoints de auth, sesiones, validación de roles
+- Ninja Tech es una **plataforma de seguridad** — extra cuidado con endpoints de auth, sesiones, validación de roles
 - **JWT tokens** deben validarse en todas las rutas protegidas (backend hace esto via `Depends(require_roles)`)
 - **Nunca** loguear passwords, tokens ni datos sensibles
 - **CORS** debe ser lista explícita en producción

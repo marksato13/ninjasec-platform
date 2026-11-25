@@ -1,4 +1,4 @@
-# ROADMAP — NinjaSec
+# ROADMAP — Ninja Tech
 
 > Priorización de los módulos 23-30 y de los pendientes críticos detectados en 15-22.
 > Creado: 2026-08-05 · **Revisado y verificado contra el código: 2026-08-06**
@@ -159,7 +159,7 @@ Si los requisitos no se pueden garantizar: **28 se queda en P2 y 30 en P5.** Amb
 
 ---
 
-## Lo que NO va en NinjaSec
+## Lo que NO va en Ninja Tech
 
 Ideas válidas que pertenecen a un repo de portafolio en GitHub Pages, no a la plataforma:
 
@@ -181,7 +181,7 @@ Ideas válidas que pertenecen a un repo de portafolio en GitHub Pages, no a la p
 - Generador de políticas de firewall multi-sintaxis (iptables/pfSense/ASA/MikroTik) sin cliente asociado
 - Verificador de DNS/MX vía DoH
 
-Son excelentes demos de portafolio (revisado y ampliado 2026-08-09 contra `ideas-roadmap-networking.md`, la propuesta completa que dio origen a los módulos 23/24/25/26/27/28/29/30). Dentro de NinjaSec serían ruido: no tienen cliente, ni rol, ni dato que persistir. **Si en algún momento se decide que sí van dentro de la plataforma** (por ejemplo, como una sección pública `/herramientas` de lead-gen en el sitio de marketing), es una decisión de producto explícita — no asumirla por defecto.
+Son excelentes demos de portafolio (revisado y ampliado 2026-08-09 contra `ideas-roadmap-networking.md`, la propuesta completa que dio origen a los módulos 23/24/25/26/27/28/29/30). Dentro de Ninja Tech serían ruido: no tienen cliente, ni rol, ni dato que persistir. **Si en algún momento se decide que sí van dentro de la plataforma** (por ejemplo, como una sección pública `/herramientas` de lead-gen en el sitio de marketing), es una decisión de producto explícita — no asumirla por defecto.
 
 ---
 

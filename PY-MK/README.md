@@ -1,6 +1,6 @@
 # PY-MK · la aplicación
 
-Backend FastAPI, frontend Next.js e infraestructura Docker de NinjaSec.
+Backend FastAPI, frontend Next.js e infraestructura Docker de Ninja Tech.
 
 La descripción del proyecto, cómo se trabaja y cómo levantarlo está en el
 [README de la raíz](../README.md). Aquí solo lo que es propio de esta carpeta.

@@ -74,7 +74,7 @@ Evidencia que respalda el control.
 
 ## Evidencia derivada — el corazón del módulo
 
-| Control ISO 27001:2022 | Módulo NinjaSec | Evidencia automática |
+| Control ISO 27001:2022 | Módulo Ninja Tech | Evidencia automática |
 |---|---|---|
 | A.5.9 Inventario de activos | 05 Dispositivos | Listado con propietario y clasificación |
 | A.5.10 Uso aceptable de activos | 05 Dispositivos | `data_classification` por activo |

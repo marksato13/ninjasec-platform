@@ -39,13 +39,14 @@ repositorio se edita **desde** ese workspace, que lo declara en
 autenticación, migraciones de Alembic o secretos se delega a otro motor ni a
 un modelo más barato. Eso es clase T4 y se queda en el agente principal.
 
-## Los tres repositorios
+## Los cuatro repositorios
 
 | Repo | Qué hay |
 | --- | --- |
 | **este**, `ninjasec-platform` | Código, CI y la especificación de desarrollo |
 | [`ninjasec-empresa`](https://github.com/marksato13/ninjasec-empresa) | Comercial, clientes, finanzas, legal, marketing. **Privado siempre** |
 | [`ninjasec-dev-workspace`](https://github.com/marksato13/ninjasec-dev-workspace) | El plano de control |
+| `ninjasec-claude` | Los conectores de Claude Code (Perplexity, Firecrawl, PostHog, Playwright, Composio, Higgsfield) y **cuándo se usan**. Privado |
 
 Separados el 2026-11-23. Si buscas el catálogo de precios o un contrato, no
 está aquí: está en `ninjasec-empresa`.
@@ -152,7 +153,7 @@ gitleaks protect --staged --no-banner --redact
 Actualizado el **2026-11-21**. Las cuatro líneas anteriores estaban obsoletas
 y se corrigen aquí:
 
-- **219 pruebas backend pasan** (eran 63 en agosto).
+- **461 pruebas backend pasan** al 2026-11-25 (219 el 2026-11-21, 63 en agosto).
 - El frontend compila **52 rutas** con Next.js 16.4.6. El build ya **no**
   ejecuta lint: `next lint` desapareció en Next 16 y el script pasó a
   `eslint .`, que hay que invocar aparte.

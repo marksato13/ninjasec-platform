@@ -7,13 +7,13 @@
 
 ## ¿Qué es?
 
-Catálogo de servicios que NinjaSec ofrece a sus clientes. Los clientes pueden ver el catálogo y solicitar servicios desde su portal. El equipo admin gestiona el catálogo y el estado de las solicitudes.
+Catálogo de servicios que Ninja Tech ofrece a sus clientes. Los clientes pueden ver el catálogo y solicitar servicios desde su portal. El equipo admin gestiona el catálogo y el estado de las solicitudes.
 
 ---
 
 ## Catálogo de servicios (tipos)
 
-Ejemplos de servicios que puede ofrecer NinjaSec:
+Ejemplos de servicios que puede ofrecer Ninja Tech:
 - Auditoría de seguridad externa
 - Pen testing de aplicaciones web
 - Monitoreo continuo de infraestructura

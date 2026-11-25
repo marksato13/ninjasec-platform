@@ -54,7 +54,7 @@ Informe SOC y la página pública **Solución**.
 
 Con `telemetria` apagada, además, la **portada**, el **encabezado** y el
 **pie** dejan de prometer «reporting por API»: los conectores son simulados.
-Hablan de lo que NinjaSec hace hoy, consultoría de infraestructura y
+Hablan de lo que Ninja Tech hace hoy, consultoría de infraestructura y
 ciberseguridad. Al encender la cápsula vuelve el mensaje de plataforma.
 
 Se retiraron además las cifras fijas de la portada (17 clientes, 73

@@ -1,10 +1,10 @@
-# NinjaSec — Documentación de Plataforma
+# Ninja Tech — Documentación de Plataforma
 
 > Versión: v0.2.0 MVP | Última actualización: **2026-08-06** (verificación contra código)
 
-## ¿Qué es NinjaSec?
+## ¿Qué es Ninja Tech?
 
-NinjaSec es una plataforma SaaS de monitoreo de infraestructura y seguridad para empresas, MSPs y consultoras de TI. Genera reportes automáticos desde plataformas como pfSense, FortiGate y Wazuh, gestiona dispositivos, tickets de soporte, revisiones de seguridad y el ciclo comercial completo.
+Ninja Tech es una plataforma SaaS de monitoreo de infraestructura y seguridad para empresas, MSPs y consultoras de TI. Genera reportes automáticos desde plataformas como pfSense, FortiGate y Wazuh, gestiona dispositivos, tickets de soporte, revisiones de seguridad y el ciclo comercial completo.
 
 ---
 

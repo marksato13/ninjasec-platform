@@ -160,7 +160,7 @@ Ciclo completo de gestión de seguridad de la información: desde el inventario 
 
 ---
 
-## Por qué este flujo es el diferencial de NinjaSec
+## Por qué este flujo es el diferencial de Ninja Tech
 
 Un SGSI llevado en Excel muere a los tres meses porque **mantenerlo actualizado es trabajo manual puro**. Aquí, siete de los diez controles clave se evidencian solos desde datos que la plataforma ya captura para operar.
 

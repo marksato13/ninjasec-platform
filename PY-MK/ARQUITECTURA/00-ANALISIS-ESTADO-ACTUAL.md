@@ -1,4 +1,4 @@
-# Análisis de Estado Actual — NinjaSec v0.2.0
+# Análisis de Estado Actual — Ninja Tech v0.2.0
 
 > Auditoría técnica realizada: Mayo 2026  
 > Alcance: backend (FastAPI) + frontend (Next.js 15)

@@ -1,4 +1,4 @@
-# 🎨 Prompts oficiales — Kuro, mascota NinjaSec
+# 🎨 Prompts oficiales — Kuro, mascota Ninja Tech
 
 > **Regla #1 para consistencia:** subí `kuro-hero.png` (la que ya tenés) como **referencia visual** antes de cada generación. En Midjourney usá `--cref <url>`. En DALL-E / Banana IA pegala como image input. En Bing Image Creator copiá el prompt + describí "based on the raccoon ninja character from this reference".
 
@@ -58,7 +58,7 @@ crisp lines, NO text in the image, sticker quality.
 
 ---
 
-## 📦 Las 8 variantes que necesita NinjaSec
+## 📦 Las 8 variantes que necesita Ninja Tech
 
 > 📌 **Renombrá cada archivo exactamente así** después de generarlo y limpiarlo: el código de la app ya espera estos nombres en `public/mascot/`.
 

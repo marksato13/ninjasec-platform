@@ -59,7 +59,7 @@ flowchart LR
 5. Documentar consumo y calidad antes de ampliar su uso.
 
 Si no existe hardware suficiente, el piloto se limita a instalar la herramienta
-sin modelo o se posterga. No se redirige codigo de NinjaSec a una API comercial
+sin modelo o se posterga. No se redirige codigo de Ninja Tech a una API comercial
 por defecto.
 
 ## PR-Agent: configuracion objetivo

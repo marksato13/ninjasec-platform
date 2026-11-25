@@ -1,12 +1,19 @@
-# NinjaSec
+# Ninja Tech
 
 Plataforma para gestionar **clientes, proyectos y colaboradores** de una consultora de
 infraestructura, nube, seguridad y desarrollo para pequeñas y medianas empresas.
 
+**Ninja Tech** es la marca general. Tiene dos áreas activas, **Ninja Sec** (ciberseguridad e infraestructura segura)
+y **Ninja Dev** (desarrollo de software), y tres futuras que todavía no existen: Ninja Infra, Ninja Cloud y Ninja
+Auditoría. La mascota es **Kuro**.
+
+> **Los nombres técnicos no cambian.** El repositorio, los contenedores, el dominio y las claves del navegador se
+> siguen llamando `ninjasec-*`: renombrarlos toca producción y es un paso aparte.
+
 🌐 **En línea:** <https://ninjasec-pe.duckdns.org>
 *(Dominio gratuito de DuckDNS. Cambiará si se registra un dominio propio.)*
 
-> **Origen:** NinjaSec nace para que estudiantes de Desarrollo, Infraestructura y
+> **Origen:** Ninja Tech nace para que estudiantes de Desarrollo, Infraestructura y
 > Ciberseguridad practiquen entregando valor real a PYMEs, con supervisión.
 
 ---
@@ -112,7 +119,7 @@ LinkedIn o por el formulario de contacto del sitio.
 
 ## Autor
 
-**Rubén Mark Salazar Tocas** — fundador de NinjaSec.
+**Rubén Mark Salazar Tocas** — fundador de Ninja Tech.
 
 ## Licencia
 

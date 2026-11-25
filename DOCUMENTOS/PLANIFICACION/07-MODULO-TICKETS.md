@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-Sistema de gestión de incidentes y solicitudes de soporte técnico. Los clientes abren tickets desde el portal y el equipo NinjaSec los atiende con SLA definidos por prioridad.
+Sistema de gestión de incidentes y solicitudes de soporte técnico. Los clientes abren tickets desde el portal y el equipo Ninja Tech los atiende con SLA definidos por prioridad.
 
 ---
 
@@ -77,7 +77,7 @@ open → in_progress → pending → resolved → closed
 - Ver solo sus tickets
 - Crear nuevo ticket con título, descripción y prioridad
 - Ver el estado y eventos de cada ticket
-- NO pueden reasignar ni cambiar estado (solo el equipo NinjaSec)
+- NO pueden reasignar ni cambiar estado (solo el equipo Ninja Tech)
 
 ---
 

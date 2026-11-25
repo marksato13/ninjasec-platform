@@ -7,7 +7,7 @@
 
 ## ¿Qué es?
 
-Las revisiones de seguridad son auditorías periódicas que el equipo de NinjaSec realiza sobre la infraestructura de los clientes. Incluyen un checklist de verificación y el registro de hallazgos (vulnerabilidades, configuraciones incorrectas, riesgos).
+Las revisiones de seguridad son auditorías periódicas que el equipo de Ninja Tech realiza sobre la infraestructura de los clientes. Incluyen un checklist de verificación y el registro de hallazgos (vulnerabilidades, configuraciones incorrectas, riesgos).
 
 ---
 

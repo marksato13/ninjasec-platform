@@ -1,6 +1,6 @@
-# 🦝 Kuro — Mascota oficial de NinjaSec
+# 🦝 Kuro — Mascota oficial de Ninja Tech
 
-Esta carpeta contiene las variantes oficiales de **Kuro**, el mapache ninja de NinjaSec.
+Esta carpeta contiene las variantes oficiales de **Kuro**, el mapache ninja de Ninja Tech.
 
 ## Archivos esperados
 
