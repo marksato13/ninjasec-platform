@@ -43,6 +43,7 @@ from app.db.models.project_requirement import ProjectRequirement
 from app.db.models.project_task import ProjectTask
 from app.db.models.project_tracking import ProjectDevice, ProjectUpdate
 from app.db.models.payment_milestone import PaymentMilestone
+from app.db.models.client_system import ClientSystem, ClientSystemEnvironment
 from app.db.models.project_type import ProjectType
 from app.db.models.report import Report
 from app.db.models.report_run import ReportRun
@@ -129,6 +130,8 @@ __all__ = [
     "ProjectDevice",
     "ProjectUpdate",
     "PaymentMilestone",
+    "ClientSystem",
+    "ClientSystemEnvironment",
     "Role",
     "SecurityReview",
     "Service",
