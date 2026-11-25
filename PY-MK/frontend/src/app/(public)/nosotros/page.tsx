@@ -1,5 +1,14 @@
 import { PublicPageShell } from "@/components/public/public-page-shell";
 import { capsulaActiva } from "@/lib/capsulas";
+import { metadatosDePagina } from "@/lib/sitio";
+
+export const metadata = {
+  ...metadatosDePagina(
+    "/nosotros",
+    "Nosotros",
+    "Quiénes somos en Ninja Tech: consultoría técnica en ciberseguridad y desarrollo con un equipo que aprende haciendo.",
+  ),
+};
 
 export default function NosotrosPage() {
   const conApi = capsulaActiva("telemetria");

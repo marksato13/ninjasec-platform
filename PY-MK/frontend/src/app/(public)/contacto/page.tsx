@@ -1,5 +1,14 @@
 import { LeadForm } from "@/components/public/lead-form";
 import { PublicPageShell } from "@/components/public/public-page-shell";
+import { metadatosDePagina } from "@/lib/sitio";
+
+export const metadata = {
+  ...metadatosDePagina(
+    "/contacto",
+    "Contacto",
+    "Cuéntanos tu necesidad en ciberseguridad o desarrollo de software y te respondemos.",
+  ),
+};
 
 export default function ContactoPage() {
   return (

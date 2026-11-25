@@ -33,6 +33,8 @@ const PASOS_CONSULTORIA = [
   { icon: FilePieChart, title: "Informa", text: "Te entregamos informes claros, técnicos y ejecutivos." },
 ];
 
+export const metadata = { alternates: { canonical: "/" } };
+
 export default function HomePage() {
   const conApi = capsulaActiva("telemetria");
   const pasos = conApi ? PASOS_PLATAFORMA : PASOS_CONSULTORIA;
