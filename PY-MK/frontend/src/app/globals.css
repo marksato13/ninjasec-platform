@@ -3841,3 +3841,18 @@ a {
   /* Un WebP animado no se pausa con CSS: con «reducir movimiento» se retira, y quedan el logo y el texto. */
   .branch-card__anim { display: none; }
 }
+
+/* ---- Ramas en Servicios y Proyectos ---- */
+.rama-head { display: flex; align-items: center; gap: 16px; }
+.rama-head__logo { width: 72px; height: 72px; border-radius: 50%; flex: none; }
+.rama-head__pose { margin-left: auto; width: 120px; height: auto; flex: none; }
+.rama-head__pose--suelta { margin: 12px 0 0; }
+.rama-subarea { margin: 6px 0 0; font-size: 1.05rem; color: var(--muted); letter-spacing: 0.02em; }
+.area-futura { border-style: dashed; }
+.area-futura__proyecto { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line); }
+
+@media (max-width: 640px) {
+  /* Las poses son decoracion: en pantallas chicas se quitan y quedan el logo y el texto. */
+  .rama-head__pose { display: none; }
+  .rama-head__logo { width: 56px; height: 56px; }
+}
