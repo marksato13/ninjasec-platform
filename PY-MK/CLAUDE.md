@@ -52,13 +52,15 @@ API base: `http://localhost:8024/api/v1` (en producción Next.js hace proxy desd
 > **se niega a correr** si `APP_ENV=production` y no hay `SEED_PASSWORD`.
 > Nunca levantes nada accesible desde fuera sin poner esa variable.
 
-| Rol | Email | Contraseña |
-|---|---|---|
-| super_admin | `admin@ninjasec.local` | `change-me` |
-| admin | `ops@ninjasec.local` | `admin123` |
-| collaborator (seed-original) | `collab@ninjasec.local` | `temp123` |
-| client | `client@ninjasec.local` | `NinjaSec2024!` |
-| collaborators nuevos (12) | `andrea.castillo@ninjasec.local`, `bryan.huaman@ninjasec.local`, `joel.cardenas@ninjasec.local`, etc. | `colab123` |
+| Rol | Email |
+|---|---|
+| super_admin | `admin@ninjasec.local` |
+| admin | `ops@ninjasec.local` |
+| collaborator (seed-original) | `collab@ninjasec.local` |
+| client | `client@ninjasec.local` |
+| collaborators nuevos (12) | `andrea.castillo@ninjasec.local`, `bryan.huaman@ninjasec.local`, `joel.cardenas@ninjasec.local`, etc. |
+
+Las contraseñas locales están en `app/db/seed.py`; con `SEED_PASSWORD` puesta, manda esa. No se copian a la documentación.
 
 ---
 
