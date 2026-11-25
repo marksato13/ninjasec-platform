@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
+from decimal import Decimal
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.time_utils import utcnow
@@ -8,9 +9,21 @@ from app.db.base import Base
 from app.db.models.enums import TicketLinkEntity, TicketPriority, TicketStatus
 
 
+# 35-P-03: un ticket es una incidencia (algo falla) o un cambio (algo nuevo
+# sobre un sistema que el cliente ya tiene).
+TIPOS_TICKET = ("incidencia", "cambio")
+DECISIONES_CAMBIO = ("approved", "rejected")
+
+
 class SupportTicket(Base):
     __tablename__ = "support_tickets"
     __table_args__ = (
+        CheckConstraint("kind IN ('incidencia', 'cambio')", name="kind"),
+        CheckConstraint("estimate_hours IS NULL OR estimate_hours > 0", name="estimate_hours"),
+        CheckConstraint(
+            "client_decision IS NULL OR client_decision IN ('approved', 'rejected')",
+            name="client_decision",
+        ),
         Index("ix_support_tickets_client_status", "client_id", "status"),
         Index("ix_support_tickets_org_opened", "organization_id", "opened_at"),
     )
@@ -45,6 +58,24 @@ class SupportTicket(Base):
         ForeignKey("users.id"), nullable=True
     )
     resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # 35-P-03 · solicitudes de cambio
+    kind: Mapped[str] = mapped_column(
+        String(12), nullable=False, default="incidencia", server_default="incidencia"
+    )
+    system_id: Mapped[int | None] = mapped_column(
+        ForeignKey("client_systems.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    estimate_hours: Mapped[Decimal | None] = mapped_column(Numeric(7, 2), nullable=True)
+    estimate_note: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    estimated_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    estimated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    client_decision: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    client_decision_note: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    client_decision_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    client_decision_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    converted_project_id: Mapped[int | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="SET NULL"), nullable=True
+    )
     opened_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -59,6 +90,14 @@ class SupportTicket(Base):
     review = relationship("SecurityReview", back_populates="support_tickets")
     finding = relationship("ReviewFinding", back_populates="support_tickets")
     assignee = relationship("User", foreign_keys=[assigned_to])
+    system = relationship("ClientSystem")
+
+    @property
+    def warranty_until(self) -> date | None:
+        """Fecha de garantía si es una incidencia de un sistema aún en garantía."""
+        if self.kind != "incidencia" or self.system is None or self.system.warranty_until is None:
+            return None
+        return self.system.warranty_until if self.system.warranty_until >= date.today() else None
     events = relationship(
         "SupportTicketEvent", back_populates="ticket", cascade="all, delete-orphan"
     )

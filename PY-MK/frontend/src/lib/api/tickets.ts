@@ -19,7 +19,23 @@ export type SupportTicketItem = {
   closed_at?: string | null;
   created_at: string;
   updated_at: string;
+  // 35-P-03 · solicitudes de cambio
+  kind: TicketKind;
+  system_id?: number | null;
+  /** Solo en incidencias de un sistema aún en garantía: hasta cuándo. */
+  warranty_until?: string | null;
+  estimate_hours?: number | null;
+  estimate_note?: string | null;
+  estimated_at?: string | null;
+  client_decision?: ChangeDecision | null;
+  client_decision_note?: string | null;
+  client_decision_at?: string | null;
+  converted_project_id?: number | null;
 };
+
+/** Incidencia: algo falla. Cambio: algo nuevo sobre un sistema que ya tiene. */
+export type TicketKind = "incidencia" | "cambio";
+export type ChangeDecision = "approved" | "rejected";
 
 export type SupportTicketEventItem = {
   id: number;
@@ -68,8 +84,25 @@ export async function createSupportTicket(payload: {
   category?: string | null;
   priority: string;
   assigned_to?: number | null;
+  kind?: TicketKind;
+  system_id?: number | null;
 }): Promise<SupportTicketItem> {
   return request<SupportTicketItem>("/support-tickets/", { method: "POST", body: JSON.stringify(payload) });
+}
+
+/** El equipo estima un cambio (admin y colaborador). Tras un rechazo, reestimar reabre la decisión. */
+export async function estimateChange(ticketId: number, payload: { hours: number; note?: string | null }): Promise<SupportTicketItem> {
+  return request<SupportTicketItem>(`/support-tickets/${ticketId}/estimate`, { method: "POST", body: JSON.stringify(payload) });
+}
+
+/** Solo el cliente: aprueba o rechaza la estimación. Rechazar exige un motivo de 5+ caracteres. */
+export async function decideChange(ticketId: number, decision: ChangeDecision, note?: string | null): Promise<SupportTicketItem> {
+  return request<SupportTicketItem>(`/support-tickets/${ticketId}/client-decision`, { method: "POST", body: JSON.stringify({ decision, note }) });
+}
+
+/** Solo admin: un cambio aprobado pasa a tarea de un proyecto existente (`project_id`) o nuevo (`project_name`). */
+export async function convertChange(ticketId: number, payload: { assigned_user_id: number; project_id?: number | null; project_name?: string | null }): Promise<SupportTicketItem> {
+  return request<SupportTicketItem>(`/support-tickets/${ticketId}/convert`, { method: "POST", body: JSON.stringify(payload) });
 }
 
 export async function updateSupportTicket(ticketId: number, payload: {

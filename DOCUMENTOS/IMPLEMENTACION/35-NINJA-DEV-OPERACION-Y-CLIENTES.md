@@ -9,7 +9,7 @@
 |---|---|---|---|
 | `35-P-01` | Sistemas del cliente y entornos | 🟡 Backend en PR #53 | ✅ Migración `20261201_01` probada en PostgreSQL 16 (subir, bajar, subir, `alembic check` limpio); ✅ 9 pruebas de permisos por rol, 404 ajeno, 422 secretos y auditoría, más 3 mutaciones detectadas; ⏳ pestaña en cliente y "Mis sistemas" en portal (contrato en `lib/api/systems.ts`) |
 | `35-P-02` | Registro de despliegues | Pendiente | Regla de checklist en `prod` probada; avance en la bitácora al desplegar |
-| `35-P-03` | Solicitudes de cambio en Tickets | Pendiente | `kind` y `system_id` en tickets; decisión del cliente auditada; conversión a tareas |
+| `35-P-03` | Solicitudes de cambio en Tickets | 🟡 Backend en PR (ver rama `feature/solicitudes-de-cambio`) | ✅ Migración `20261201_03` probada en PostgreSQL 16 (subir, bajar, subir, `alembic check` limpio); ✅ 5 pruebas: flujo abrir → estimar → aprobar/rechazar → convertir en tarea, roles, 404 ajeno y otra organización, garantía, auditoría; 3 mutaciones detectadas; ⏳ pantalla: "Pedir un cambio" en Mis sistemas y bloque de estimación en el ticket (contrato en `lib/api/tickets.ts`) |
 | `35-P-04` | Estimador de costos | Pendiente | Tarifas solo admin (prueba de 403/404); versión aprobada inmutable; propuesta de hitos C3 |
 | `35-P-05` | Pruebas de aceptación (UAT) | Pendiente | Casos marcados por el cliente; observar exige nota |
 | `35-P-06` | Documentos desde plantilla | Pendiente | Generación en borrador interno; publicar es acción del admin |
