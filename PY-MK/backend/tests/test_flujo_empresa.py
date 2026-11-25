@@ -65,12 +65,10 @@ def _token(http_client, email):
 
 @pytest.fixture
 def org(db, seed_data):
-    o = db.scalar(select(Organization).where(Organization.slug == "flujo-org"))
-    if o is None:
-        o = Organization(name="Flujo Org", slug="flujo-org")
-        db.add(o)
-        db.commit()
-    return o
+    # La organizacion duena del sitio (la de menor id): es la que recibe los leads del
+    # formulario publico desde la migracion 20261127_01. Antes el flujo usaba una
+    # organizacion aparte y solo funcionaba porque los leads no tenian dueno.
+    return db.scalar(select(Organization).order_by(Organization.id).limit(1))
 
 
 @pytest.fixture

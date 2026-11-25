@@ -30,7 +30,8 @@ def crear_lead(db, seed_data):
     def _crear(**kw) -> Lead:
         datos = dict(contact_name="Lucía Torres", email="lucia@panaderia-demo.pe", phone="+51 999 111 222",
                      company_name="Panadería Torres", interest_area="Firewall", source="website",
-                     message="Queremos separar el wifi de visitas.", status=LeadStatus.QUALIFIED)
+                     message="Queremos separar el wifi de visitas.", status=LeadStatus.QUALIFIED,
+                     organization_id=seed_data["org"].id)
         datos.update(kw)
         lead = Lead(**datos)
         db.add(lead)
