@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+import { HitosDePago } from "@/components/tracking/hitos-de-pago";
 import { SeguimientoVista } from "@/components/tracking/seguimiento-vista";
 
 /** Lo que ve el especialista: lo mismo que el cliente, más el centro de mando para alimentarlo. */
@@ -25,6 +26,7 @@ export default function CentroDelProyectoPage() {
         </div>
       </div>
       <SeguimientoVista proyectoId={id} modo="equipo" />
+      <HitosDePago projectId={id} />
     </section>
   );
 }
