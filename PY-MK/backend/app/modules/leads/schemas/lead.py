@@ -15,7 +15,14 @@ class LeadRead(ORMModel):
     source: str | None = None
     phone: str | None = None
     message: str | None = None
+    converted_client_id: int | None = None
     created_at: datetime | None = None
+
+
+class LeadConvertido(ORMModel):
+    lead: LeadRead
+    client_id: int
+    company_name: str
 
 
 class LeadCreate(ORMModel):

@@ -10,6 +10,7 @@ export type LeadItem = {
   source?: string | null;
   phone?: string | null;
   message?: string | null;
+  converted_client_id?: number | null;
   created_at?: string | null;
 };
 
@@ -35,4 +36,11 @@ export async function deleteLead(leadId: number): Promise<{ message: string }> {
 
 export async function exportLeadsXlsx(filters?: { date_from?: string; date_to?: string }): Promise<void> {
   return downloadFile(`/leads/export-xlsx${buildQuery({ ...filters })}`, "pipeline.xlsx");
+}
+
+export type LeadConvertido = { lead: LeadItem; client_id: number; company_name: string };
+
+/** Convierte el lead en cliente en el servidor: atomico, auditado y una sola vez (409 si ya se hizo). */
+export async function convertLead(leadId: number): Promise<LeadConvertido> {
+  return request<LeadConvertido>(`/leads/${leadId}/convert`, { method: "POST" });
 }
