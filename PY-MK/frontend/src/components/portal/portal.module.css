@@ -1,0 +1,291 @@
+/*
+ * Portal del cliente. Una sola idea visual: la fila de fases de cada proyecto, que
+ * responde «¿en qué está mi servicio?» de un vistazo. Todo lo demás es tranquilo y
+ * usa los colores del tema (variables de globals.css), en claro y en oscuro.
+ */
+
+.saludo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+}
+
+.saludo h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  letter-spacing: -0.02em;
+}
+
+.saludo p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.columnas {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.bloque {
+  display: grid;
+  gap: 12px;
+}
+
+.bloqueTitulo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bloqueTitulo h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.bloqueTitulo a {
+  color: var(--primary);
+  font-size: 0.85rem;
+}
+
+/* --- Tarjeta de proyecto --------------------------------------------------- */
+
+.proyecto {
+  display: grid;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .proyecto:hover {
+    border-color: color-mix(in srgb, var(--primary) 55%, var(--line));
+  }
+}
+
+.proyecto:active {
+  transform: scale(0.99);
+}
+
+.proyecto:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+.proyectoCabeza {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.proyectoCabeza strong {
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.linea {
+  flex: none;
+  font-size: 0.75rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.pausado {
+  composes: linea;
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 45%, transparent);
+}
+
+/* Fila de fases: cinco tramos; los hechos llenos, el actual con borde vivo. */
+.fases {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fase {
+  display: grid;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--muted);
+  min-width: 0;
+}
+
+.fase span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tramo {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.faseHecha .tramo {
+  background: var(--success);
+}
+
+.faseActual {
+  color: var(--text, inherit);
+  font-weight: 600;
+}
+
+.faseActual .tramo {
+  background: linear-gradient(
+    90deg,
+    var(--primary) var(--avance, 0%),
+    color-mix(in srgb, var(--primary) 25%, var(--line)) var(--avance, 0%)
+  );
+}
+
+.datos {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.86rem;
+}
+
+.datos div {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+  gap: 8px;
+}
+
+.datos dt {
+  color: var(--muted);
+}
+
+.datos dd {
+  margin: 0;
+}
+
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.esqueleto {
+  height: 148px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--line) 50%, transparent);
+}
+
+/* --- Pendientes del cliente ------------------------------------------------ */
+
+.pendientes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pendiente {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, var(--line));
+  background: color-mix(in srgb, var(--warning) 7%, var(--panel));
+  color: inherit;
+  text-decoration: none;
+}
+
+.pendiente:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.pendiente small {
+  display: block;
+  color: var(--muted);
+}
+
+.alDia {
+  margin: 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.accesos {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.acceso strong {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.acceso:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.vacio {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  padding: 22px;
+  border-radius: 16px;
+  border: 1px dashed var(--line);
+  color: var(--muted);
+}
+
+.vacio strong {
+  color: var(--text, inherit);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proyecto {
+    transition: border-color 160ms ease;
+  }
+  .proyecto:active {
+    transform: none;
+  }
+}
