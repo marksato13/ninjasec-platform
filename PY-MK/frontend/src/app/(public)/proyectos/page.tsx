@@ -12,7 +12,8 @@ import {
 } from "@/lib/portafolio";
 
 export const metadata = {
-  title: "Proyectos · Ninja Tech",
+  title: "Proyectos",
+  alternates: { canonical: "/proyectos" },
   description:
     "Lo que Ninja Tech ha construido en ciberseguridad (Ninja Sec) y desarrollo de software (Ninja Dev), con su diagrama y el nivel de evidencia de cada trabajo.",
 };

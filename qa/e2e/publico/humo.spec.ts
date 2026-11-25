@@ -53,6 +53,24 @@ test("con la cápsula apagada la portada no promete reporting por API", async ({
   await expect(cuerpo).not.toContainText(/clientes monitoreados|dispositivos gestionados/i);
 });
 
+test("robots.txt bloquea el panel y apunta al sitemap", async ({ request }) => {
+  const respuesta = await request.get("/robots.txt");
+  expect(respuesta.status()).toBe(200);
+  const texto = await respuesta.text();
+  expect(texto).toMatch(/Disallow: \/dashboard/);
+  expect(texto).toMatch(/Disallow: \/portal/);
+  expect(texto).toMatch(/Sitemap: .*\/sitemap\.xml/);
+});
+
+test("sitemap.xml lista el sitio público y nada privado", async ({ request }) => {
+  const respuesta = await request.get("/sitemap.xml");
+  expect(respuesta.status()).toBe(200);
+  const texto = await respuesta.text();
+  expect(texto).toContain("/servicios</loc>");
+  expect(texto).not.toMatch(/\/(dashboard|portal|login)\b/);
+  if (!TELEMETRIA_ENCENDIDA) expect(texto).not.toContain("/solucion");
+});
+
 for (const ruta of RUTAS_PUBLICAS) {
   test(`la ruta pública ${ruta} responde 200`, async ({ page }) => {
     const respuesta = await page.goto(ruta);
