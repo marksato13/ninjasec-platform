@@ -30,4 +30,5 @@ export * from "./catalog-devices";
 export * from "./navigation";
 export * from "./study";
 export * from "./tracking";
+export * from "./payments";
 export * from "./work-windows";
