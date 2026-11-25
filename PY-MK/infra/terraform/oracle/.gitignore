@@ -1,0 +1,7 @@
+# El estado contiene datos sensibles y el tfvars identifica la cuenta: nunca a git.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
