@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Package, ShieldCheck } from "lucide-react";
 
 import { createServiceRequest, getMe, getServiceRequests, getServices, ServiceItem, ServiceRequestItem } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { Modal } from "@/components/ui/modal";
+import { claseSolicitud, estadoSolicitud, fecha } from "@/components/portal/etiquetas";
 
 function serviceIcon(category?: string | null) {
   const cat = (category ?? "").toLowerCase();
@@ -19,6 +20,7 @@ export default function PortalServicesPage() {
   const [selectedService, setSelectedService] = useState<ServiceItem | null>(null);
   const [formMessage, setFormMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: services = [], isLoading, error } = useQuery<ServiceItem[]>({
     queryKey: ["portal-services"],
@@ -51,6 +53,7 @@ export default function PortalServicesPage() {
         message: formMessage.trim() || null,
       });
       notifySuccess("Solicitud enviada", "Te contactaremos a la brevedad.");
+      await queryClient.invalidateQueries({ queryKey: ["portal-service-requests"] });
       setRequestOpen(false);
     } catch (err) {
       notifyError("No se pudo enviar la solicitud", err instanceof Error ? err.message : "");
@@ -63,13 +66,35 @@ export default function PortalServicesPage() {
     <section className="page-stack">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Portal</p>
-          <h2>Catálogo de servicios</h2>
+          <h2>Servicios</h2>
         </div>
         <span style={{ color: "var(--muted)", fontSize: "0.88rem" }}>
           {services.length} servicio{services.length !== 1 ? "s" : ""} disponible{services.length !== 1 ? "s" : ""}
         </span>
       </div>
+
+      {myRequests.length > 0 && (
+        <article className="panel">
+          <div className="panel-head">
+            <div><h3>Mis solicitudes</h3></div>
+            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{myRequests.length} solicitud{myRequests.length !== 1 ? "es" : ""}</span>
+          </div>
+          <div className="table-like">
+            <div className="table-row table-head">
+              <span>Servicio</span>
+              <span>Estado</span>
+              <span>Fecha</span>
+            </div>
+            {myRequests.map((req) => (
+              <div className="table-row" key={req.id}>
+                <span>{serviceMap.get(req.service_id) || `Servicio #${req.service_id}`}</span>
+                <span><span className={`badge ${claseSolicitud(req.status, req.project_id)}`}>{estadoSolicitud(req.status, req.project_id)}</span></span>
+                <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>{fecha(req.created_at)}</span>
+              </div>
+            ))}
+          </div>
+        </article>
+      )}
 
       {error ? (
         <div className="empty-state state-error">No se pudo cargar el catálogo de servicios.</div>
@@ -120,29 +145,6 @@ export default function PortalServicesPage() {
             </article>
           ))}
         </div>
-      )}
-
-      {myRequests.length > 0 && (
-        <article className="panel">
-          <div className="panel-head">
-            <div><p className="eyebrow">Historial</p><h3>Mis solicitudes</h3></div>
-            <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>{myRequests.length} solicitud{myRequests.length !== 1 ? "es" : ""}</span>
-          </div>
-          <div className="table-like">
-            <div className="table-row table-head">
-              <span>Servicio</span>
-              <span>Estado</span>
-              <span>Fecha</span>
-            </div>
-            {myRequests.map((req) => (
-              <div className="table-row" key={req.id}>
-                <span>{serviceMap.get(req.service_id) || `Servicio #${req.service_id}`}</span>
-                <span><span className={`badge badge-${req.status === "NEW" ? "pending" : req.status === "REVIEW" ? "draft" : "archived"}`}>{req.status}</span></span>
-                <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>{req.created_at ? req.created_at.slice(0, 10) : "—"}</span>
-              </div>
-            ))}
-          </div>
-        </article>
       )}
 
       <Modal

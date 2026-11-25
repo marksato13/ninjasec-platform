@@ -22,17 +22,29 @@ import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getApprovalStatusLabel } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 
+const ROLES: Record<string, string> = {
+  client: "Cliente",
+  collaborator: "Colaborador",
+  admin: "Administrador",
+  super_admin: "Super administrador",
+};
+
 function roleLabel(role: string) {
-  return role.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return ROLES[role] ?? role.replaceAll("_", " ");
 }
 
 function ProfileCompleteness({ user, skills, certifications }: { user: AuthUser | null; skills: UserSkillItem[]; certifications: UserCertificationItem[] }) {
+  const esCliente = user?.role === "client";
   const steps = [
     { label: "Nombre completo",      done: !!(user?.name || user?.full_name) },
     { label: "Email",                done: !!user?.email },
     { label: "Cargo registrado",     done: !!user?.job_title },
-    { label: "Al menos 1 skill",     done: skills.length > 0 },
-    { label: "Al menos 1 certif.",   done: certifications.length > 0 },
+    ...(esCliente
+      ? []
+      : [
+          { label: "Al menos una habilidad",     done: skills.length > 0 },
+          { label: "Al menos una certificación", done: certifications.length > 0 },
+        ]),
   ];
   const pct = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
   const color = pct === 100 ? "var(--success)" : pct >= 60 ? "var(--warning)" : "var(--danger)";
@@ -91,8 +103,11 @@ export default function PortalProfilePage() {
   const { data, isLoading, error: queryError } = useQuery({
     queryKey: ["portal-profile"],
     queryFn: async () => {
-      const [me, skillsData, userSkillsData, certsData] = await Promise.all([
-        getMe(),
+      const me = await getMe();
+      if (me.role === "client") {
+        return { me, skillsData: [], userSkillsData: [], certsData: [] };
+      }
+      const [skillsData, userSkillsData, certsData] = await Promise.all([
         getSkills(),
         getUserSkills(),
         getUserCertifications(),
@@ -164,7 +179,7 @@ export default function PortalProfilePage() {
       setNewSkillName("");
       setSkillLevel("");
       setSkillOpen(false);
-      notifySuccess("Skill registrado", "Queda pendiente de aprobacion.");
+      notifySuccess("Skill registrado", "Queda pendiente de aprobación.");
       queryClient.invalidateQueries({ queryKey: ["portal-profile"] });
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo guardar el skill";
@@ -178,8 +193,8 @@ export default function PortalProfilePage() {
   async function handleAddCertification(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!certName) {
-      setError("Ingresa el nombre de la certificacion");
-      notifyError("Ingresa el nombre de la certificacion");
+      setError("Ingresa el nombre de la certificación");
+      notifyError("Ingresa el nombre de la certificación");
       return;
     }
     setSavingCert(true);
@@ -201,12 +216,12 @@ export default function PortalProfilePage() {
       setCertIssued("");
       setCertExpires("");
       setCertOpen(false);
-      notifySuccess("Certificacion registrada", "Queda pendiente de aprobacion.");
+      notifySuccess("Certificación registrada", "Queda pendiente de aprobación.");
       queryClient.invalidateQueries({ queryKey: ["portal-profile"] });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "No se pudo registrar la certificacion";
+      const message = err instanceof Error ? err.message : "No se pudo registrar la certificación";
       setError(message);
-      notifyError("No se pudo registrar la certificacion", message);
+      notifyError("No se pudo registrar la certificación", message);
     } finally {
       setSavingCert(false);
     }
@@ -215,8 +230,7 @@ export default function PortalProfilePage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
-        <h2>Perfil</h2>
+        <h2>Tu perfil</h2>
       </div>
 
       <ProfileCompleteness user={user} skills={userSkills} certifications={certifications} />
@@ -224,8 +238,8 @@ export default function PortalProfilePage() {
       <article className="panel">
         <div className="panel-head">
           <div>
-            <p className="eyebrow">Sesion</p>
-            <h3>Informacion de usuario</h3>
+            <p className="eyebrow">Cuenta</p>
+            <h3>Tus datos</h3>
           </div>
           <div className="panel-actions">
             <button
@@ -259,7 +273,7 @@ export default function PortalProfilePage() {
             <li><strong>Cargo:</strong> {user.job_title || "Sin cargo"}</li>
           </ul>
         ) : (
-          <div className="empty-state">No hay informacion disponible.</div>
+          <div className="empty-state">No hay información disponible.</div>
         )}
       </article>
 
@@ -326,11 +340,12 @@ export default function PortalProfilePage() {
         </form>
       </Modal>
 
+      {user?.role !== "client" && (
       <div className="split-grid">
         <article className="panel">
           <div className="panel-head">
             <div>
-              <p className="eyebrow">Skills</p>
+              <p className="eyebrow">Habilidades</p>
               <h3>Habilidades registradas</h3>
             </div>
             <div className="panel-actions">
@@ -340,7 +355,7 @@ export default function PortalProfilePage() {
             </div>
           </div>
           {userSkills.length === 0 ? (
-            <div className="empty-state">Aun no has registrado skills.</div>
+            <div className="empty-state">Aún no has registrado habilidades.</div>
           ) : (
             <ul className="stack-list">
               {userSkills.map((item) => (
@@ -395,12 +410,12 @@ export default function PortalProfilePage() {
             </div>
             <div className="panel-actions">
               <button className="button button-primary" type="button" onClick={() => setCertOpen(true)}>
-                Nueva certificacion
+                Nueva certificación
               </button>
             </div>
           </div>
           {certifications.length === 0 ? (
-            <div className="empty-state">Aun no has registrado certificaciones.</div>
+            <div className="empty-state">Aún no has registrado certificaciones.</div>
           ) : (
             <ul className="stack-list">
               {certifications.map((cert) => (
@@ -436,9 +451,9 @@ export default function PortalProfilePage() {
               ))}
             </ul>
           )}
-          <Modal isOpen={certOpen} title="Registrar certificacion" onClose={() => setCertOpen(false)}>
+          <Modal isOpen={certOpen} title="Registrar certificación" onClose={() => setCertOpen(false)}>
             <form className="entity-form" onSubmit={handleAddCertification}>
-              <input placeholder="Nombre de certificacion" value={certName} onChange={(event) => setCertName(event.target.value)} />
+              <input placeholder="Nombre de certificación" value={certName} onChange={(event) => setCertName(event.target.value)} />
               <input placeholder="Entidad / issuer" value={certIssuer} onChange={(event) => setCertIssuer(event.target.value)} />
               <input placeholder="Credential ID" value={certCredential} onChange={(event) => setCertCredential(event.target.value)} />
               <input placeholder="Link (Credly, LinkedIn, etc)" value={certUrl} onChange={(event) => setCertUrl(event.target.value)} />
@@ -448,7 +463,7 @@ export default function PortalProfilePage() {
               </div>
               <div className="panel-actions">
                 <button className="button button-primary" type="submit" disabled={savingCert}>
-                  {savingCert ? "Guardando..." : "Registrar certificacion"}
+                  {savingCert ? "Guardando..." : "Registrar certificación"}
                 </button>
                 <button className="button button-ghost" type="button" onClick={() => setCertOpen(false)}>
                   Cancelar
@@ -458,6 +473,7 @@ export default function PortalProfilePage() {
           </Modal>
         </article>
       </div>
+      )}
     </section>
   );
 }
