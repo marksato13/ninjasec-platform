@@ -9,7 +9,7 @@ from app.db.base import Base
 class CatalogDeviceSummary(Base):
     """Resumen ejecutivo de elaboración propia de un modelo (29-P2).
 
-    Es contenido original de NinjaSec, no una copia del datasheet del
+    Es contenido original de Ninja Tech, no una copia del datasheet del
     fabricante -- ver la regla de copyright en
     PLANIFICACION/29-MODULO-CATALOGO-EQUIPOS.md. `source_note` cita de
     dónde se sacó la información (ej. "Datasheet oficial Cisco, 2024").

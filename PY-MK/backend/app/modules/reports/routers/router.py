@@ -413,7 +413,7 @@ def _build_consolidated_workbook(
         ws1.row_dimensions[row].height = 20
 
     # Encabezado principal
-    title_cell = ws1.cell(row=1, column=1, value="INFORME EJECUTIVO CONSOLIDADO — NinjaSec")
+    title_cell = ws1.cell(row=1, column=1, value="INFORME EJECUTIVO CONSOLIDADO — Ninja Tech")
     title_cell.font = Font(bold=True, name="Calibri", size=14, color=COLOR_HEADER_FG)
     title_cell.fill = accent_fill
     title_cell.alignment = Alignment(horizontal="center", vertical="center")

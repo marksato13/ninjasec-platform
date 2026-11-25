@@ -17,7 +17,7 @@ _LABEL_COLOR = {"Saludable": colors.HexColor("#10b981"), "Con observaciones": co
 
 def generate_soc_report_pdf(score_data: dict) -> bytes:
     buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=_MARGIN, rightMargin=_MARGIN, topMargin=_MARGIN, bottomMargin=_MARGIN, title=f"Salud de seguridad — {score_data['client_name']}", author="NinjaSec Platform")
+    doc = SimpleDocTemplate(buffer, pagesize=A4, leftMargin=_MARGIN, rightMargin=_MARGIN, topMargin=_MARGIN, bottomMargin=_MARGIN, title=f"Salud de seguridad — {score_data['client_name']}", author="Ninja Tech")
 
     base = getSampleStyleSheet()
     title_style = ParagraphStyle("soc_title", parent=base["Normal"], fontSize=16, fontName="Helvetica-Bold", textColor=colors.HexColor("#0f172a"))
