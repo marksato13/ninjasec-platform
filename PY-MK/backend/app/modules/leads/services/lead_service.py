@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.models.client import Client
 from app.db.models.client_contact import ClientContact
 from app.db.models.enums import ClientStatus, LeadStatus
 from app.db.models.lead import Lead
-from app.db.repositories.base import Repository
+from app.db.models.organization import Organization
 from app.modules.audit.services.audit_service import AuditService
 from app.modules.leads.schemas import LeadCreate, LeadInfoUpdate, LeadUpdate
 
@@ -19,19 +19,40 @@ class LeadService:
         self.current_user = current_user
 
     def list(self) -> list[Lead]:
-        return list(Repository(self.db).list_all(Lead))
+        stmt = select(Lead).where(Lead.organization_id == self.current_user.organization_id)
+        return list(self.db.scalars(stmt).all())
+
+    def _get_or_404(self, lead_id: int, *, for_update: bool = False) -> Lead:
+        """404 tambien si el lead es de otra organizacion: no confirmar que existe."""
+        stmt = select(Lead).where(
+            Lead.id == lead_id, Lead.organization_id == self.current_user.organization_id
+        )
+        if for_update:
+            stmt = stmt.with_for_update()
+        lead = self.db.scalar(stmt)
+        if lead is None:
+            raise HTTPException(status_code=404, detail="Lead not found")
+        return lead
+
+    def _site_organization_id(self) -> int:
+        """El formulario publico es del sitio, y el sitio es de la primera organizacion."""
+        org_id = self.db.scalar(select(func.min(Organization.id)))
+        if org_id is None:
+            raise HTTPException(status_code=503, detail="El sitio aun no tiene organizacion")
+        return org_id
 
     def create(self, payload: LeadCreate) -> Lead:
-        lead = Lead(**{**payload.model_dump(), "status": LeadStatus.NEW})
+        lead = Lead(
+            **{**payload.model_dump(), "status": LeadStatus.NEW},
+            organization_id=self._site_organization_id(),
+        )
         self.db.add(lead)
         self.db.commit()
         self.db.refresh(lead)
         return lead
 
     def update_info(self, lead_id: int, payload: LeadInfoUpdate) -> Lead:
-        lead = Repository(self.db).get_by_id(Lead, lead_id)
-        if not lead:
-            raise HTTPException(status_code=404, detail="Lead not found")
+        lead = self._get_or_404(lead_id)
         for field, value in payload.model_dump(exclude_unset=True).items():
             setattr(lead, field, value)
         self.db.commit()
@@ -47,9 +68,7 @@ class LeadService:
         return lead
 
     def delete(self, lead_id: int) -> None:
-        lead = Repository(self.db).get_by_id(Lead, lead_id)
-        if not lead:
-            raise HTTPException(status_code=404, detail="Lead not found")
+        lead = self._get_or_404(lead_id)
         self.db.delete(lead)
         self.db.commit()
         if self.current_user:
@@ -62,9 +81,7 @@ class LeadService:
             )
 
     def update_status(self, lead_id: int, payload: LeadUpdate) -> Lead:
-        lead = Repository(self.db).get_by_id(Lead, lead_id)
-        if not lead:
-            raise HTTPException(status_code=404, detail="Lead not found")
+        lead = self._get_or_404(lead_id)
         try:
             lead.status = LeadStatus(payload.status)
         except ValueError:
@@ -88,12 +105,9 @@ class LeadService:
         dos veces creaba dos clientes. Aqui el lead se bloquea (`FOR UPDATE`) mientras se decide,
         y queda enlazado a su cliente: un segundo intento recibe 409 en vez de un duplicado.
 
-        Los leads llegan por el formulario publico y no tienen organizacion: el cliente nace en la
-        del administrador que convierte.
+        El lead es de la organizacion del administrador (si no, 404) y el cliente nace en ella.
         """
-        lead = self.db.scalar(select(Lead).where(Lead.id == lead_id).with_for_update())
-        if lead is None:
-            raise HTTPException(status_code=404, detail="Lead not found")
+        lead = self._get_or_404(lead_id, for_update=True)
         if lead.converted_client_id is not None:
             raise HTTPException(status_code=409, detail="Este lead ya fue convertido en cliente")
         if lead.status == LeadStatus.CLOSED_LOST:

@@ -12,9 +12,12 @@ class Lead(Base):
 
     __table_args__ = (
         Index("ix_leads_status", "status"),
+        Index("ix_leads_org", "organization_id"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    # Migracion 20261127_01. Un lead publico es de la organizacion duena del sitio.
+    organization_id: Mapped[int] = mapped_column(ForeignKey("organizations.id"), nullable=False)
     company_name: Mapped[str | None] = mapped_column(String(150), nullable=True)
     contact_name: Mapped[str] = mapped_column(String(150), nullable=False)
     email: Mapped[str] = mapped_column(String(180), nullable=False)
