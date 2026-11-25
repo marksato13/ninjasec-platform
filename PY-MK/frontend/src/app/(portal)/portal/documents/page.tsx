@@ -360,7 +360,7 @@ export default function PortalDocumentsPage() {
                 </option>
               ))}
             </select>
-            <input placeholder="Titulo" value={formTitle} onChange={(event) => setFormTitle(event.target.value)} required />
+            <input placeholder="Título" value={formTitle} onChange={(event) => setFormTitle(event.target.value)} required />
             <input placeholder="Resumen corto" value={formSummary} onChange={(event) => setFormSummary(event.target.value)} />
             <input placeholder="Link GitHub" value={formGithub} onChange={(event) => setFormGithub(event.target.value)} />
             <textarea placeholder="Preview Markdown" value={formPreview} onChange={(event) => setFormPreview(event.target.value)} rows={6} />

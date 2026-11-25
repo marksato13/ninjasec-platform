@@ -32,7 +32,7 @@ export default function PortalReportsPage() {
         ) : (
           <div className="table-like">
             <div className="table-row table-head table-row-wide">
-              <span>Titulo</span>
+              <span>Título</span>
               <span>Tipo</span>
               <span>Plantilla</span>
             </div>

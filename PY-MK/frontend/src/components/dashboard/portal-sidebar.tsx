@@ -97,7 +97,7 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
         <button
           className="sidebar-close button button-ghost button-icon"
           type="button"
-          aria-label="Cerrar menu"
+          aria-label="Cerrar menú"
           onClick={onClose}
         >
           <X size={16} />
@@ -143,7 +143,7 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
             className="sidebar-footer-btn"
             type="button"
             onClick={handleLogout}
-            title="Cerrar sesion"
+            title="Cerrar sesión"
           >
             <LogOut size={14} />
           </button>

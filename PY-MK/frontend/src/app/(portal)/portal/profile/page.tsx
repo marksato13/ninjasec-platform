@@ -179,7 +179,7 @@ export default function PortalProfilePage() {
       setNewSkillName("");
       setSkillLevel("");
       setSkillOpen(false);
-      notifySuccess("Skill registrado", "Queda pendiente de aprobacion.");
+      notifySuccess("Skill registrado", "Queda pendiente de aprobación.");
       queryClient.invalidateQueries({ queryKey: ["portal-profile"] });
     } catch (err) {
       const message = err instanceof Error ? err.message : "No se pudo guardar el skill";
@@ -193,8 +193,8 @@ export default function PortalProfilePage() {
   async function handleAddCertification(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!certName) {
-      setError("Ingresa el nombre de la certificacion");
-      notifyError("Ingresa el nombre de la certificacion");
+      setError("Ingresa el nombre de la certificación");
+      notifyError("Ingresa el nombre de la certificación");
       return;
     }
     setSavingCert(true);
@@ -216,12 +216,12 @@ export default function PortalProfilePage() {
       setCertIssued("");
       setCertExpires("");
       setCertOpen(false);
-      notifySuccess("Certificacion registrada", "Queda pendiente de aprobacion.");
+      notifySuccess("Certificación registrada", "Queda pendiente de aprobación.");
       queryClient.invalidateQueries({ queryKey: ["portal-profile"] });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "No se pudo registrar la certificacion";
+      const message = err instanceof Error ? err.message : "No se pudo registrar la certificación";
       setError(message);
-      notifyError("No se pudo registrar la certificacion", message);
+      notifyError("No se pudo registrar la certificación", message);
     } finally {
       setSavingCert(false);
     }
@@ -273,7 +273,7 @@ export default function PortalProfilePage() {
             <li><strong>Cargo:</strong> {user.job_title || "Sin cargo"}</li>
           </ul>
         ) : (
-          <div className="empty-state">No hay informacion disponible.</div>
+          <div className="empty-state">No hay información disponible.</div>
         )}
       </article>
 
@@ -410,12 +410,12 @@ export default function PortalProfilePage() {
             </div>
             <div className="panel-actions">
               <button className="button button-primary" type="button" onClick={() => setCertOpen(true)}>
-                Nueva certificacion
+                Nueva certificación
               </button>
             </div>
           </div>
           {certifications.length === 0 ? (
-            <div className="empty-state">Aun no has registrado certificaciones.</div>
+            <div className="empty-state">Aún no has registrado certificaciones.</div>
           ) : (
             <ul className="stack-list">
               {certifications.map((cert) => (
@@ -451,9 +451,9 @@ export default function PortalProfilePage() {
               ))}
             </ul>
           )}
-          <Modal isOpen={certOpen} title="Registrar certificacion" onClose={() => setCertOpen(false)}>
+          <Modal isOpen={certOpen} title="Registrar certificación" onClose={() => setCertOpen(false)}>
             <form className="entity-form" onSubmit={handleAddCertification}>
-              <input placeholder="Nombre de certificacion" value={certName} onChange={(event) => setCertName(event.target.value)} />
+              <input placeholder="Nombre de certificación" value={certName} onChange={(event) => setCertName(event.target.value)} />
               <input placeholder="Entidad / issuer" value={certIssuer} onChange={(event) => setCertIssuer(event.target.value)} />
               <input placeholder="Credential ID" value={certCredential} onChange={(event) => setCertCredential(event.target.value)} />
               <input placeholder="Link (Credly, LinkedIn, etc)" value={certUrl} onChange={(event) => setCertUrl(event.target.value)} />
@@ -463,7 +463,7 @@ export default function PortalProfilePage() {
               </div>
               <div className="panel-actions">
                 <button className="button button-primary" type="submit" disabled={savingCert}>
-                  {savingCert ? "Guardando..." : "Registrar certificacion"}
+                  {savingCert ? "Guardando..." : "Registrar certificación"}
                 </button>
                 <button className="button button-ghost" type="button" onClick={() => setCertOpen(false)}>
                   Cancelar
