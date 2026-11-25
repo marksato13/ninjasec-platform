@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   BarChart3,
   BookOpen,
+  CalendarClock,
   Boxes,
   BriefcaseBusiness,
   Building2,
@@ -76,6 +77,7 @@ const navGroups: NavGroup[] = [
       { label: "Catálogo de equipos", href: "/dashboard/catalog-devices", icon: IC(Boxes) },
       { label: "Informe SOC",   href: "/dashboard/soc-report",        icon: IC(Gauge) },
       { label: "Tickets",       href: "/dashboard/support-tickets",   icon: IC(Ticket) },
+      { label: "Ventanas de trabajo", href: "/dashboard/work-windows", icon: IC(CalendarClock) },
     ],
   },
   {
