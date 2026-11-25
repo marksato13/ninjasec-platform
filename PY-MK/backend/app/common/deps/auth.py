@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.orm import Session
@@ -11,7 +11,6 @@ from app.modules.auth.schemas import CurrentUser
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
-oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 def get_current_user(
@@ -57,15 +56,21 @@ def get_current_user(
 
 
 def get_current_user_optional(
-    token: str | None = Depends(oauth2_scheme_optional), db: Session = Depends(get_db)
+    request: Request, db: Session = Depends(get_db)
 ) -> CurrentUser | None:
     """Para rutas publicas que se comportan distinto con sesion.
 
     Sin token, o con uno invalido o caducado, devuelve None: la ruta sigue
     siendo publica y trata a quien llama como anonimo.
+
+    Lee la cabecera a mano y no con OAuth2PasswordBearer(auto_error=False):
+    con este ultimo, OpenAPI publica la ruta como si exigiera sesion y el
+    contrato (oasdiff) la marca como "ya no admite acceso anonimo".
     """
-    if not token:
+    esquema, _, token = request.headers.get("authorization", "").partition(" ")
+    if esquema.lower() != "bearer" or not token.strip():
         return None
+    token = token.strip()
     try:
         return get_current_user(token=token, db=db)
     except HTTPException:
