@@ -175,6 +175,8 @@ def _crear(db, model, schema_read, payload, current_user, entidad: str):
         slug=(payload.slug or slugify(name)),
         is_active=True,
     )
+    if getattr(payload, "business_line", None) is not None:
+        item.business_line = payload.business_line
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -216,6 +218,8 @@ def _actualizar(db, model, schema_read, item_id, payload, current_user, entidad:
             )
     if "is_active" in data and data["is_active"] is not None:
         item.is_active = data["is_active"]
+    if "business_line" in data and hasattr(item, "business_line"):
+        item.business_line = data["business_line"]
 
     db.add(item)
     db.commit()
