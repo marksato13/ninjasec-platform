@@ -105,6 +105,16 @@ def seed_data(setup_db):
 # Sesión de DB por test (función)
 # ---------------------------------------------------------------------------
 
+@pytest.fixture(autouse=True)
+def _limitadores_limpios():
+    """Cada prueba empieza sin intentos contados: casi todas hacen login."""
+    from app.common.rate_limit import reset_all
+
+    reset_all()
+    yield
+    reset_all()
+
+
 @pytest.fixture
 def db(setup_db):
     session = TestingSession()

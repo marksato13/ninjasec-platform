@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from app.common.deps.auth import get_current_user
+from app.common.rate_limit import rate_limit
 from app.common.deps.database import get_db
 from app.core.config import settings
 from app.core.security import hash_password, verify_password
@@ -30,7 +31,12 @@ class PasswordChange(BaseModel):
     new_password: str = Field(min_length=8, max_length=128)
 
 
-@router.post("/login", response_model=LoginResponse)
+# Auditoria 2026-11-25 (B1): sin esto se podian probar claves sin freno.
+# 10 intentos en 5 minutos por IP: sobra para quien se equivoca.
+login_limit = rate_limit(max_requests=settings.login_rate_limit_max, window_seconds=300, name="login")
+
+
+@router.post("/login", response_model=LoginResponse, dependencies=[Depends(login_limit)])
 def login(payload: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
     service = AuthService(db)
     user = service.authenticate(payload.email, payload.password)

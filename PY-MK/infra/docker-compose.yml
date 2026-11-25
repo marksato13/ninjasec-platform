@@ -36,6 +36,7 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-60}
       CORS_ORIGINS:                ${CORS_ORIGINS:-http://localhost:3018}
       SEED_ON_STARTUP:             ${SEED_ON_STARTUP:-true}
+      LOGIN_RATE_LIMIT_MAX:        ${LOGIN_RATE_LIMIT_MAX:-10}
       IS_PRODUCTION:               ${IS_PRODUCTION:-false}
       STORAGE_PATH:                /data/uploads
     volumes:
