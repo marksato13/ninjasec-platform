@@ -17,7 +17,7 @@ const PORTAL_ACTIONS: QuickAction[] = [
   {
     icon: <Ticket size={18} />,
     label: "Crear ticket de soporte",
-    href: "/portal/support",
+    href: "/portal/tickets",
     description: "Reportar un problema o solicitar ayuda técnica",
   },
   {

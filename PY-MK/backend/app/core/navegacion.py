@@ -34,7 +34,8 @@ from dataclasses import dataclass
 SUPERFICIES: dict[str, tuple[str, ...]] = {
     "public": ("visitor",),
     "staff": ("super_admin", "admin", "collaborator"),
-    "portal": ("client", "collaborator", "admin", "super_admin"),
+    # El portal es del cliente: PortalGuard deja entrar solo a ese rol.
+    "portal": ("client",),
 }
 
 _STAFF = ("super_admin", "admin", "collaborator")
@@ -100,6 +101,7 @@ OPCIONES: tuple[Opcion, ...] = (
     _staff("/dashboard/catalog-devices", "Catálogo de equipos", "Herramientas Ninja Sec"),
     _staff("/dashboard/soc-report", "Informe SOC", "Herramientas Ninja Sec", capsula="telemetria"),
     _staff("/dashboard/ninja-dev", "Guía Ninja Dev", "Herramientas Ninja Dev"),
+    _staff("/dashboard/mis-tareas", "Mis tareas", "Operación"),
     _staff("/dashboard/support-tickets", "Tickets", "Operación"),
     _staff("/dashboard/work-windows", "Ventanas de trabajo", "Operación"),
     _staff("/dashboard/clients", "Clientes", "Comercial"),
@@ -110,24 +112,20 @@ OPCIONES: tuple[Opcion, ...] = (
     _staff("/dashboard/users", "Usuarios", "Equipo", _ADMINS),
     _staff("/dashboard/applications", "Postulaciones", "Equipo", _ADMINS),
     _staff("/dashboard/reports", "Reportes", "Control", _ADMINS),
-    _staff("/dashboard/approvals", "Aprobaciones", "Control", _ADMINS),
     _staff("/dashboard/audit", "Auditoría", "Control", ("super_admin",)),
     # Aqui vive el editor de menus: sin esta, el super_admin se quedaria sin
     # forma de volver a mostrar lo que ocultó.
     _staff("/dashboard/settings", "Configuración", "Control", _ADMINS,
            fija=("super_admin",)),
     # --- Portal -------------------------------------------------------------
-    _portal("/portal", "Inicio", ("client", "collaborator", "admin", "super_admin")),
+    _portal("/portal", "Inicio", ("client",)),
     _portal("/portal/projects", "Proyectos", ("client",)),
     _portal("/portal/inventory", "Inventario", ("client",)),
     _portal("/portal/documents", "Documentos", ("client",)),
     _portal("/portal/tickets", "Tickets", ("client",)),
-    _portal("/portal/work-windows", "Ventanas de trabajo", ("client", "collaborator")),
+    _portal("/portal/work-windows", "Ventanas de trabajo", ("client",)),
     _portal("/portal/services", "Servicios", ("client",)),
-    _portal("/portal/profile", "Perfil", ("client", "collaborator", "admin", "super_admin")),
-    _portal("/portal/applications", "Postulaciones", ("collaborator",)),
-    _portal("/portal/tasks", "Tareas", ("collaborator",)),
-    _portal("/portal/resources", "Recursos", ("collaborator",)),
+    _portal("/portal/profile", "Perfil", ("client",)),
 )
 
 _POR_CLAVE: dict[tuple[str, str], Opcion] = {(o.superficie, o.clave): o for o in OPCIONES}

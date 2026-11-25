@@ -13,7 +13,7 @@ const STATUS_LABEL: Record<string, string> = {
   done:        "Hecha",
 };
 
-export default function PortalTasksPage() {
+export default function MisTareasPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const qc = useQueryClient();
 
