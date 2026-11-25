@@ -2,9 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.common.deps.auth import CurrentUser, require_roles
+from app.common.deps.auth import CurrentUser, get_current_user_optional, require_roles
 from app.common.deps.database import get_db
 from app.common.rate_limit import rate_limit
+from app.db.models.client_profile import ClientProfile
 from app.db.models.service import Service
 from app.db.models.service_request import ServiceRequest
 from app.db.models.enums import RoleCode, ServiceRequestStatus
@@ -73,7 +74,14 @@ def list_service_requests(
         .where(Service.organization_id == current_user.organization_id)
     )
     if current_user.role == RoleCode.CLIENT.value:
-        stmt = stmt.where(ServiceRequest.requester_email == current_user.email)
+        # Auditoria 2026-11-25 (A3): antes se filtraba por requester_email, un
+        # dato que escribe cualquiera en el formulario publico. Asi un anonimo
+        # podia plantar un mensaje (phishing) en el portal de un cliente real.
+        # Ahora el cliente solo ve lo enlazado a SU client_id.
+        client_id = _client_id_of(db, current_user)
+        if client_id is None:
+            return []
+        stmt = stmt.where(ServiceRequest.client_id == client_id)
     return [ServiceRequestRead.model_validate(item) for item in db.scalars(stmt).all()]
 
 
@@ -88,11 +96,18 @@ public_request_limit = rate_limit(max_requests=5, window_seconds=3600, name="ser
     dependencies=[Depends(public_request_limit)],
 )
 def create_service_request(
-    payload: ServiceRequestCreate, db: Session = Depends(get_db)
+    payload: ServiceRequestCreate,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser | None = Depends(get_current_user_optional),
 ) -> ServiceRequestRead:
-    req = ServiceRequest(
-        **{**payload.model_dump(), "status": ServiceRequestStatus.NEW}
-    )
+    data = payload.model_dump()
+    # El client_id nunca lo decide quien envia el formulario: un cliente con
+    # sesion queda enlazado a su empresa y a su correo; un anonimo, a ninguna.
+    data["client_id"] = None
+    if current_user and current_user.role == RoleCode.CLIENT.value:
+        data["client_id"] = _client_id_of(db, current_user)
+        data["requester_email"] = current_user.email
+    req = ServiceRequest(**{**data, "status": ServiceRequestStatus.NEW})
     db.add(req)
     db.commit()
     db.refresh(req)
@@ -109,7 +124,9 @@ def update_service_request(
     db: Session = Depends(get_db),
 ) -> ServiceRequestRead:
     req = Repository(db).get_by_id(ServiceRequest, request_id)
-    if not req:
+    service = db.get(Service, req.service_id) if req else None
+    # A4: la solicitud de otra organizacion no existe para este admin.
+    if not req or not service or service.organization_id != current_user.organization_id:
         raise HTTPException(status_code=404, detail="Service request not found")
     try:
         req.status = ServiceRequestStatus(payload.status)
@@ -118,3 +135,8 @@ def update_service_request(
     db.commit()
     db.refresh(req)
     return ServiceRequestRead.model_validate(req)
+
+
+def _client_id_of(db: Session, current_user: CurrentUser) -> int | None:
+    profile = db.scalar(select(ClientProfile).where(ClientProfile.user_id == current_user.id))
+    return profile.client_id if profile else None

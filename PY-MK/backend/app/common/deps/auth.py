@@ -11,6 +11,7 @@ from app.modules.auth.schemas import CurrentUser
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 
 def get_current_user(
@@ -53,6 +54,22 @@ def get_current_user(
         role=user.role_code.value,
         full_name=user.full_name,
     )
+
+
+def get_current_user_optional(
+    token: str | None = Depends(oauth2_scheme_optional), db: Session = Depends(get_db)
+) -> CurrentUser | None:
+    """Para rutas publicas que se comportan distinto con sesion.
+
+    Sin token, o con uno invalido o caducado, devuelve None: la ruta sigue
+    siendo publica y trata a quien llama como anonimo.
+    """
+    if not token:
+        return None
+    try:
+        return get_current_user(token=token, db=db)
+    except HTTPException:
+        return None
 
 
 def require_roles(*allowed_roles: str):

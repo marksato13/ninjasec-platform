@@ -1,3 +1,4 @@
+from datetime import datetime
 from pydantic import EmailStr, Field
 
 from app.common.schemas.base import ORMModel
@@ -35,7 +36,10 @@ class ServiceRequestRead(ORMModel):
     status: str
     request_type: str | None = None
     message: str | None = None
-    created_at: str | None = None
+    client_id: int | None = None
+    # Era `str`: la base devuelve datetime y crear cualquier solicitud daba 500
+    # despues de guardarla. En JSON sigue saliendo como texto ISO 8601.
+    created_at: datetime | None = None
 
 
 class ServiceRequestUpdate(ORMModel):
