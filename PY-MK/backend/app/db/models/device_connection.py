@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -25,7 +26,7 @@ class DeviceConnection(Base):
     vlan_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     bandwidth_mbps: Mapped[int | None] = mapped_column(Integer, nullable=True)
     notes: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     source_device = relationship("Device", foreign_keys=[source_device_id])
     target_device = relationship("Device", foreign_keys=[target_device_id])

@@ -3,6 +3,7 @@ from datetime import date, datetime
 from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKey, Integer, String, Table, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 risk_threats = Table(
@@ -62,8 +63,8 @@ class RiskAsset(Base):
     availability: Mapped[int] = mapped_column(Integer, nullable=False)
     business_value: Mapped[int] = mapped_column(Integer, nullable=False)
     owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     client = relationship("Client")
     device = relationship("Device")
@@ -91,8 +92,8 @@ class Risk(Base):
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="identified")
     owner_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     review_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     client = relationship("Client")
     asset = relationship("RiskAsset", back_populates="risks")

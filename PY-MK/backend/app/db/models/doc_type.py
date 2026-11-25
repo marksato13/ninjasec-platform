@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import DocScope
 
@@ -17,6 +18,6 @@ class DocType(Base):
         default=DocScope.BOTH,
     )
     is_active: Mapped[bool] = mapped_column(default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     docs = relationship("ProjectDoc", back_populates="doc_type")

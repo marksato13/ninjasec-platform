@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import AssignmentType
 
@@ -27,7 +28,7 @@ class ProjectMember(Base):
         default=AssignmentType.MANUAL,
     )
     is_required: Mapped[bool] = mapped_column(Boolean, default=False)
-    joined_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    joined_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     project = relationship("Project", back_populates="members")
     user = relationship("User", back_populates="project_memberships")

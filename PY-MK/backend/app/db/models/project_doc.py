@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import DocStatus, DocVisibility
 
@@ -45,9 +46,9 @@ class ProjectDoc(Base):
         ForeignKey("users.id"), nullable=True
     )
     verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=utcnow, onupdate=utcnow
     )
 
     project = relationship("Project", back_populates="docs")

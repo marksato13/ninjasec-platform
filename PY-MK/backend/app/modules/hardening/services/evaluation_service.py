@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.time_utils import utcnow
 from app.db.models.client import Client
 from app.db.models.collection_snapshot import CollectionSnapshot
 from app.db.models.hardening import HardeningRule
@@ -74,7 +75,7 @@ class HardeningEvaluationService:
         integration_ids = [i.id for i in self._integrations(client_id)]
         if not integration_ids:
             return "not_applicable", "El cliente no tiene integraciones configuradas"
-        cutoff = datetime.utcnow() - timedelta(days=30)
+        cutoff = utcnow() - timedelta(days=30)
         recent = self.db.scalar(select(CollectionSnapshot).where(CollectionSnapshot.integration_id.in_(integration_ids), CollectionSnapshot.collected_at >= cutoff))
         if recent:
             return "pass", "Hay al menos una recolección de datos en los últimos 30 días"

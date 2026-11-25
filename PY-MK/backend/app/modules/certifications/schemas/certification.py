@@ -3,6 +3,7 @@ from datetime import datetime
 from pydantic import computed_field, field_validator, model_validator
 
 from app.common.schemas.base import ORMModel
+from app.core.time_utils import utcnow
 
 
 class UserCertificationRead(ORMModel):
@@ -34,7 +35,7 @@ class UserCertificationRead(ORMModel):
     def is_expired(self) -> bool:
         if self.expires_at is None:
             return False  # sin fecha de vencimiento = no caduca
-        return self.expires_at < datetime.utcnow()
+        return self.expires_at < utcnow()
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -42,7 +43,7 @@ class UserCertificationRead(ORMModel):
         """Dias que faltan. Negativo si ya vencio. None si no caduca."""
         if self.expires_at is None:
             return None
-        return (self.expires_at - datetime.utcnow()).days
+        return (self.expires_at - utcnow()).days
 
     @computed_field  # type: ignore[prop-decorator]
     @property
