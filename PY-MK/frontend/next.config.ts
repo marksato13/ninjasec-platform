@@ -36,6 +36,17 @@ const nextConfig: NextConfig = {
     if (process.env.NODE_ENV !== "production") return [];
     return [{ source: "/:path*", headers: [{ key: "Content-Security-Policy", value: CSP }] }];
   },
+  // Auditoria de modulos 2026-11-25: paginas retiradas o mudadas. Redirigen en el
+  // servidor, antes del guardia del portal (que no deja montar la pagina al equipo).
+  async redirects() {
+    return [
+      { source: "/dashboard/approvals", destination: "/dashboard/formacion?tab=validar", permanent: false },
+      { source: "/portal/support", destination: "/portal/tickets", permanent: false },
+      { source: "/portal/tasks", destination: "/dashboard/mis-tareas", permanent: false },
+      { source: "/portal/resources", destination: "/dashboard/projects", permanent: false },
+      { source: "/portal/applications/:path*", destination: "/dashboard", permanent: false },
+    ];
+  },
   async rewrites() {
     return [
       // Catch-all con trailing slash explícito (debe ir antes del genérico)

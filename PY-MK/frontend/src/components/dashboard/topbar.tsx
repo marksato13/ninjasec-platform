@@ -23,12 +23,13 @@ const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard/reports":            { title: "Reportes",              subtitle: "Exportes y consolidados" },
   "/dashboard/leads":              { title: "Leads",                 subtitle: "Captación y seguimiento comercial" },
   "/dashboard/work-windows":       { title: "Ventanas de trabajo",   subtitle: "Cambios autorizados por el cliente" },
+  "/dashboard/mis-tareas":         { title: "Mis tareas",            subtitle: "Lo que tienes asignado" },
+  "/dashboard/perfil":             { title: "Tu perfil",             subtitle: "Datos y contraseña" },
   "/dashboard/services":           { title: "Servicios",             subtitle: "Catálogo de servicios activos" },
   "/dashboard/projects":           { title: "Proyectos",             subtitle: "Pipeline y estado de proyectos" },
   "/dashboard/users":              { title: "Usuarios",              subtitle: "Cuentas y roles del sistema" },
   "/dashboard/collaborators":      { title: "Colaboradores",         subtitle: "Perfiles y disponibilidad" },
   "/dashboard/applications":       { title: "Postulaciones",         subtitle: "Proceso de selección" },
-  "/dashboard/approvals":          { title: "Aprobaciones",          subtitle: "Skills y certificaciones pendientes" },
   "/dashboard/audit":              { title: "Auditoría",             subtitle: "Trazabilidad de acciones" },
   "/dashboard/risks":              { title: "Riesgos",               subtitle: "Activos, amenazas y tratamiento" },
   "/dashboard/vulnerabilities":    { title: "Vulnerabilidades",      subtitle: "CVE priorizadas por EPSS" },
@@ -79,7 +80,7 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
         <NotificationCenter />
         <ThemeToggle />
         {user && (
-          <div className="user-chip">
+          <Link className="user-chip" href="/dashboard/perfil" title="Tu perfil y contraseña">
             <span
               className="profile-avatar"
               style={{ background: `hsl(${(user.name?.charCodeAt(0) ?? 200) % 360}, 50%, 40%)` }}
@@ -87,12 +88,14 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
               {getInitials(user.name || user.email)}
             </span>
             <span className="profile-label">{user.name}</span>
-          </div>
+          </Link>
         )}
-        <Link className="button button-secondary" href="/dashboard/reports" style={{ gap: 6 }}>
-          <FileBarChart2 size={14} />
-          Reportes
-        </Link>
+        {user && (user.role === "super_admin" || user.role === "admin") ? (
+          <Link className="button button-secondary topbar-reportes" href="/dashboard/reports" style={{ gap: 6 }}>
+            <FileBarChart2 size={14} aria-hidden="true" />
+            <span>Reportes</span>
+          </Link>
+        ) : null}
       </div>
     </header>
   );
