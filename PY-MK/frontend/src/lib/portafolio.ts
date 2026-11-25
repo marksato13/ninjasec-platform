@@ -1,5 +1,5 @@
 /**
- * Portafolio público: los proyectos que NinjaSec puede enseñar.
+ * Portafolio público: los proyectos que Ninja Tech puede enseñar.
  *
  * ## Regla de honestidad
  *
@@ -46,7 +46,7 @@ export type ProyectoPublico = {
 };
 
 export const EVIDENCIA_ETIQUETA: Record<Evidencia, { texto: string; ayuda: string }> = {
-  producto: { texto: "En línea", ayuda: "Construido por NinjaSec y funcionando: puedes verlo." },
+  producto: { texto: "En línea", ayuda: "Construido por Ninja Tech y funcionando: puedes verlo." },
   laboratorio: {
     texto: "Laboratorio propio",
     ayuda: "Implementado y medido en nuestro laboratorio, no en un cliente.",
@@ -60,10 +60,10 @@ export const PROYECTOS: ProyectoPublico[] = [
   {
     id: "plataforma-ninjasec",
     linea: "dev",
-    titulo: "Plataforma de gestión de NinjaSec",
+    titulo: "Plataforma de gestión de Ninja Tech",
     evidencia: "producto",
     resumen:
-      "El sistema con el que NinjaSec gestiona clientes, proyectos y colaboradores. Es el mismo que estás usando: está en línea ahora.",
+      "El sistema con el que Ninja Tech gestiona clientes, proyectos y colaboradores. Es el mismo que estás usando: está en línea ahora.",
     detalle: [
       "Cuatro roles (super admin, admin, colaborador y cliente), cada uno con su propio menú, que el super admin puede editar.",
       "Aislamiento por organización: los datos de un cliente no se ven desde otro, y pedir un recurso ajeno devuelve 404.",

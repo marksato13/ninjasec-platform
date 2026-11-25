@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, FilePieChart, Gauge, Plug, ShieldCheck } from "lucide-react";
 
@@ -10,8 +11,8 @@ import { capsulaActiva } from "@/lib/capsulas";
  *
  * Con la capsula apagada (hoy) los conectores son simulados, asi que la
  * portada no puede prometer "reporting por API", ni presumir cifras de
- * clientes y dispositivos que no existen. Habla de lo que NinjaSec hace de
- * verdad: consultoria de infraestructura y ciberseguridad.
+ * clientes y dispositivos que no existen. Habla de lo que Ninja Tech hace de
+ * verdad, en sus dos areas activas: Ninja Sec (ciberseguridad) y Ninja Dev (software).
  *
  * Al encender la capsula vuelve sola el mensaje de plataforma. Los numeros
  * de ejemplo (17 clientes, 73 dispositivos...) se retiraron en los dos casos:
@@ -20,7 +21,7 @@ import { capsulaActiva } from "@/lib/capsulas";
 
 const PASOS_PLATAFORMA = [
   { icon: Plug, title: "Conecta", text: "Integra pfSense, FortiGate y otras plataformas de red y seguridad por API." },
-  { icon: Gauge, title: "Consolida", text: "NinjaSec normaliza y centraliza los datos técnicos de todos tus dispositivos." },
+  { icon: Gauge, title: "Consolida", text: "Ninja Tech normaliza y centraliza los datos técnicos de todos tus dispositivos." },
   { icon: ShieldCheck, title: "Visualiza", text: "Dashboards operativos y ejecutivos, actualizados en tiempo casi real." },
   { icon: FilePieChart, title: "Reporta", text: "Reportes técnicos y ejecutivos listos para entregar, sin trabajo manual." },
 ];
@@ -45,21 +46,21 @@ export default function HomePage() {
 
         <div className="hero-marketing landing-reveal">
           <div>
-            <span className="pill">{conApi ? "NinjaSec Platform" : "NinjaSec"}</span>
+            <span className="pill">{conApi ? "Ninja Tech Platform" : "Ninja Tech"}</span>
             {conApi ? (
               <>
                 <h1>Reporting inteligente por API para infraestructura, seguridad y operaciones TI.</h1>
                 <p>
-                  NinjaSec transforma datos técnicos de dispositivos y plataformas como pfSense y FortiGate
+                  Ninja Tech transforma datos técnicos de dispositivos y plataformas como pfSense y FortiGate
                   en dashboards, reportes ejecutivos y servicios tecnológicos listos para empresas y MSPs.
                 </p>
               </>
             ) : (
               <>
-                <h1>Consultoría de infraestructura y ciberseguridad para pequeñas y medianas empresas.</h1>
+                <h1>Ciberseguridad y desarrollo de software para pymes</h1>
                 <p>
-                  NinjaSec reúne a estudiantes y profesionales de infraestructura, desarrollo y
-                  ciberseguridad para revisar, ordenar y proteger la tecnología de tu empresa.
+                  En Ninja Tech ayudamos a pequeñas y medianas empresas a proteger sus redes y
+                  construir software a medida. Trabajamos en dos áreas: Ninja Sec y Ninja Dev.
                 </p>
               </>
             )}
@@ -70,19 +71,82 @@ export default function HomePage() {
               {conApi ? (
                 <Link className="button button-secondary" href="/solucion">Ver solucion</Link>
               ) : (
-                <Link className="button button-secondary" href="/servicios">Ver servicios</Link>
+                <Link className="button button-secondary" href="/proyectos">Ver proyectos</Link>
               )}
             </div>
           </div>
 
           <div className="hero-visual-card hero-mascot-card">
-            <Mascot variant="working" size="lg" priority />
+            {conApi ? (
+              <Mascot variant="working" size="lg" priority />
+            ) : (
+              <Image
+                className="hero-pose"
+                src="/brand/poses/tech-escudo-ventana.webp"
+                alt="Kuro, la mascota de Ninja Tech, con un escudo y una ventana de código"
+                width={520}
+                height={520}
+                priority
+              />
+            )}
             <div className="hero-mascot-badge">
               <span className="dot" />
-              Kuro está vigilando tu red
+              {conApi ? "Kuro está vigilando tu red" : "Kuro cuida tu red y tu código"}
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Las dos areas activas, justo bajo la portada y en el mismo orden en movil y escritorio. */}
+      <section className="branch-cards landing-reveal landing-reveal--delay-1" aria-label="Áreas de Ninja Tech">
+        <article className="panel branch-card branch-card--sec" id="ninja-sec">
+          <div className="branch-card__head">
+            <Image className="branch-card__logo" src="/brand/avatar-ninja-sec.webp" alt="Logo de Ninja Sec" width={72} height={72} />
+            <div>
+              <p className="eyebrow">Ciberseguridad e infraestructura segura</p>
+              <h2>Ninja Sec</h2>
+            </div>
+          </div>
+          <p>Protegemos redes, detectamos comportamientos anómalos y ayudamos a responder a incidentes.</p>
+          <Image
+            className="branch-card__anim"
+            src="/brand/anim/seguridad.webp"
+            alt="Kuro sosteniendo un escudo de seguridad"
+            width={150}
+            height={150}
+            unoptimized
+          />
+          <div className="hero-actions">
+            <Link className="button button-secondary" href="/servicios">Ver servicios</Link>
+            <Link className="button button-ghost" href="/proyectos">Ver proyectos</Link>
+          </div>
+        </article>
+
+        <article className="panel branch-card branch-card--dev" id="ninja-dev">
+          <div className="branch-card__head">
+            <Image className="branch-card__logo" src="/brand/avatar-ninja-dev.webp" alt="Logo de Ninja Dev" width={72} height={72} />
+            <div>
+              <p className="eyebrow">Desarrollo de software</p>
+              <h2>Ninja Dev</h2>
+            </div>
+          </div>
+          <p>
+            Desarrollamos aplicaciones web, sistemas internos y APIs. Integramos tus herramientas y probamos
+            los flujos que tu negocio usa a diario.
+          </p>
+          <Image
+            className="branch-card__anim"
+            src="/brand/anim/desarrollo.webp"
+            alt="Kuro programando en su laptop"
+            width={150}
+            height={150}
+            unoptimized
+          />
+          <div className="hero-actions">
+            <Link className="button button-secondary" href="/servicios">Ver servicios</Link>
+            <Link className="button button-ghost" href="/proyectos">Ver proyectos</Link>
+          </div>
+        </article>
       </section>
 
       <section className="page-stack landing-reveal landing-reveal--delay-1">
@@ -153,7 +217,7 @@ export default function HomePage() {
         </div>
         <div className="marketing-grid marketing-grid--two">
           <article className="panel">
-            <p className="eyebrow">Desarrollo</p>
+            <p className="eyebrow">Ninja Dev</p>
             <h3>Software que ya está funcionando</h3>
             <p>
               La plataforma con la que gestionamos clientes, proyectos y equipo, y el despliegue
@@ -162,7 +226,7 @@ export default function HomePage() {
             <Link className="button button-secondary" href="/proyectos#plataforma-ninjasec">Ver la plataforma</Link>
           </article>
           <article className="panel">
-            <p className="eyebrow">Infraestructura</p>
+            <p className="eyebrow">Ninja Sec · Infraestructura segura</p>
             <h3>Redes que no paran</h3>
             <p>
               Una red segmentada con firewalls en alta disponibilidad y doble proveedor de internet,
@@ -179,7 +243,7 @@ export default function HomePage() {
           <h3>Capacidad real de ejecucion</h3>
           <p>
             {conApi
-              ? "NinjaSec demuestra integraciones API, modelado de datos, UX operacional y reporting automatizado aplicado a infraestructura y ciberseguridad."
+              ? "Ninja Tech demuestra integraciones API, modelado de datos, UX operacional y reporting automatizado aplicado a infraestructura y ciberseguridad."
               : "Revisiones de seguridad, gestión de infraestructura y desarrollo de software aplicados a las necesidades de pequeñas y medianas empresas."}
           </p>
         </article>

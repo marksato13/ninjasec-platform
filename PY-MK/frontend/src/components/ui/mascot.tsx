@@ -33,7 +33,7 @@ const VARIANT_TO_FILE: Record<MascotVariant, string> = {
 };
 
 const VARIANT_ALT: Record<MascotVariant, string> = {
-  hero:        "Kuro, el ninja-mapache de NinjaSec",
+  hero:        "Kuro, el ninja-mapache de Ninja Tech",
   working:     "Kuro analizando dashboards de seguridad",
   waving:      "Kuro saludando",
   confused:    "Kuro está confundido",

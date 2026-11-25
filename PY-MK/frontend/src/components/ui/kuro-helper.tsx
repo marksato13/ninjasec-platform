@@ -46,7 +46,7 @@ const PORTAL_ACTIONS: QuickAction[] = [
   },
   {
     icon: <Mail size={18} />,
-    label: "Contactar a NinjaSec",
+    label: "Contactar a Ninja Tech",
     href: "/contacto",
     description: "Hablá con un especialista",
   },

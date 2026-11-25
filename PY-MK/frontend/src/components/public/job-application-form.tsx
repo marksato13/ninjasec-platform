@@ -43,7 +43,7 @@ export function JobApplicationForm() {
 
   return (
     <form className="public-form" onSubmit={handleSubmit}>
-      <h3>Quiero formar parte de NinjaSec</h3>
+      <h3>Quiero formar parte de Ninja Tech</h3>
       <input placeholder="Nombre completo" value={fullName} onChange={(event) => setFullName(event.target.value)} required />
       <input placeholder="Correo" value={email} onChange={(event) => setEmail(event.target.value)} required />
       <input placeholder="Rol o cargo deseado" value={desiredRole} onChange={(event) => setDesiredRole(event.target.value)} required />

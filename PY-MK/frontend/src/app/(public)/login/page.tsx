@@ -28,7 +28,7 @@ export default function LoginPage() {
               </p>
               <h3>KURO <span>v0.2.0</span></h3>
               <p className="login-mascot-bio">
-                Asistente táctico de NinjaSec.<br />
+                Asistente táctico de Ninja Tech.<br />
                 Vigilando la red 24/7.
               </p>
               <div className="login-mascot-stats">
@@ -49,7 +49,7 @@ export default function LoginPage() {
               <span className="login-eyebrow-meta">/auth/v1</span>
             </div>
             <h1 className="login-headline">
-              Inicia sesión en <span className="login-headline-accent">NinjaSec</span>
+              Inicia sesión en <span className="login-headline-accent">Ninja Tech</span>
             </h1>
             <p className="login-subhead">
               Accedé al dashboard administrativo o al portal según el rol asignado a tu cuenta.

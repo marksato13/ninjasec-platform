@@ -124,7 +124,7 @@ export default function ServiciosPage() {
         <p className="eyebrow">Servicios</p>
         <h1>Infraestructura, nube, seguridad y desarrollo para tu empresa.</h1>
         <p>
-          NinjaSec ayuda a pequeñas y medianas empresas a ordenar, proteger y hacer crecer su
+          Ninja Tech ayuda a pequeñas y medianas empresas a ordenar, proteger y hacer crecer su
           tecnología. Empezamos entendiendo qué tienes, y solo entonces proponemos qué hacer.
         </p>
       </section>

@@ -6,7 +6,7 @@ export default function ColaboraPage() {
     <PublicPageShell>
       <section className="content-hero">
         <p className="eyebrow">Colabora</p>
-        <h1>Forma parte de NinjaSec.</h1>
+        <h1>Forma parte de Ninja Tech.</h1>
         <p>
           Buscamos estudiantes y profesionales con interés en infraestructura y redes, nube (AWS),
           ciberseguridad y desarrollo de software. Trabajarás en casos reales, con seguimiento.
