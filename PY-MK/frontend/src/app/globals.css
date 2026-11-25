@@ -4454,6 +4454,20 @@ a {
   min-width: 40px;
 }
 
+/* Select suelto, sin clase (filtros de documentos y otros): mismo aspecto que .input.
+   :where() deja la especificidad en cero, asi cualquier estilo existente sigue mandando. */
+:where(select:not([class])) {
+  padding: 9px 32px 9px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background-color: var(--row);
+  color: var(--text);
+  min-height: 38px;
+}
+
+/* La etiqueta de estado va en la esquina: el encabezado le deja sitio para no taparse. */
+.doc-card .doc-card__head { padding-right: 64px; }
+
 /* Logo de marca en la barra lateral: el icono de Kuro, sin el degradado del marcador. */
 .logo-space.logo-space--marca {
   background: transparent;
