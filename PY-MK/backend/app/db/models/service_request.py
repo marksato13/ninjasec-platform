@@ -16,6 +16,10 @@ class ServiceRequest(Base):
     client_id: Mapped[int | None] = mapped_column(
         ForeignKey("clients.id"), nullable=True
     )
+    # La solicitud aprobada se convierte en un proyecto (auditoria funcional A6).
+    project_id: Mapped[int | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     requester_name: Mapped[str] = mapped_column(String(150), nullable=False)
     requester_email: Mapped[str] = mapped_column(String(180), nullable=False)
     request_type: Mapped[str | None] = mapped_column(String(80), nullable=True)

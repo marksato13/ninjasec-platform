@@ -1,439 +1,228 @@
 "use client";
 
-import Link from "next/link";
-import { AlertTriangle, Building2, LayoutGrid, RefreshCw, Server, Shield, ShieldCheck, Ticket, TrendingUp, Users, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+/**
+ * Inicio del panel: la operación de Ninja Tech de un vistazo.
+ *
+ * Regla: solo datos reales del backend. Si un dato no carga se dice "No se pudo
+ * cargar"; si no hay datos, se dice qué hacer. Nunca un número de relleno.
+ * (Antes este panel mostraba alertas, tendencias y actividad inventadas cuando la
+ * base estaba vacía, y un "score 100" calculado sin datos.)
+ *
+ * Orden de la pantalla = orden del servicio (ninjasec-empresa/OPERACIONES/flujos/
+ * 01-ORDEN-DEL-SERVICIO.md): solicitudes y leads -> clientes -> proyectos por área
+ * -> soporte. Las vistas de seguridad e infraestructura dependen de la cápsula de
+ * telemetría y ya no viven aquí: las alertas solo se piden si la cápsula está activa.
+ */
+
+import { useQuery } from "@tanstack/react-query";
 
 import {
-  AlertItem,
-  AuditItem,
-  DashboardClient,
-  DashboardSummaryItem,
+  type AlertItem,
+  type AreaItem,
+  type AuditItem,
+  type AuthUser,
+  type CollaboratorProfile,
+  type DashboardClient,
+  type LeadItem,
+  type ProjectItem,
+  type ServiceItem,
+  type ServiceRequestItem,
+  type SupportTicketItem,
   getAlerts,
+  getAreas,
   getAuditLogs,
   getClients,
-  getDashboardSummary,
+  getCollaborators,
   getLeads,
+  getMe,
   getProjects,
-  LeadItem,
-  ProjectItem,
-  refreshAlerts,
+  getServiceRequests,
+  getServices,
+  getSupportTickets,
 } from "@/lib/api";
-import { notifyError, notifySuccess } from "@/lib/alerts";
-import { useAlertsSocket } from "@/lib/hooks/use-alerts-socket";
+import { capsulaActiva } from "@/lib/capsulas";
 import { QK } from "@/lib/query-keys";
-import {
-  CommercialView,
-  InfrastructureView,
-  KpiCard,
-  OperationsView,
-  QuickLinks,
-  SecurityView,
-  SparkBar,
-  MOCK_TREND_FINDINGS,
-} from "./dashboard-widgets";
-import { AlertsWidget } from "./alerts-widget";
 
-// ── Empty summary fallback — para que la UI no se rompa si el backend tarda ────
-const EMPTY_SUMMARY: DashboardSummaryItem = {
-  reviews:  { total_scheduled: 0, total_executed: 0, execution_rate_pct: 0, open_count: 0, closed_count: 0 },
-  findings: { total: 0, by_severity: {}, by_status: {}, critical_open: 0 },
-  tickets:  { total: 0, open_count: 0, closed_count: 0, avg_resolution_hours: null, overdue_count: 0 },
-  inventory:{ total_devices: 0, by_status: {}, active_consoles: 0, expired_licenses: 0 },
-  generated_at: new Date().toISOString(),
-};
+import { Actividad } from "./inicio/actividad";
+import { Atencion, type Pendiente } from "./inicio/atencion";
+import { Embudo, type Etapa } from "./inicio/embudo";
+import { fechaLarga, nombreDeUsuario, saludoSegunHora } from "./inicio/formato";
+import { PrimerosPasos, type Paso } from "./inicio/primeros-pasos";
+import styles from "./inicio/inicio.module.css";
 
-const SEVERITY_LABEL: Record<string, string> = {
-  critical: "Crítica", high: "Alta", medium: "Media", low: "Baja", info: "Info",
-};
+const TICKET_ABIERTO = new Set(["open", "in_progress", "pending"]);
+const PROYECTO_VIVO = new Set(["planning", "active", "paused"]);
+const LEAD_CERRADO = new Set(["WON", "LOST", "CONVERTED"]);
+const TELEMETRIA = capsulaActiva("telemetria");
 
-function formatRelativeDate(iso?: string) {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  const diff = Math.floor((Date.now() - d.getTime()) / 60000);
-  if (diff < 1)    return "ahora mismo";
-  if (diff < 60)   return `hace ${diff} min`;
-  if (diff < 1440) return `hace ${Math.floor(diff / 60)} h`;
-  return `hace ${Math.floor(diff / 1440)} días`;
+function areaDe(area?: AreaItem): "sec" | "dev" | "otra" {
+  const texto = `${area?.slug ?? ""} ${area?.name ?? ""}`.toLowerCase();
+  if (texto.includes("sec")) return "sec";
+  if (texto.includes("dev")) return "dev";
+  return "otra";
 }
-
-const AUDIT_LABEL: Record<string, string> = {
-  "client.created": "Cliente creado",  "client.updated": "Cliente editado",  "client.deleted": "Cliente eliminado",
-  "user.created":   "Usuario creado",  "user.updated":   "Usuario editado",  "user.deleted":   "Usuario eliminado",
-  "integration.created": "Consola conectada", "integration.updated": "Consola editada",
-  "device.created": "Activo registrado", "device.updated": "Activo editado", "device.retired": "Activo retirado",
-  "review.created": "Revisión creada", "review.closed": "Revisión cerrada",
-  "ticket.created": "Ticket creado",   "ticket.updated": "Ticket actualizado",
-};
-
-const MOCK_AUDIT_FALLBACK: { id: number; action: string; created_at: string }[] = [
-  { id: 1, action: "review.created",  created_at: new Date(Date.now() - 12 * 60 * 1000).toISOString() },
-  { id: 2, action: "ticket.created",  created_at: new Date(Date.now() - 47 * 60 * 1000).toISOString() },
-  { id: 3, action: "client.created",  created_at: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() },
-  { id: 4, action: "device.created",  created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() },
-  { id: 5, action: "integration.created", created_at: new Date(Date.now() - 22 * 60 * 60 * 1000).toISOString() },
-];
-
-const MOCK_ALERTS_FALLBACK: AlertItem[] = [
-  { type: "license_expired", severity: "critical", message: "FortiCare 24x7 venció hace 2 días — Industrias Metálicas SAC", entity_type: "license", entity_id: 101, created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-  { type: "review_overdue",  severity: "high",     message: "Revisión IDS Suricata atrasada 5 días — Clínica San Lucas",   entity_type: "review",  entity_id: 88,  created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() },
-  { type: "ticket_overdue",  severity: "medium",   message: "Ticket #142 sin respuesta hace 4h — Logística Andina S.A.",   entity_type: "ticket",  entity_id: 142, created_at: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() },
-  { type: "device_offline",  severity: "low",      message: "AP UniFi-3 sin reportar hace 30 min — ConsultorIT SRL",       entity_type: "device",  entity_id: 12,  created_at: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
-];
-
-// ── Tabs ───────────────────────────────────────────────────────────────────────
-type TabKey = "general" | "security" | "commercial" | "operations" | "infra";
-const TABS: { key: TabKey; label: string; icon: React.ReactNode; color: string }[] = [
-  { key: "general",    label: "General",        icon: <LayoutGrid size={14} />,  color: "var(--primary)"  },
-  { key: "security",   label: "Seguridad",      icon: <ShieldCheck size={14} />, color: "var(--security)" },
-  { key: "commercial", label: "Comercial",      icon: <TrendingUp size={14} />,  color: "#A78BFA"         },
-  { key: "operations", label: "Operaciones",    icon: <Ticket size={14} />,      color: "var(--warning)"  },
-  { key: "infra",      label: "Infraestructura", icon: <Server size={14} />,     color: "#06B6D4"         },
-];
-
-const AUTO_REFRESH_KEY = "ninjasec_dashboard_autorefresh";
-const AUTO_REFRESH_INTERVAL_MS = 60_000;
 
 export function DashboardShell() {
-  const queryClient = useQueryClient();
-  const [tab, setTab] = useState<TabKey>("general");
-  const [clientId,  setClientId]  = useState("");
-  const [dateFrom,  setDateFrom]  = useState("");
-  const [dateTo,    setDateTo]    = useState("");
-  const [refreshing, setRefreshing] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(false);
+  const yo = useQuery<AuthUser>({ queryKey: QK.me(), queryFn: getMe });
+  const solicitudes = useQuery<ServiceRequestItem[]>({ queryKey: QK.serviceRequests(), queryFn: getServiceRequests });
+  const leads = useQuery<LeadItem[]>({ queryKey: QK.leads(), queryFn: getLeads });
+  const clientes = useQuery<DashboardClient[]>({ queryKey: QK.clients(), queryFn: () => getClients() });
+  const proyectos = useQuery<ProjectItem[]>({ queryKey: QK.projects(), queryFn: getProjects });
+  const areas = useQuery<AreaItem[]>({ queryKey: QK.areas(), queryFn: getAreas });
+  const tickets = useQuery<SupportTicketItem[]>({ queryKey: QK.tickets(), queryFn: () => getSupportTickets() });
+  const servicios = useQuery<ServiceItem[]>({ queryKey: QK.services(), queryFn: getServices });
+  const colaboradores = useQuery<CollaboratorProfile[]>({ queryKey: QK.collaborators(), queryFn: getCollaborators });
+  const auditoria = useQuery<AuditItem[]>({ queryKey: QK.auditLogs(8), queryFn: () => getAuditLogs(8) });
+  const alertas = useQuery<AlertItem[]>({ queryKey: QK.alerts(undefined), queryFn: () => getAlerts(), enabled: TELEMETRIA });
 
-  // Persistir preferencia de auto-refresh entre sesiones
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setAutoRefresh(window.localStorage.getItem(AUTO_REFRESH_KEY) === "1");
-  }, []);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(AUTO_REFRESH_KEY, autoRefresh ? "1" : "0");
-  }, [autoRefresh]);
+  const nombre = nombreDeUsuario(yo.data?.full_name ?? yo.data?.name);
 
-  const { data: clients = [] } = useQuery<DashboardClient[]>({
-    queryKey: QK.clients(),
-    queryFn: () => getClients(),
-  });
+  // ── El embudo ───────────────────────────────────────────────
+  const nuevas = (solicitudes.data ?? []).filter((s) => s.status === "NEW").length;
+  const leadsAbiertos = (leads.data ?? []).filter((l) => !LEAD_CERRADO.has(l.status));
+  const leadsNuevos = leadsAbiertos.filter((l) => l.status === "NEW").length;
+  const vivos = (proyectos.data ?? []).filter((p) => PROYECTO_VIVO.has(p.status));
+  const areaPorId = new Map((areas.data ?? []).map((a) => [a.id, a]));
+  const porArea = { sec: 0, dev: 0, otra: 0 };
+  for (const p of vivos) porArea[areaDe(p.area_id ? areaPorId.get(p.area_id) : undefined)] += 1;
+  const abiertos = (tickets.data ?? []).filter((t) => TICKET_ABIERTO.has(t.status));
+  const sinAsignar = abiertos.filter((t) => !t.assigned_to).length;
+  const clientesActivos = (clientes.data ?? []).filter((c) => c.commercial_status !== "inactive").length;
 
-  const summaryFilters = {
-    client_id: clientId ? Number(clientId) : undefined,
-    date_from: dateFrom || undefined,
-    date_to:   dateTo   || undefined,
-  };
-  const { data: summaryRaw, isLoading: summaryLoading } = useQuery<DashboardSummaryItem | null>({
-    queryKey: QK.dashboardSummary(summaryFilters),
-    queryFn: () => getDashboardSummary(summaryFilters),
-    refetchInterval: autoRefresh ? AUTO_REFRESH_INTERVAL_MS : false,
-  });
-  const summary = summaryRaw ?? EMPTY_SUMMARY;
+  const etapas: Etapa[] = [
+    {
+      clave: "solicitudes",
+      etiqueta: "Solicitudes",
+      href: "/dashboard/services",
+      valor: solicitudes.data?.length,
+      detalle: nuevas ? `${nuevas} sin revisar` : "Ninguna por revisar",
+      error: solicitudes.isError,
+      cargando: solicitudes.isLoading,
+    },
+    {
+      clave: "leads",
+      etiqueta: "Leads abiertos",
+      href: "/dashboard/leads",
+      valor: leads.data ? leadsAbiertos.length : undefined,
+      detalle: leadsNuevos ? `${leadsNuevos} sin contactar` : "Ninguno sin contactar",
+      error: leads.isError,
+      cargando: leads.isLoading,
+    },
+    {
+      clave: "clientes",
+      etiqueta: "Clientes",
+      href: "/dashboard/clients",
+      valor: clientes.data ? clientesActivos : undefined,
+      detalle: clientes.data && clientes.data.length !== clientesActivos ? `${clientes.data.length} en total` : "Activos",
+      error: clientes.isError,
+      cargando: clientes.isLoading,
+    },
+    {
+      clave: "proyectos",
+      etiqueta: "Proyectos en curso",
+      href: "/dashboard/projects",
+      valor: proyectos.data ? vivos.length : undefined,
+      areas: proyectos.data ? porArea : undefined,
+      error: proyectos.isError,
+      cargando: proyectos.isLoading,
+    },
+    {
+      clave: "tickets",
+      etiqueta: "Tickets abiertos",
+      href: "/dashboard/support-tickets",
+      valor: tickets.data ? abiertos.length : undefined,
+      detalle: sinAsignar ? `${sinAsignar} sin asignar` : "Ninguno sin asignar",
+      error: tickets.isError,
+      cargando: tickets.isLoading,
+    },
+  ];
 
-  const alertFilters = clientId ? Number(clientId) : undefined;
-  const { data: alertsRaw = [] } = useQuery<AlertItem[]>({
-    queryKey: QK.alerts(alertFilters),
-    queryFn: () => getAlerts(alertFilters),
-    // El WebSocket de abajo empuja actualizaciones cuando conecta; este
-    // polling sigue siendo la carga inicial y el respaldo si el socket
-    // no logra conectar (proxy/firewall) o se cae y no puede reconectar.
-    refetchInterval: autoRefresh ? AUTO_REFRESH_INTERVAL_MS : false,
-  });
-  const { pushedAlerts, connected: alertsSocketConnected } = useAlertsSocket(
-    autoRefresh, alertFilters
-  );
-  const alerts = pushedAlerts ?? (alertsRaw.length > 0 ? alertsRaw : MOCK_ALERTS_FALLBACK);
-
-  const { data: auditRaw = [] } = useQuery<AuditItem[]>({
-    queryKey: QK.auditLogs(5),
-    queryFn: () => getAuditLogs(5),
-  });
-  const auditLogs = auditRaw.length > 0 ? auditRaw : MOCK_AUDIT_FALLBACK;
-
-  // Counts reales para la segunda fila de KPIs
-  const { data: leads = [] } = useQuery<LeadItem[]>({
-    queryKey: QK.leads(),
-    queryFn: () => getLeads(),
-  });
-  const { data: projects = [] } = useQuery<ProjectItem[]>({
-    queryKey: QK.projects(),
-    queryFn: () => getProjects(),
-  });
-
-  async function handleRefreshAlerts() {
-    setRefreshing(true);
-    try {
-      const result = await refreshAlerts();
-      notifySuccess("Alertas actualizadas", `${result.integrations_marked_risk} integraciones en riesgo · ${result.devices_marked_pending_review} activos pendientes`);
-      queryClient.invalidateQueries({ queryKey: QK.alerts(alertFilters) });
-      queryClient.invalidateQueries({ queryKey: QK.dashboardSummary(summaryFilters) });
-    } catch (err) {
-      notifyError("No se pudo refrescar", err instanceof Error ? err.message : undefined);
-    } finally {
-      setRefreshing(false);
-    }
+  // ── La bandeja de pendientes ────────────────────────────────
+  const pendientes: Pendiente[] = [];
+  for (const s of solicitudes.data ?? []) {
+    if (s.status !== "NEW") continue;
+    pendientes.push({
+      clave: `sol-${s.id}`,
+      tipo: "solicitud",
+      titulo: `Revisar la solicitud de ${s.requester_name}`,
+      sub: s.message || s.requester_email,
+      cuando: s.created_at,
+      href: "/dashboard/services",
+    });
   }
+  for (const l of leads.data ?? []) {
+    if (l.status !== "NEW") continue;
+    pendientes.push({
+      clave: `lead-${l.id}`,
+      tipo: "lead",
+      titulo: `Contactar a ${l.contact_name}`,
+      sub: l.company_name || l.email,
+      cuando: l.created_at,
+      href: "/dashboard/leads",
+    });
+  }
+  for (const t of abiertos) {
+    if (t.assigned_to) continue;
+    pendientes.push({
+      clave: `tk-${t.id}`,
+      tipo: t.priority === "critical" || t.priority === "high" ? "urgente" : "ticket",
+      titulo: `Asignar el ticket #${t.id}: ${t.title}`,
+      sub: `Prioridad ${t.priority}`,
+      cuando: t.opened_at ?? t.created_at,
+      href: "/dashboard/support-tickets",
+    });
+  }
+  for (const a of TELEMETRIA ? alertas.data ?? [] : []) {
+    pendientes.push({
+      clave: `al-${a.type}-${a.entity_type}-${a.entity_id}`,
+      tipo: a.severity === "critical" || a.severity === "high" ? "urgente" : "alerta",
+      titulo: a.message,
+      sub: "Alerta de telemetría",
+      cuando: a.created_at,
+    });
+  }
+  pendientes.sort((x, y) => (y.cuando ?? "").localeCompare(x.cuando ?? ""));
+  const fuentesConError = [solicitudes, leads, tickets].filter((q) => q.isError).length;
 
-  const criticalAlerts = alerts.filter((a) => a.severity === "critical").length;
-  const hasExpiredLicenses = summary.inventory.expired_licenses > 0;
+  // ── Primeros pasos: solo con todas las listas cargadas, para no afirmar nada sin datos ──
+  const listasCargadas = [areas, servicios, clientes, proyectos, colaboradores].every((q) => q.data);
+  const pasos: Paso[] = listasCargadas
+    ? [
+        { clave: "areas", titulo: "Áreas Ninja Sec y Ninja Dev", como: "Configuración › Áreas", href: "/dashboard/settings", hecho: (areas.data ?? []).some((a) => a.is_active) },
+        { clave: "servicios", titulo: "Servicios publicados", como: "Servicios › Nuevo servicio", href: "/dashboard/services", hecho: (servicios.data ?? []).some((s) => s.active) },
+        { clave: "colaborador", titulo: "Primer colaborador", como: "Colaboradores › Nuevo colaborador", href: "/dashboard/collaborators", hecho: (colaboradores.data ?? []).length > 0 },
+        { clave: "cliente", titulo: "Primer cliente", como: "Clientes › Nuevo, o convierte un lead", href: "/dashboard/clients", hecho: (clientes.data ?? []).length > 0 },
+        { clave: "proyecto", titulo: "Primer proyecto", como: "Proyectos › Nuevo proyecto", href: "/dashboard/projects", hecho: (proyectos.data ?? []).length > 0 },
+      ]
+    : [];
+  const faltaAlgo = pasos.some((p) => !p.hecho);
+
+  const hoy = new Date();
 
   return (
-    <section className="page-stack">
-
-      {/* Encabezado + filtros */}
-      <div className="section-heading">
+    <div className={styles.page}>
+      <header className={styles.head}>
         <div>
-          <p className="eyebrow">Panel administrativo</p>
-          <h2>Dashboard</h2>
+          <h1 className={styles.greeting} suppressHydrationWarning>
+            {saludoSegunHora(hoy)}
+            {nombre ? `, ${nombre}` : ""}
+          </h1>
+          <p className={styles.date} suppressHydrationWarning>{fechaLarga(hoy)}</p>
         </div>
-        <div className="panel-actions">
-          <select value={clientId} onChange={(e) => setClientId(e.target.value)} style={{ minWidth: 180 }}>
-            <option value="">Todos los clientes</option>
-            {clients.map((c) => <option key={c.id} value={c.id}>{c.company_name}</option>)}
-          </select>
-          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} title="Desde" style={{ width: 140 }} />
-          <input type="date" value={dateTo}   onChange={(e) => setDateTo(e.target.value)}   title="Hasta" style={{ width: 140 }} />
-          {(dateFrom || dateTo) && (
-            <button className="button button-ghost button-sm" type="button" onClick={() => { setDateFrom(""); setDateTo(""); }}>
-              Limpiar
-            </button>
-          )}
-          <button
-            className={`button button-sm ${autoRefresh ? "button-success" : "button-ghost"}`}
-            type="button"
-            onClick={() => setAutoRefresh((v) => !v)}
-            title={
-              autoRefresh
-                ? alertsSocketConnected
-                  ? "Alertas en vivo por WebSocket -- el resto del dashboard sigue en polling"
-                  : `Auto-refresh activo (cada ${AUTO_REFRESH_INTERVAL_MS / 1000}s) -- reintentando WebSocket de alertas`
-                : "Activar auto-refresh"
-            }
-          >
-            <Zap size={14} className={autoRefresh ? "spin-slow" : ""} />
-            {autoRefresh ? "Auto ON" : "Auto OFF"}
-            {autoRefresh && (
-              <span
-                style={{
-                  width: 6, height: 6, borderRadius: "50%", marginLeft: 4,
-                  background: alertsSocketConnected ? "var(--success)" : "var(--muted)",
-                  display: "inline-block",
-                }}
-              />
-            )}
-          </button>
-          <button className="button button-secondary" type="button" onClick={handleRefreshAlerts} disabled={refreshing}>
-            <RefreshCw size={14} className={refreshing ? "spin" : ""} />
-            {refreshing ? "Actualizando…" : "Refrescar"}
-          </button>
-        </div>
-      </div>
+      </header>
 
-      {/* Banner alerta crítica */}
-      {(criticalAlerts > 0 || hasExpiredLicenses) && (
-        <div className={`alert-banner ${criticalAlerts > 0 ? "pulse-critical" : ""}`}>
-          <AlertTriangle size={16} />
-          <span>
-            {criticalAlerts > 0 && `${criticalAlerts} alerta${criticalAlerts > 1 ? "s" : ""} crítica${criticalAlerts > 1 ? "s" : ""} activa${criticalAlerts > 1 ? "s" : ""}`}
-            {criticalAlerts > 0 && hasExpiredLicenses && " · "}
-            {hasExpiredLicenses && `${summary.inventory.expired_licenses} licencia${summary.inventory.expired_licenses > 1 ? "s" : ""} vencida${summary.inventory.expired_licenses > 1 ? "s" : ""}`}
-          </span>
-        </div>
-      )}
+      {faltaAlgo ? <PrimerosPasos pasos={pasos} /> : null}
 
-      {/* Tabs de vistas */}
-      <div className="dashboard-tabs">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            className={`dashboard-tab ${tab === t.key ? "dashboard-tab--active" : ""}`}
-            onClick={() => setTab(t.key)}
-            style={tab === t.key ? { borderColor: `${t.color}55`, color: t.color, background: `${t.color}14` } : undefined}
-          >
-            {t.icon}
-            <span>{t.label}</span>
-          </button>
-        ))}
-      </div>
+      <Embudo etapas={etapas} />
 
-      {summaryLoading && !summaryRaw ? (
-        <div className="state-panel">Cargando dashboard…</div>
-      ) : tab === "general" ? (
-        <GeneralView
-          summary={summary}
-          alerts={alerts}
-          auditLogs={auditLogs}
-          hasExpiredLicenses={hasExpiredLicenses}
-          clients={clients}
-          leads={leads}
-          projects={projects}
+      <div className={styles.columns}>
+        <Atencion
+          pendientes={pendientes}
+          cargando={solicitudes.isLoading || leads.isLoading || tickets.isLoading}
+          fuentesConError={fuentesConError}
         />
-      ) : tab === "security" ? (
-        <SecurityView summary={summary} />
-      ) : tab === "commercial" ? (
-        <CommercialView leads={leads} clients={clients} />
-      ) : tab === "operations" ? (
-        <OperationsView summary={summary} />
-      ) : tab === "infra" ? (
-        <InfrastructureView summary={summary} />
-      ) : null}
-
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────
-   VISTA — GENERAL
-   ───────────────────────────────────────────────────────────────── */
-
-function kpiColor(value: number, thresholds: { warn: number; danger: number }, inverse = false): string {
-  if (inverse) {
-    if (value === 0) return "var(--success)";
-    if (value <= thresholds.warn) return "var(--warning)";
-    return "var(--danger)";
-  }
-  if (value >= thresholds.danger) return "var(--success)";
-  if (value >= thresholds.warn)   return "var(--warning)";
-  return "var(--danger)";
-}
-
-type AuditDisplay = { id: number; action: string; created_at?: string | null };
-
-function GeneralView({
-  summary,
-  alerts,
-  auditLogs,
-  hasExpiredLicenses,
-  clients,
-  leads,
-  projects,
-}: {
-  summary: DashboardSummaryItem;
-  alerts: AlertItem[];
-  auditLogs: AuditDisplay[];
-  hasExpiredLicenses: boolean;
-  clients: DashboardClient[];
-  leads: LeadItem[];
-  projects: ProjectItem[];
-}) {
-  const activeClients   = clients.filter((c) => (c.commercial_status ?? "").toLowerCase() === "active").length || clients.length;
-  const pipelineLeads   = leads.filter((l) => !["CLOSED_WON", "CLOSED_LOST", "closed_won", "closed_lost", "CLOSED"].includes(l.status ?? "")).length;
-  const qualifiedLeads  = leads.filter((l) => (l.status ?? "").toUpperCase() === "QUALIFIED").length;
-  const activeProjects  = projects.filter((p) => (p.status ?? "").toLowerCase() === "active").length;
-  const planningProjects = projects.filter((p) => (p.status ?? "").toLowerCase() === "planning").length;
-  // Score promedio derivado de hallazgos críticos: 100 - 10*crit - 3*highOpen, mínimo 30
-  const findingsBy = summary.findings.by_severity || {};
-  const securityScore = Math.max(30, 100 - 10 * (findingsBy.critical ?? 0) - 3 * (findingsBy.high ?? 0));
-  return (
-    <>
-      {/* KPIs principales — valores reales del backend (sin fallbacks que oculten cero) */}
-      <div className="metrics-grid">
-        <KpiCard
-          icon={<Shield size={18} />}
-          label="Revisiones ejecutadas"
-          value={`${summary.reviews.execution_rate_pct ?? 0}%`}
-          sublabel={`${summary.reviews.total_executed ?? 0} de ${summary.reviews.total_scheduled ?? 0} programadas`}
-          color={kpiColor(summary.reviews.execution_rate_pct ?? 0, { warn: 60, danger: 80 })}
-        />
-        <KpiCard
-          icon={<AlertTriangle size={18} />}
-          label="Hallazgos críticos"
-          value={summary.findings.critical_open ?? 0}
-          sublabel={`${summary.findings.total ?? 0} hallazgos totales`}
-          color={kpiColor(summary.findings.critical_open ?? 0, { warn: 1, danger: 0 }, true)}
-        />
-        <KpiCard
-          icon={<Ticket size={18} />}
-          label="Tickets abiertos"
-          value={summary.tickets.open_count ?? 0}
-          sublabel={summary.tickets.avg_resolution_hours != null ? `${summary.tickets.avg_resolution_hours}h resolución promedio` : `${summary.tickets.total ?? 0} totales`}
-          color={kpiColor(summary.tickets.open_count ?? 0, { warn: 5, danger: 0 }, true)}
-        />
-        <KpiCard
-          icon={<Server size={18} />}
-          label="Activos monitoreados"
-          value={summary.inventory.total_devices ?? 0}
-          sublabel={hasExpiredLicenses
-            ? `⚠ ${summary.inventory.expired_licenses} licencias vencidas`
-            : `${summary.inventory.active_consoles ?? 0} consolas activas`}
-          color={hasExpiredLicenses ? "var(--danger)" : "var(--success)"}
-        />
+        <Actividad eventos={auditoria.data ?? []} cargando={auditoria.isLoading} error={auditoria.isError} />
       </div>
-
-      {/* Segunda fila KPIs — valores reales */}
-      <div className="metrics-grid">
-        <KpiCard icon={<Users size={18} />}     label="Clientes activos"   value={activeClients}   sublabel={`${clients.length} totales en el directorio`}        color="var(--primary)"  />
-        <KpiCard icon={<TrendingUp size={18} />} label="Leads en pipeline" value={pipelineLeads}   sublabel={`${qualifiedLeads} calificados`}                       color="#A78BFA"         />
-        <KpiCard icon={<Building2 size={18} />}  label="Proyectos activos" value={activeProjects}  sublabel={`${planningProjects} en planificación`}                color="var(--warning)"  />
-        <KpiCard icon={<ShieldCheck size={18} />} label="Score promedio"   value={securityScore}   sublabel={securityScore >= 85 ? "/100 — excelente" : securityScore >= 70 ? "/100 — bueno" : "/100 — requiere atención"} color={securityScore >= 85 ? "var(--success)" : securityScore >= 70 ? "var(--warning)" : "var(--danger)"} />
-      </div>
-
-      {/* Hallazgos por severidad + tendencia */}
-      <div className="widget-grid widget-grid--2">
-        {Object.keys(summary.findings.by_severity).length > 0 ? (
-          <article className="panel">
-            <div className="panel-head">
-              <div><p className="eyebrow">Seguridad</p><h3>Hallazgos por severidad</h3></div>
-              <span className="muted-small">{summary.findings.total} totales</span>
-            </div>
-            <div className="stack-gap-md">
-              {Object.entries(summary.findings.by_severity)
-                .sort(([a], [b]) => ["critical", "high", "medium", "low", "info"].indexOf(a) - ["critical", "high", "medium", "low", "info"].indexOf(b))
-                .map(([sev, count]) => {
-                  const total = summary.findings.total || 1;
-                  const pct   = Math.round((count / total) * 100);
-                  const color = sev === "critical" ? "var(--danger)" : sev === "high" ? "#F59E0B" : sev === "medium" ? "var(--warning)" : "var(--success)";
-                  return (
-                    <Link key={sev} href={`/dashboard/security-reviews?severity=${sev}`} className="severity-row severity-row--link" title={`Ver hallazgos ${SEVERITY_LABEL[sev] ?? sev}`}>
-                      <span className="severity-row__label">{SEVERITY_LABEL[sev] ?? sev}</span>
-                      <div className="severity-row__track">
-                        <div className="severity-row__fill" style={{ width: `${pct}%`, background: color }} />
-                      </div>
-                      <span className="severity-row__count" style={{ color }}>{count}</span>
-                    </Link>
-                  );
-                })}
-            </div>
-          </article>
-        ) : (
-          <article className="panel">
-            <div className="panel-head">
-              <div><p className="eyebrow">Tendencia 7 días</p><h3>Hallazgos detectados</h3></div>
-              <span className="muted-small">{MOCK_TREND_FINDINGS.reduce((a, b) => a + b, 0)} esta semana</span>
-            </div>
-            <SparkBar data={MOCK_TREND_FINDINGS} color="var(--danger)" height={100} />
-          </article>
-        )}
-
-        <article className="panel">
-          <div className="panel-head">
-            <div><p className="eyebrow">Auditoría</p><h3>Actividad reciente</h3></div>
-            <Link href="/dashboard/audit" className="muted-link">Ver todo →</Link>
-          </div>
-          <div className="stack-gap-sm">
-            {auditLogs.map((log) => {
-              const isDelete = log.action?.includes("deleted") || log.action?.includes("retired");
-              const isCreate = log.action?.includes("created");
-              const color = isDelete ? "var(--danger)" : isCreate ? "var(--success)" : "var(--warning)";
-              return (
-                <div key={log.id} className="audit-row">
-                  <span className="audit-row__dot" style={{ background: color }} />
-                  <span className="audit-row__label">{AUDIT_LABEL[log.action ?? ""] ?? log.action ?? "Acción"}</span>
-                  <span className="audit-row__time">{formatRelativeDate(log.created_at ?? undefined)}</span>
-                </div>
-              );
-            })}
-          </div>
-        </article>
-      </div>
-
-      {/* Quick links */}
-      <QuickLinks />
-
-      {/* Alertas */}
-      <AlertsWidget alerts={alerts} />
-    </>
+    </div>
   );
 }

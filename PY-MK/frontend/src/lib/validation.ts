@@ -65,6 +65,8 @@ export const projectFormSchema = z
     projectTypeId: z.string().min(1, "Selecciona un tipo de proyecto"),
     serviceId: z.string().optional(),
     productId: z.string().optional(),
+    // Area de la empresa (Ninja Sec / Ninja Dev). Vacia: el backend la toma del servicio.
+    areaId: z.string().optional(),
     description: z.string().optional(),
     status: z.enum(["planning", "active", "paused", "completed"]),
     startDate: z.string().optional(),
