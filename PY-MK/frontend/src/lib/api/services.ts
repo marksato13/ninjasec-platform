@@ -1,7 +1,7 @@
 import { request } from "./client";
 
 export type ServiceItem = { id: number; title: string; slug: string; category?: string | null; summary?: string | null; description?: string | null; price_label?: string | null; is_public?: boolean; active: boolean };
-export type ServiceRequestItem = { id: number; service_id: number; requester_name: string; requester_email: string; status: string; request_type?: string | null; message?: string | null; created_at?: string | null; client_id?: number | null };
+export type ServiceRequestItem = { id: number; service_id: number; requester_name: string; requester_email: string; status: string; request_type?: string | null; message?: string | null; created_at?: string | null; client_id?: number | null; project_id?: number | null };
 
 export async function getServices(): Promise<ServiceItem[]> {
   return request<ServiceItem[]>("/services/");

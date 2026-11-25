@@ -23,7 +23,7 @@ export default function PortalReviewsPage() {
 
   return (
     <section className="page-stack">
-      <div className="section-heading"><p className="eyebrow">Portal</p><h2>Revisiones</h2></div>
+      <div className="section-heading"><h2>Revisiones</h2></div>
       <article className="panel">
         {error ? <p className="form-error">{error instanceof Error ? error.message : "No se pudieron cargar revisiones"}</p> : null}
         {isLoading ? <div className="empty-state">Cargando revisiones...</div> : <div className="card-grid">{reviews.map((review) => <article className="card" key={review.id}><div className="card-header"><div className="card-title"><strong>Revision #{review.id}</strong><span className="card-subtitle">{review.executed_at || review.scheduled_at || "Sin fecha"}</span></div><div className="card-badges"><span className={`badge ${getStatusBadgeClass(review.status)}`}>{getReviewStatusLabel(review.status)}</span></div></div><div className="card-actions"><button className="button button-secondary" type="button" onClick={async () => setDetail(await getSecurityReview(review.id))}>Ver detalle</button></div></article>)}</div>}

@@ -24,7 +24,6 @@ export default function PortalCompanyPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
         <h2>Empresa</h2>
       </div>
 

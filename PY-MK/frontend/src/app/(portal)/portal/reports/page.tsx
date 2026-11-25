@@ -14,7 +14,6 @@ export default function PortalReportsPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
         <h2>Reportes</h2>
       </div>
 

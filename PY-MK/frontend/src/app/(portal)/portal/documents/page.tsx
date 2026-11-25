@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { File, FileBarChart2, FileSpreadsheet, FileText, ExternalLink } from "lucide-react";
+import { Download, File, FileBarChart2, FileSpreadsheet, FileText, ExternalLink } from "lucide-react";
 
 import {
   createProjectDoc,
   DocTypeItem,
+  downloadFile,
   getDocTypes,
   getMe,
   getProjectDocs,
@@ -195,7 +196,6 @@ export default function PortalDocumentsPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
         <h2>Documentos</h2>
       </div>
 
@@ -280,6 +280,16 @@ export default function PortalDocumentsPage() {
                       <a className="button button-secondary button-sm" href={doc.github_url} target="_blank" rel="noreferrer" style={{ gap: 5 }}>
                         <ExternalLink size={12} /> Abrir
                       </a>
+                    )}
+                    {doc.file_url && (
+                      <button className="button button-secondary button-sm" type="button" style={{ gap: 5 }}
+                        onClick={() =>
+                          downloadFile(`/project-docs/${doc.id}/download`, doc.title).catch((err) =>
+                            notifyError("No se pudo descargar el documento", err instanceof Error ? err.message : ""),
+                          )
+                        }>
+                        <Download size={12} /> Descargar
+                      </button>
                     )}
                     {role !== "client" && (
                       <button className="button button-ghost button-sm" type="button" onClick={() => startEdit(doc)}>Editar</button>

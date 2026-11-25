@@ -2,29 +2,50 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FileText, Package, Server, ShieldCheck, Ticket } from "lucide-react";
+import { MessageCircleQuestion, FileText, FolderKanban, Package, Server, Ticket } from "lucide-react";
 
 import {
   AuthUser,
-  getClients,
-  getClientServices,
   getDevices,
   getMe,
   getProjectDocs,
+  getProjects,
   getSupportTickets,
+  ProjectItem,
+  SupportTicketItem,
 } from "@/lib/api";
 import { clearSession, getStoredToken, isPortalRole, isTokenExpired } from "@/lib/auth";
+import { ProyectoResumen } from "@/components/portal/proyecto-resumen";
+import { hace } from "@/components/portal/etiquetas";
+import s from "@/components/portal/portal.module.css";
 
-function roleLabel(role: string) {
-  return role.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+/**
+ * Inicio del portal. Responde, en este orden, lo que el cliente viene a saber:
+ * en que estan sus proyectos, que necesitamos de el, y donde esta lo demas.
+ *
+ * No muestra un «estado de seguridad»: no tenemos un dato que lo respalde, y un «OK»
+ * sin base es peor que no decir nada.
+ */
+
+const CERRADOS = new Set(["closed", "resolved", "completed", "cancelled", "canceled"]);
+
+function saludo(): string {
+  const h = Number(new Date().toLocaleString("en-US", { hour: "numeric", hour12: false, timeZone: "America/Lima" }));
+  if (h < 12) return "Buenos días";
+  if (h < 19) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+function hoy(): string {
+  return new Date().toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Lima" });
 }
 
 export function PortalShell() {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [activeDevices, setActiveDevices] = useState(0);
-  const [docsCount, setDocsCount] = useState(0);
-  const [openTickets, setOpenTickets] = useState(0);
-  const [servicesCount, setServicesCount] = useState(0);
+  const [proyectos, setProyectos] = useState<ProjectItem[] | null>(null);
+  const [tickets, setTickets] = useState<SupportTicketItem[]>([]);
+  const [equipos, setEquipos] = useState<number | null>(null);
+  const [documentos, setDocumentos] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -40,7 +61,7 @@ export function PortalShell() {
       return;
     }
 
-    async function loadPortal() {
+    async function cargar() {
       try {
         const me = await getMe();
         if (!isPortalRole(me.role)) {
@@ -49,30 +70,16 @@ export function PortalShell() {
         }
         setUser(me);
 
-        const [devicesRes, docsRes, ticketsRes, clientsRes] = await Promise.allSettled([
+        const [proyRes, ticketsRes, equiposRes, docsRes] = await Promise.allSettled([
+          getProjects(),
+          getSupportTickets({}),
           getDevices({}),
           getProjectDocs(),
-          getSupportTickets({ ticket_status: "open" }),
-          getClients(),
         ]);
-        if (devicesRes.status === "fulfilled")
-          setActiveDevices(devicesRes.value.filter((d) => d.status === "active").length);
-        if (docsRes.status === "fulfilled") setDocsCount(docsRes.value.length);
-        if (ticketsRes.status === "fulfilled") setOpenTickets(ticketsRes.value.length);
-        // P-03: contar servicios contratados (ClientService) del cliente actual
-        if (clientsRes.status === "fulfilled" && clientsRes.value.length > 0) {
-          try {
-            const myServices = await getClientServices(clientsRes.value[0].id);
-            const now = Date.now();
-            const active = myServices.filter((cs) => {
-              if (cs.ends_at && new Date(cs.ends_at).getTime() < now) return false;
-              return true;
-            });
-            setServicesCount(active.length);
-          } catch {
-            setServicesCount(0);
-          }
-        }
+        setProyectos(proyRes.status === "fulfilled" ? proyRes.value : []);
+        if (ticketsRes.status === "fulfilled") setTickets(ticketsRes.value);
+        if (equiposRes.status === "fulfilled") setEquipos(equiposRes.value.filter((d) => d.status === "active").length);
+        if (docsRes.status === "fulfilled") setDocumentos(docsRes.value.length);
       } catch (err) {
         clearSession();
         setError(err instanceof Error ? err.message : "No se pudo cargar el portal");
@@ -81,110 +88,91 @@ export function PortalShell() {
       }
     }
 
-    loadPortal();
+    cargar();
   }, []);
 
-  if (loading) return <div className="state-panel">Cargando portal...</div>;
-  if (error)   return <div className="state-panel state-error">{error}</div>;
+  if (loading) return <div className="state-panel">Cargando tu portal…</div>;
+  if (error) return <div className="state-panel state-error">{error}</div>;
+
+  const nombre = (user?.name || user?.full_name || "").split(" ")[0];
+  const activos = (proyectos ?? []).filter((p) => !CERRADOS.has(p.status.toLowerCase()));
+  const esperandoTe = tickets.filter((t) => t.status === "pending");
+  const abiertos = tickets.filter((t) => !CERRADOS.has(t.status));
 
   return (
     <section className="page-stack">
+      <header className={s.saludo}>
+        <h2>{saludo()}{nombre ? `, ${nombre}` : ""}</h2>
+        <p>{hoy()}</p>
+      </header>
 
-      {/* Hero welcome */}
-      <div className="section-heading">
-        <div>
-          <p className="eyebrow">{roleLabel(user?.role ?? "")}</p>
-          <h2>Bienvenido, {user?.name || user?.full_name}</h2>
-        </div>
-        {user?.job_title && (
-          <span style={{ color: "var(--muted)", fontSize: "0.9rem" }}>{user.job_title}</span>
-        )}
+      <div className={s.columnas}>
+        <section className={s.bloque} aria-labelledby="tus-proyectos">
+          <div className={s.bloqueTitulo}>
+            <h3 id="tus-proyectos">Tus proyectos</h3>
+            {(proyectos?.length ?? 0) > activos.length ? <Link href="/portal/projects">Ver todos</Link> : null}
+          </div>
+          {activos.length === 0 ? (
+            <div className={s.vacio}>
+              <strong>No tienes proyectos en curso.</strong>
+              <span>Cuando aceptes una propuesta, aquí verás en qué fase va el trabajo y qué sigue.</span>
+              <Link className="button button-primary button-sm" href="/portal/services">
+                Ver servicios
+              </Link>
+            </div>
+          ) : (
+            activos.map((p) => <ProyectoResumen key={p.id} proyecto={p} />)
+          )}
+        </section>
+
+        <aside className={s.bloque}>
+          <section className={s.bloque} aria-labelledby="pendiente">
+            <div className={s.bloqueTitulo}>
+              <h3 id="pendiente">Pendiente de tu lado</h3>
+            </div>
+            {esperandoTe.length === 0 ? (
+              <p className={s.alDia}>Nada por ahora. Te avisaremos aquí cuando necesitemos una respuesta o una aprobación tuya.</p>
+            ) : (
+              <ul className={s.pendientes}>
+                {esperandoTe.map((t) => (
+                  <li key={t.id}>
+                    <Link className={s.pendiente} href="/portal/tickets">
+                      <MessageCircleQuestion size={18} aria-hidden="true" style={{ color: "var(--warning)", flex: "none" }} />
+                      <span>
+                        Responder el ticket #{t.id}: {t.title}
+                        <small>Esperando tu respuesta, {hace(t.updated_at)}</small>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+
+          <section className={s.bloque} aria-labelledby="accesos">
+            <div className={s.bloqueTitulo}>
+              <h3 id="accesos">Tu cuenta</h3>
+            </div>
+            <div className={s.accesos}>
+              <Link className={s.acceso} href="/portal/projects">
+                <FolderKanban size={16} aria-hidden="true" /> Proyectos <strong>{proyectos?.length ?? "—"}</strong>
+              </Link>
+              <Link className={s.acceso} href="/portal/tickets">
+                <Ticket size={16} aria-hidden="true" /> Tickets abiertos <strong>{abiertos.length}</strong>
+              </Link>
+              <Link className={s.acceso} href="/portal/documents">
+                <FileText size={16} aria-hidden="true" /> Documentos <strong>{documentos ?? "—"}</strong>
+              </Link>
+              <Link className={s.acceso} href="/portal/inventory">
+                <Server size={16} aria-hidden="true" /> Equipos <strong>{equipos ?? "—"}</strong>
+              </Link>
+              <Link className={s.acceso} href="/portal/services" style={{ gridColumn: "1 / -1" }}>
+                <Package size={16} aria-hidden="true" /> Solicitar un servicio
+              </Link>
+            </div>
+          </section>
+        </aside>
       </div>
-
-      {/* KPI grid */}
-      <div className="metrics-grid">
-        <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Ticket size={16} style={{ color: openTickets > 0 ? "var(--warning)" : "var(--success)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Tickets abiertos</span>
-          </div>
-          <strong style={{ fontSize: "2rem", color: openTickets === 0 ? "var(--success)" : openTickets <= 3 ? "var(--warning)" : "var(--danger)" }}>
-            {openTickets}
-          </strong>
-          <Link href="/portal/tickets" style={{ color: "var(--primary)", fontSize: "0.8rem" }}>Ver tickets →</Link>
-        </article>
-
-        <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Server size={16} style={{ color: "var(--success)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Dispositivos activos</span>
-          </div>
-          <strong style={{ fontSize: "2rem", color: activeDevices > 0 ? "var(--success)" : "var(--muted)" }}>
-            {activeDevices}
-          </strong>
-          <Link href="/portal/inventory" style={{ color: "var(--primary)", fontSize: "0.8rem" }}>Ver inventario →</Link>
-        </article>
-
-        <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <FileText size={16} style={{ color: "var(--primary)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Documentos disponibles</span>
-          </div>
-          <strong style={{ fontSize: "2rem", color: docsCount > 0 ? "var(--success)" : "var(--muted)" }}>
-            {docsCount}
-          </strong>
-          <Link href="/portal/documents" style={{ color: "var(--primary)", fontSize: "0.8rem" }}>Ver documentos →</Link>
-        </article>
-
-        <article className="metric-card panel">
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <ShieldCheck size={16} style={{ color: openTickets > 0 ? "var(--warning)" : "var(--success)", opacity: 0.7 }} />
-            <span className="eyebrow" style={{ margin: 0 }}>Estado seguridad</span>
-          </div>
-          <strong style={{ fontSize: "2rem", color: openTickets === 0 ? "var(--success)" : "var(--warning)" }}>
-            {openTickets === 0 ? "OK" : "⚠"}
-          </strong>
-          <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>
-            {openTickets === 0 ? "Sin incidencias abiertas" : `${openTickets} pendiente${openTickets !== 1 ? "s" : ""}`}
-          </span>
-        </article>
-      </div>
-
-      {/* Quick access grid */}
-      <div className="split-grid">
-        <article className="panel">
-          <div className="panel-head">
-            <div><p className="eyebrow">Acceso rápido</p><h3>Módulos disponibles</h3></div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <Link className="button button-secondary" href="/portal/inventory" style={{ justifyContent: "flex-start", gap: 10 }}>
-              <Server size={16} /> Inventario de activos
-            </Link>
-            <Link className="button button-secondary" href="/portal/documents" style={{ justifyContent: "flex-start", gap: 10 }}>
-              <FileText size={16} /> Documentos
-            </Link>
-            <Link className="button button-secondary" href="/portal/tickets" style={{ justifyContent: "flex-start", gap: 10 }}>
-              <Ticket size={16} /> Tickets de soporte
-            </Link>
-            <Link className="button button-secondary" href="/portal/services" style={{ justifyContent: "flex-start", gap: 10 }}>
-              <Package size={16} /> Servicios contratados ({servicesCount})
-            </Link>
-          </div>
-        </article>
-
-        <article className="panel">
-          <div className="panel-head">
-            <div><p className="eyebrow">Sesión</p><h3>Datos de acceso</h3></div>
-          </div>
-          <ul className="stack-list">
-            <li><strong>Nombre:</strong> {user?.name || user?.full_name}</li>
-            <li><strong>Email:</strong> {user?.email}</li>
-            <li><strong>Rol:</strong> {user ? roleLabel(user.role) : "-"}</li>
-            <li><strong>Cargo:</strong> {user?.job_title || "Sin cargo"}</li>
-          </ul>
-        </article>
-      </div>
-
     </section>
   );
 }

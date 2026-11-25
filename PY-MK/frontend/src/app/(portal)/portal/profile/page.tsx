@@ -22,17 +22,29 @@ import { notifyError, notifySuccess } from "@/lib/alerts";
 import { getApprovalStatusLabel } from "@/lib/role-utils";
 import { Modal } from "@/components/ui/modal";
 
+const ROLES: Record<string, string> = {
+  client: "Cliente",
+  collaborator: "Colaborador",
+  admin: "Administrador",
+  super_admin: "Super administrador",
+};
+
 function roleLabel(role: string) {
-  return role.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return ROLES[role] ?? role.replaceAll("_", " ");
 }
 
 function ProfileCompleteness({ user, skills, certifications }: { user: AuthUser | null; skills: UserSkillItem[]; certifications: UserCertificationItem[] }) {
+  const esCliente = user?.role === "client";
   const steps = [
     { label: "Nombre completo",      done: !!(user?.name || user?.full_name) },
     { label: "Email",                done: !!user?.email },
     { label: "Cargo registrado",     done: !!user?.job_title },
-    { label: "Al menos 1 skill",     done: skills.length > 0 },
-    { label: "Al menos 1 certif.",   done: certifications.length > 0 },
+    ...(esCliente
+      ? []
+      : [
+          { label: "Al menos una habilidad",     done: skills.length > 0 },
+          { label: "Al menos una certificación", done: certifications.length > 0 },
+        ]),
   ];
   const pct = Math.round((steps.filter((s) => s.done).length / steps.length) * 100);
   const color = pct === 100 ? "var(--success)" : pct >= 60 ? "var(--warning)" : "var(--danger)";
@@ -91,8 +103,11 @@ export default function PortalProfilePage() {
   const { data, isLoading, error: queryError } = useQuery({
     queryKey: ["portal-profile"],
     queryFn: async () => {
-      const [me, skillsData, userSkillsData, certsData] = await Promise.all([
-        getMe(),
+      const me = await getMe();
+      if (me.role === "client") {
+        return { me, skillsData: [], userSkillsData: [], certsData: [] };
+      }
+      const [skillsData, userSkillsData, certsData] = await Promise.all([
         getSkills(),
         getUserSkills(),
         getUserCertifications(),
@@ -215,8 +230,7 @@ export default function PortalProfilePage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
-        <h2>Perfil</h2>
+        <h2>Tu perfil</h2>
       </div>
 
       <ProfileCompleteness user={user} skills={userSkills} certifications={certifications} />
@@ -224,8 +238,8 @@ export default function PortalProfilePage() {
       <article className="panel">
         <div className="panel-head">
           <div>
-            <p className="eyebrow">Sesion</p>
-            <h3>Informacion de usuario</h3>
+            <p className="eyebrow">Cuenta</p>
+            <h3>Tus datos</h3>
           </div>
           <div className="panel-actions">
             <button
@@ -326,11 +340,12 @@ export default function PortalProfilePage() {
         </form>
       </Modal>
 
+      {user?.role !== "client" && (
       <div className="split-grid">
         <article className="panel">
           <div className="panel-head">
             <div>
-              <p className="eyebrow">Skills</p>
+              <p className="eyebrow">Habilidades</p>
               <h3>Habilidades registradas</h3>
             </div>
             <div className="panel-actions">
@@ -340,7 +355,7 @@ export default function PortalProfilePage() {
             </div>
           </div>
           {userSkills.length === 0 ? (
-            <div className="empty-state">Aun no has registrado skills.</div>
+            <div className="empty-state">Aún no has registrado habilidades.</div>
           ) : (
             <ul className="stack-list">
               {userSkills.map((item) => (
@@ -458,6 +473,7 @@ export default function PortalProfilePage() {
           </Modal>
         </article>
       </div>
+      )}
     </section>
   );
 }
