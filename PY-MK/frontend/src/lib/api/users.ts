@@ -33,7 +33,7 @@ export async function updateUser(userId: number, payload: {
   is_active?: boolean | null;
   role_code?: string | null;
 }): Promise<DashboardUser> {
-  return request<DashboardUser>(`/users/${userId}`, { method: "PATCH", body: JSON.stringify(payload) });
+  return request<DashboardUser>(`/users/${userId}`, { method: "PUT", body: JSON.stringify(payload) });
 }
 
 export async function deleteUser(userId: number): Promise<{ message: string }> {
