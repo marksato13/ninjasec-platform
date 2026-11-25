@@ -11,7 +11,7 @@ export type ProjectTaskItem = { id: number; organization_id: number; project_id:
 
 export async function getProjects(): Promise<ProjectItem[]> { return request<ProjectItem[]>("/projects/"); }
 export async function getProject(id: number): Promise<ProjectItem> { return request<ProjectItem>(`/projects/${id}`); }
-export async function createProject(payload: { organization_id: number; client_id?: number | null; project_type_id?: number | null; service_id?: number | null; product_id?: number | null; name: string; description?: string | null; status?: string; start_date?: string | null; end_date?: string | null; budget_label?: string | null }): Promise<ProjectItem> { return request<ProjectItem>("/projects/", { method: "POST", body: JSON.stringify(payload) }); }
+export async function createProject(payload: { organization_id: number; client_id?: number | null; project_type_id?: number | null; service_id?: number | null; product_id?: number | null; area_id?: number | null; name: string; description?: string | null; status?: string; start_date?: string | null; end_date?: string | null; budget_label?: string | null }): Promise<ProjectItem> { return request<ProjectItem>("/projects/", { method: "POST", body: JSON.stringify(payload) }); }
 export async function updateProject(id: number, payload: { name?: string | null; description?: string | null; status?: string | null; start_date?: string | null; end_date?: string | null; budget_label?: string | null }): Promise<ProjectItem> { return request<ProjectItem>(`/projects/${id}`, { method: "PUT", body: JSON.stringify(payload) }); }
 export async function deleteProject(id: number): Promise<{ message: string }> { return request<{ message: string }>(`/projects/${id}`, { method: "DELETE" }); }
 
