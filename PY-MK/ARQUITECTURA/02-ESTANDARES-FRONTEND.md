@@ -1,4 +1,4 @@
-# Estándares Frontend — NinjaSec Next.js 15
+# Estándares Frontend — Ninja Tech Next.js 15
 
 > Toda nueva página y componente debe seguir estos estándares.  
 > Estos estándares son verificables — existe un checklist en `04-CHECKLIST-VERIFICACION.md`.

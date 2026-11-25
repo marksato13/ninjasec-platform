@@ -1,4 +1,4 @@
-# Estándares Backend — NinjaSec FastAPI
+# Estándares Backend — Ninja Tech FastAPI
 
 > Toda nueva funcionalidad backend debe seguir estos estándares.  
 > Toda refactorización debe dejar el código más cerca de estos estándares.

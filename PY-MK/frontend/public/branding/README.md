@@ -1,6 +1,6 @@
 # Branding Assets Guide
 
-Usa esta carpeta para organizar las imagenes oficiales del frontend de `NinjaSec`.
+Usa esta carpeta para organizar las imagenes oficiales del frontend de `Ninja Tech`.
 
 ## Estructura
 

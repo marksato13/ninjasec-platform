@@ -28,7 +28,7 @@ Lista de dispositivos monitoreados de su empresa:
 - Banner de alerta si hay dispositivos en `pending_review`
 
 ### Documentos (`/portal/documents`)
-Biblioteca de documentos compartidos por NinjaSec con el cliente:
+Biblioteca de documentos compartidos por Ninja Tech con el cliente:
 - Reportes de seguridad entregados
 - Contratos y acuerdos de servicio
 - Manuales y procedimientos
@@ -45,7 +45,7 @@ Gestión de sus solicitudes de soporte:
 - NO puede cambiar estado ni reasignar
 
 ### Servicios (`/portal/services`)
-Catálogo de servicios de NinjaSec:
+Catálogo de servicios de Ninja Tech:
 - Ver todos los servicios disponibles
 - Solicitar un servicio con descripción de necesidad
 - Ver estado de sus solicitudes previas
@@ -64,7 +64,7 @@ Gestión de la cuenta personal:
 - Ver información de otros clientes
 - Cambiar estado de sus tickets
 - Ver leads o información comercial
-- Acceder a reportes internos de NinjaSec
+- Acceder a reportes internos de Ninja Tech
 - Ver o gestionar otros usuarios
 
 ---

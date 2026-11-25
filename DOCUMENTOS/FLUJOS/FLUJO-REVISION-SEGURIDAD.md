@@ -4,7 +4,7 @@
 
 ## Descripción
 
-Proceso de auditoría de seguridad que el equipo NinjaSec ejecuta en la infraestructura de un cliente. Culmina con un reporte PDF entregado al cliente.
+Proceso de auditoría de seguridad que el equipo Ninja Tech ejecuta en la infraestructura de un cliente. Culmina con un reporte PDF entregado al cliente.
 
 ---
 

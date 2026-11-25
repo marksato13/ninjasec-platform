@@ -6,7 +6,7 @@
 
 ## El problema
 
-NinjaSec tiene 38 módulos de API y 24 pantallas de panel. No todos están
+Ninja Tech tiene 38 módulos de API y 24 pantallas de panel. No todos están
 igual de terminados, y uno de ellos **miente**:
 
 `simulate_connector_test()` devuelve `"reachable": true` **sin contactar
