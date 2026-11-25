@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { UserSearch } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/api";
 import { getStoredUser, isAdminRole } from "@/lib/auth";
 import { notifyError } from "@/lib/alerts";
+import { EmptyState } from "@/components/ui/empty-state";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 
 type FilterState = {
@@ -116,8 +118,10 @@ export default function DashboardApplicationsPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Admin</p>
-        <h2>Postulaciones</h2>
+        <div>
+          <p className="eyebrow">Admin</p>
+          <h2>Postulaciones</h2>
+        </div>
       </div>
 
       <article className="panel filters-panel">
@@ -192,7 +196,12 @@ export default function DashboardApplicationsPage() {
       <article className="panel">
         {loading ? <div className="empty-state">Cargando postulaciones...</div> : null}
         {!loading && items.length === 0 ? (
-          <div className="empty-state">No hay postulaciones registradas con los filtros actuales.</div>
+          <EmptyState
+            icon={UserSearch}
+            title="Ninguna postulación con estos filtros"
+            description="Las postulaciones llegan desde el formulario público de colaboradores."
+            action={{ label: "Limpiar filtros", onClick: handleClearFilters }}
+          />
         ) : null}
         {!loading && items.length > 0 ? (
           <div className="card-grid">

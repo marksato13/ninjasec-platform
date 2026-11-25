@@ -116,9 +116,12 @@ export default function RisksPage() {
 
   return (
     <section className="page-stack">
-      <div className="flex items-center justify-between">
-        <h2>Gestión de riesgos</h2>
-        <select className="input w-64" value={clientFilter} onChange={(e) => setClientFilter(e.target.value ? Number(e.target.value) : "")}>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Ninja Sec</p>
+          <h2>Gestión de riesgos</h2>
+        </div>
+        <select aria-label="Cliente" className="input" style={{ width: 260, marginTop: 0 }} value={clientFilter} onChange={(e) => setClientFilter(e.target.value ? Number(e.target.value) : "")}>
           <option value="">Todos los clientes</option>
           {clients.map((client) => <option key={client.id} value={client.id}>{client.company_name}</option>)}
         </select>
@@ -127,7 +130,7 @@ export default function RisksPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="panel">
           <h3>Nuevo activo de riesgo</h3>
-          <form onSubmit={submitAsset} className="grid gap-3">
+          <form onSubmit={submitAsset} className="risk-form grid gap-3">
             <label>Cliente
               <select className="input" required value={assetForm.client_id} onChange={(e) => setAssetForm({ ...assetForm, client_id: Number(e.target.value) })}>
                 <option value={0}>Seleccionar</option>
@@ -163,7 +166,7 @@ export default function RisksPage() {
 
         <div className="panel">
           <h3>Nuevo riesgo</h3>
-          <form onSubmit={submitRisk} className="grid gap-3">
+          <form onSubmit={submitRisk} className="risk-form grid gap-3">
             <label>Cliente
               <select className="input" required value={riskForm.client_id} onChange={(e) => setRiskForm({ ...riskForm, client_id: Number(e.target.value), asset_id: 0 })}>
                 <option value={0}>Seleccionar</option>
@@ -228,7 +231,7 @@ export default function RisksPage() {
                     {risks.map((risk: RiskItem) => (
                       <div key={risk.id} className="mt-2 rounded bg-white/85 p-2 text-xs text-slate-900">
                         <div className="font-semibold">{risk.title}</div>
-                        <div className="mt-1 flex gap-1">
+                        <div className="risk-cell-factors mt-1 flex gap-1">
                           <select aria-label={`Probabilidad de ${risk.title}`} className="input" value={risk.likelihood}
                             onChange={(e) => moveFactors.mutate({ id: risk.id, likelihood: Number(e.target.value), impact: risk.impact })}>
                             {LEVELS.map((v) => <option key={v} value={v}>{v}</option>)}
@@ -274,7 +277,7 @@ export default function RisksPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="panel">
           <h3>Catálogo de amenazas</h3>
-          <form onSubmit={submitThreat} className="mb-3 grid grid-cols-3 gap-2">
+          <form onSubmit={submitThreat} className="risk-form mb-3 grid grid-cols-3 gap-2">
             <input className="input" placeholder="Código" value={threatForm.code} onChange={(e) => setThreatForm({ ...threatForm, code: e.target.value })} />
             <input className="input" placeholder="Nombre" value={threatForm.name} onChange={(e) => setThreatForm({ ...threatForm, name: e.target.value })} />
             <input className="input" placeholder="Categoría" value={threatForm.category} onChange={(e) => setThreatForm({ ...threatForm, category: e.target.value })} />
@@ -288,7 +291,7 @@ export default function RisksPage() {
         </div>
         <div className="panel">
           <h3>Catálogo de vulnerabilidades</h3>
-          <form onSubmit={submitVulnerability} className="mb-3 grid grid-cols-3 gap-2">
+          <form onSubmit={submitVulnerability} className="risk-form mb-3 grid grid-cols-3 gap-2">
             <input className="input" placeholder="Código" value={vulnForm.code} onChange={(e) => setVulnForm({ ...vulnForm, code: e.target.value })} />
             <input className="input" placeholder="Nombre" value={vulnForm.name} onChange={(e) => setVulnForm({ ...vulnForm, name: e.target.value })} />
             <input className="input" placeholder="Categoría" value={vulnForm.category} onChange={(e) => setVulnForm({ ...vulnForm, category: e.target.value })} />
