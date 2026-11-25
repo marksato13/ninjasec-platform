@@ -84,7 +84,6 @@ export default function PortalApplicationsPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
         <h2>Mis revisiones</h2>
       </div>
 
