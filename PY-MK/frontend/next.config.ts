@@ -45,6 +45,11 @@ const nextConfig: NextConfig = {
       { source: "/portal/tasks", destination: "/dashboard/mis-tareas", permanent: false },
       { source: "/portal/resources", destination: "/dashboard/projects", permanent: false },
       { source: "/portal/applications/:path*", destination: "/dashboard", permanent: false },
+      // Paginas huerfanas retiradas (sin entrada en ningun menu).
+      { source: "/portal/company", destination: "/portal", permanent: false },
+      { source: "/portal/reports", destination: "/portal/documents", permanent: false },
+      { source: "/portal/reviews", destination: "/portal/documents", permanent: false },
+      { source: "/dashboard/architecture", destination: "/dashboard", permanent: false },
     ];
   },
   async rewrites() {
