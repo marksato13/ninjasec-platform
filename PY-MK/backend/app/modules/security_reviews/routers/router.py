@@ -111,6 +111,40 @@ def list_reviews(
     return [SecurityReviewRead.model_validate(r) for r in reviews]
 
 
+
+def _validar_referencias(
+    db: Session,
+    organization_id: int,
+    client_id: int | None = None,
+    integration_id: int | None = None,
+    reviewer_user_id: int | None = None,
+) -> None:
+    """Cliente, integracion y revisor deben ser de la organizacion de quien llama.
+
+    Sin esto, un admin podia crear una revision con el cliente o la integracion de
+    otra organizacion y luego exportar su PDF con los datos ajenos (revision
+    adversarial con Codex, 2026-11-25). Lo ajeno responde 404, igual que lo inexistente.
+    """
+    from app.db.models.client import Client
+    from app.db.models.integration import Integration
+    from app.db.models.user import User
+
+    if client_id is not None:
+        cliente = db.get(Client, client_id)
+        if not cliente or cliente.organization_id != organization_id:
+            raise HTTPException(status_code=404, detail="Client not found")
+    if integration_id is not None:
+        integracion = db.get(Integration, integration_id)
+        if not integracion or integracion.organization_id != organization_id:
+            raise HTTPException(status_code=404, detail="Integration not found")
+        if client_id is not None and integracion.client_id not in (None, client_id):
+            raise HTTPException(status_code=422, detail="Integration does not belong to this client")
+    if reviewer_user_id is not None:
+        revisor = db.get(User, reviewer_user_id)
+        if not revisor or revisor.organization_id != organization_id:
+            raise HTTPException(status_code=404, detail="Reviewer not found")
+
+
 @router.post("/", response_model=SecurityReviewRead, status_code=status.HTTP_201_CREATED)
 def create_review(
     payload: SecurityReviewCreate,
@@ -119,6 +153,13 @@ def create_review(
     ),
     db: Session = Depends(get_db),
 ) -> SecurityReviewRead:
+    _validar_referencias(
+        db,
+        current_user.organization_id,
+        client_id=payload.client_id,
+        integration_id=payload.integration_id,
+        reviewer_user_id=payload.reviewer_user_id,
+    )
     review = SecurityReview(
         organization_id=current_user.organization_id,
         client_id=payload.client_id,
@@ -338,6 +379,7 @@ def update_review(
     if current_user.role == RoleCode.COLLABORATOR.value and review.reviewer_user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Collaborators can only edit reviews assigned to them")
     data = payload.model_dump(exclude_unset=True)
+    _validar_referencias(db, current_user.organization_id, reviewer_user_id=data.get("reviewer_user_id"))
     # Validar: cerrar requiere reviewer asignado
     new_status = data.get("status") or review.status
     reviewer = data.get("reviewer_user_id") or review.reviewer_user_id
