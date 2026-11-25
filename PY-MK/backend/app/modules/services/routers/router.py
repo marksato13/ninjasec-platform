@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.common.rate_limit import rate_limit
 from app.db.models.service import Service
 from app.db.models.service_request import ServiceRequest
 from app.db.models.enums import RoleCode, ServiceRequestStatus
@@ -76,8 +77,15 @@ def list_service_requests(
     return [ServiceRequestRead.model_validate(item) for item in db.scalars(stmt).all()]
 
 
+# Auditoria 2026-11-25 (B3): formulario publico sin sesion.
+public_request_limit = rate_limit(max_requests=5, window_seconds=3600, name="service-request")
+
+
 @router.post(
-    "/requests", response_model=ServiceRequestRead, status_code=status.HTTP_201_CREATED
+    "/requests",
+    response_model=ServiceRequestRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(public_request_limit)],
 )
 def create_service_request(
     payload: ServiceRequestCreate, db: Session = Depends(get_db)

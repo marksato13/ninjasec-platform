@@ -1,8 +1,15 @@
 """Limitador de peticiones — en memoria o distribuido con Redis (15-P-05 / G-06).
 
-`POST /job-applications/` es el unico endpoint de la API sin autenticacion.
-Sin freno, cualquiera puede inundar la tabla de postulaciones antes de que
-el sitio este siquiera publicado.
+Protege las rutas que no piden sesion y el login:
+
+- `POST /auth/login`: 10 intentos cada 5 minutos por IP (adivinar claves;
+  `LOGIN_RATE_LIMIT_MAX` lo cambia, solo el e2e del CI lo sube).
+- `POST /leads/`: 5 por hora por IP (cada envio manda un correo).
+- `POST /services/requests`: 5 por hora por IP.
+- `POST /job-applications/`: 5 por hora por IP.
+
+El limite es por IP y no por correo a proposito: uno por correo dejaria a
+cualquiera bloquear la cuenta de otro a base de fallar su clave.
 
 ALCANCE — leelo antes de confiar en esto
 =========================================
@@ -194,9 +201,19 @@ def _build_limiter(max_requests: int, window_seconds: int, name: str) -> RateLim
     return InMemorySlidingWindowLimiter(max_requests, window_seconds)
 
 
+_REGISTRADOS: list[RateLimiterBackend] = []
+
+
+def reset_all() -> None:
+    """Solo para tests: vacia todos los limitadores creados."""
+    for limiter in _REGISTRADOS:
+        limiter.reset()
+
+
 def rate_limit(max_requests: int, window_seconds: int, *, name: str):
     """Construye una dependencia FastAPI que aplica el limite."""
     limiter = _build_limiter(max_requests, window_seconds, name)
+    _REGISTRADOS.append(limiter)
 
     def dependency(request: Request) -> None:
         allowed, retry_after = limiter.check(f"{name}:{client_key(request)}")

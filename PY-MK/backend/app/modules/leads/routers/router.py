@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
 from app.common.email import avisar_lead_nuevo
+from app.common.rate_limit import rate_limit
 from app.db.models.enums import RoleCode
 from app.modules.leads.schemas import LeadConvertido, LeadCreate, LeadInfoUpdate, LeadRead, LeadUpdate
 from app.modules.leads.services.lead_service import LeadService
@@ -108,7 +109,16 @@ def list_leads(
     return [LeadRead.model_validate(item) for item in LeadService(db, current_user).list()]
 
 
-@router.post("/", response_model=LeadRead, status_code=status.HTTP_201_CREATED)
+# Auditoria 2026-11-25 (B2): publico y cada envio manda un correo.
+public_lead_limit = rate_limit(max_requests=5, window_seconds=3600, name="lead")
+
+
+@router.post(
+    "/",
+    response_model=LeadRead,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(public_lead_limit)],
+)
 def create_lead(payload: LeadCreate, db: Session = Depends(get_db)) -> LeadRead:
     lead = LeadService(db).create(payload)
 
