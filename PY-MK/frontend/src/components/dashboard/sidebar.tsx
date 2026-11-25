@@ -12,7 +12,6 @@ import {
   Code2,
   ChevronDown,
   ChevronUp,
-  Cpu,
   FileBarChart2,
   FolderKanban,
   GraduationCap,
@@ -33,6 +32,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -205,7 +205,9 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
 
       {/* Brand */}
       <div className="brand-block sidebar-header">
-        <div className="logo-space">NS</div>
+        <div className="logo-space logo-space--marca">
+          <Image src="/brand/icono-cabeza.webp" alt="Ninja Tech" width={36} height={36} priority />
+        </div>
         {!isCollapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Ninja Tech</p>
