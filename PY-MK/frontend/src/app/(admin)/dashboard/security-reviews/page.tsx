@@ -19,12 +19,18 @@ import {
   IntegrationItem,
   SecurityReviewItem,
 } from "@/lib/api";
+import { capsulaActiva } from "@/lib/capsulas";
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
 import { getReviewStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { QK } from "@/lib/query-keys";
+
+// Las consolas (integrations) y la puntuacion por host son de la capsula de
+// telemetria. Apagada, sus rutas no existen en el backend: no se consultan ni se
+// muestra lo que depende de ellas.
+const TELEMETRIA = capsulaActiva("telemetria");
 
 export default function SecurityReviewsPage() {
   const currentUser  = getStoredUser();
@@ -45,6 +51,7 @@ export default function SecurityReviewsPage() {
   const { data: integrations = [] } = useQuery<IntegrationItem[]>({
     queryKey: QK.integrations(),
     queryFn: () => getIntegrations(),
+    enabled: TELEMETRIA,
   });
 
   const { data: users = [] } = useQuery<DashboardUser[]>({
@@ -242,6 +249,13 @@ export default function SecurityReviewsPage() {
       </article>
 
       <Modal isOpen={createOpen} title="Nueva revisión de seguridad" onClose={() => setCreateOpen(false)}>
+        {!TELEMETRIA ? (
+          <p className="muted-small">
+            Cada revisión se hace sobre una consola del cliente, y las consolas forman parte de la
+            cápsula de telemetría, que está apagada en esta instancia. Por ahora no se pueden crear
+            revisiones nuevas; las existentes se siguen consultando en esta página.
+          </p>
+        ) : (
         <div className="entity-form">
           <select value={form.client_id} onChange={(e) => setForm((f) => ({ ...f, client_id: e.target.value, integration_id: "" }))}>
             <option value="">Selecciona cliente *</option>
@@ -263,6 +277,7 @@ export default function SecurityReviewsPage() {
             {saving ? "Creando..." : "Crear revisión"}
           </button>
         </div>
+        )}
       </Modal>
     </section>
   );
