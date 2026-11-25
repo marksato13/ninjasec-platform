@@ -144,7 +144,7 @@ Registrados en `api/router.py` pero demasiado pequeños para justificar un docum
 
 ⚠️ **Solo para el entorno local con datos sembrados.** Estas cuentas no deben existir en ningún entorno expuesto. Ver la rotación de secretos pendiente en `docs/deploy/HANDOFF-CLAUDE-OPS-UBUNTU.md` antes de FASE 2.8.
 
-Contraseña universal: **`NinjaSec2024!`**
+Contraseña: la del seed local (`PY-MK/backend/app/db/seed.py`) o la de `SEED_PASSWORD` si la pusiste. No se escribe aquí.
 
 | Rol | Email |
 |-----|-------|

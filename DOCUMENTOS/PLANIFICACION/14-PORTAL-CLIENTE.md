@@ -92,7 +92,7 @@ El portal tiene su propio sidebar simplificado con accesos a:
 | FinanzApp Technologies | ti@finanzapp.ninjasec.local |
 | RetailMax Peru | ti@retailmax.ninjasec.local |
 
-Contraseña de todas: **`NinjaSec2024!`**
+Contraseña: la del seed local (`PY-MK/backend/app/db/seed.py`) o la de `SEED_PASSWORD` si la pusiste. No se escribe aquí.
 
 ---
 
