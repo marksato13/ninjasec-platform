@@ -20,6 +20,7 @@ const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard/support-tickets":    { title: "Tickets",               subtitle: "SLA, asignaciones y resolución" },
   "/dashboard/reports":            { title: "Reportes",              subtitle: "Exportes y consolidados" },
   "/dashboard/leads":              { title: "Leads",                 subtitle: "Captación y seguimiento comercial" },
+  "/dashboard/work-windows":       { title: "Ventanas de trabajo",   subtitle: "Cambios autorizados por el cliente" },
   "/dashboard/services":           { title: "Servicios",             subtitle: "Catálogo de servicios activos" },
   "/dashboard/projects":           { title: "Proyectos",             subtitle: "Pipeline y estado de proyectos" },
   "/dashboard/users":              { title: "Usuarios",              subtitle: "Cuentas y roles del sistema" },
@@ -35,7 +36,6 @@ const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard/hardening":          { title: "Hardening",             subtitle: "Evaluación de configuración" },
   "/dashboard/soc-report":         { title: "Informe SOC",           subtitle: "Resumen para el cliente" },
   "/dashboard/formacion":          { title: "Formación",             subtitle: "Rutas hacia una certificación" },
-  "/dashboard/work-windows":       { title: "Ventanas de trabajo",   subtitle: "Cambios autorizados por el cliente" },
   "/dashboard/settings":           { title: "Configuración",         subtitle: "Ajustes del sistema" },
 };
 

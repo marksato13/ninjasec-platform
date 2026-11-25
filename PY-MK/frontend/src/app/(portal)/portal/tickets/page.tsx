@@ -15,8 +15,7 @@ import { getStatusBadgeClass } from "@/lib/role-utils";
 import { getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { QK } from "@/lib/query-keys";
-
-const PRIORITIES = ["low", "medium", "high", "critical"];
+import { detalleEvento, eventoTicket, fechaHora, PRIORIDADES } from "@/components/portal/etiquetas";
 
 export default function PortalTicketsPage() {
   const [tab, setTab] = useState<"open" | "closed">("open");
@@ -62,7 +61,6 @@ export default function PortalTicketsPage() {
     <section className="page-stack">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Portal</p>
           <h2>Tickets</h2>
         </div>
         <button className="button button-primary" type="button" onClick={() => setCreateOpen(true)}>
@@ -95,7 +93,7 @@ export default function PortalTicketsPage() {
           <div className="table-like">
             <div className="table-row table-head table-row-wide">
               <span>ID</span>
-              <span>Titulo</span>
+              <span>Título</span>
               <span>Prioridad</span>
               <span>Estado</span>
             </div>
@@ -106,7 +104,13 @@ export default function PortalTicketsPage() {
                   <button
                     className="button button-ghost"
                     type="button"
-                    onClick={async () => setDetail(await getSupportTicket(ticket.id))}
+                    onClick={async () => {
+                      try {
+                        setDetail(await getSupportTicket(ticket.id));
+                      } catch (err) {
+                        notifyError("No se pudo abrir el ticket", err instanceof Error ? err.message : "");
+                      }
+                    }}
                   >
                     {ticket.title}
                   </button>
@@ -137,9 +141,9 @@ export default function PortalTicketsPage() {
             onChange={(e) => setFormDescription(e.target.value)}
             rows={4}
           />
-          <select value={formPriority} onChange={(e) => setFormPriority(e.target.value)}>
-            {PRIORITIES.map((p) => (
-              <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
+          <select aria-label="Prioridad" value={formPriority} onChange={(e) => setFormPriority(e.target.value)}>
+            {PRIORIDADES.map((p) => (
+              <option key={p.value} value={p.value}>Prioridad {p.label.toLowerCase()}</option>
             ))}
           </select>
           <div className="panel-actions">
@@ -155,23 +159,23 @@ export default function PortalTicketsPage() {
 
       <Modal
         isOpen={!!detail}
-        title={detail ? `Ticket #${detail.id}` : "Detalle ticket"}
+        title={detail ? `Ticket #${detail.id}` : "Detalle del ticket"}
         onClose={() => setDetail(null)}
       >
         {detail ? (
           <div className="page-stack">
             <div className="card-meta">
               <div>
-                <span className="card-label">Descripcion</span>
+                <span className="card-label">Descripción</span>
                 <span>{detail.description || "-"}</span>
               </div>
               <div>
-                <span className="card-label">Resolucion</span>
+                <span className="card-label">Resolución</span>
                 <span>{detail.resolution || "-"}</span>
               </div>
               <div>
                 <span className="card-label">Apertura</span>
-                <span>{detail.opened_at}</span>
+                <span>{fechaHora(detail.opened_at)}</span>
               </div>
             </div>
             <div className="table-like">
@@ -182,11 +186,9 @@ export default function PortalTicketsPage() {
               </div>
               {detail.events.map((event) => (
                 <div className="table-row" key={event.id}>
-                  <span>{event.event_type}</span>
-                  <span>
-                    {event.notes || `${event.from_status || ""} ${event.to_status || ""}`}
-                  </span>
-                  <span>{event.created_at}</span>
+                  <span>{eventoTicket(event.event_type)}</span>
+                  <span>{detalleEvento(event.notes, event.from_status, event.to_status)}</span>
+                  <span>{fechaHora(event.created_at)}</span>
                 </div>
               ))}
             </div>

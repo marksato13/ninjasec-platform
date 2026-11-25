@@ -24,7 +24,6 @@ export default function PortalCompanyPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Portal</p>
         <h2>Empresa</h2>
       </div>
 
@@ -32,14 +31,14 @@ export default function PortalCompanyPage() {
         <div className="panel-head">
           <div>
             <p className="eyebrow">Cuenta</p>
-            <h3>Informacion general</h3>
+            <h3>Información general</h3>
           </div>
         </div>
         {error ? <p className="form-error">{error instanceof Error ? error.message : "No se pudo cargar la empresa"}</p> : null}
         {isLoading ? (
           <div className="empty-state">Cargando empresa...</div>
         ) : me?.role !== "client" ? (
-          <div className="empty-state">Esta seccion esta disponible solo para clientes.</div>
+          <div className="empty-state">Esta sección está disponible solo para clientes.</div>
         ) : client ? (
           <ul className="stack-list">
             <li><strong>Empresa:</strong> {client.company_name}</li>
@@ -48,7 +47,7 @@ export default function PortalCompanyPage() {
             <li><strong>Tamano:</strong> {client.size || "No definido"}</li>
           </ul>
         ) : (
-          <div className="empty-state">No hay informacion de empresa asignada.</div>
+          <div className="empty-state">No hay información de empresa asignada.</div>
         )}
       </article>
     </section>

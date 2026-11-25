@@ -2,6 +2,7 @@
 
 import {
   BookOpen,
+  CalendarClock,
   CheckSquare,
   ClipboardList,
   FileText,
@@ -34,6 +35,7 @@ const clientNavItems: NavItem[] = [
   { label: "Documentos", href: "/portal/documents", icon: IC(FileText) },
   { label: "Tickets",    href: "/portal/tickets",   icon: IC(HelpCircle) },
   { label: "Servicios",  href: "/portal/services",  icon: IC(Package) },
+  { label: "Ventanas de trabajo", href: "/portal/work-windows", icon: IC(CalendarClock) },
   { label: "Perfil",     href: "/portal/profile",   icon: IC(User) },
 ];
 
@@ -45,6 +47,7 @@ const baseItems: NavItem[] = [
 const collaboratorItems: NavItem[] = [
   { label: "Postulaciones", href: "/portal/applications", icon: IC(ClipboardList) },
   { label: "Tareas",        href: "/portal/tasks",        icon: IC(CheckSquare) },
+  { label: "Ventanas",      href: "/portal/work-windows", icon: IC(CalendarClock) },
   { label: "Recursos",      href: "/portal/resources",    icon: IC(BookOpen) },
 ];
 
@@ -97,7 +100,7 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
         <button
           className="sidebar-close button button-ghost button-icon"
           type="button"
-          aria-label="Cerrar menu"
+          aria-label="Cerrar menú"
           onClick={onClose}
         >
           <X size={16} />
@@ -143,7 +146,7 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
             className="sidebar-footer-btn"
             type="button"
             onClick={handleLogout}
-            title="Cerrar sesion"
+            title="Cerrar sesión"
           >
             <LogOut size={14} />
           </button>

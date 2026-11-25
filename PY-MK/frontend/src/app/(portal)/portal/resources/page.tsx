@@ -41,7 +41,6 @@ export default function PortalResourcesPage() {
       {/* Encabezado */}
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Portal</p>
           <h2>Recursos</h2>
         </div>
         <span style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
