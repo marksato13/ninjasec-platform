@@ -18,7 +18,9 @@ const CSP = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   `connect-src 'self' ${GOOGLE}`,
-  `frame-src ${GOOGLE}`,
+  // El portal muestra en un iframe los PDF entregados al cliente, alojados fuera
+  // (github_url). frame-src decide que podemos incrustar, no quien nos incrusta.
+  `frame-src 'self' https: ${GOOGLE}`,
   "frame-ancestors 'self'",
   "base-uri 'self'",
   "form-action 'self'",
