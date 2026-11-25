@@ -1,6 +1,15 @@
 import { LeadForm } from "@/components/public/lead-form";
 import { PublicPageShell } from "@/components/public/public-page-shell";
 import { capsulaActiva } from "@/lib/capsulas";
+import { metadatosDePagina } from "@/lib/sitio";
+
+export const metadata = {
+  ...metadatosDePagina(
+    "/agenda-demo",
+    "Agenda una reunión",
+    "Agenda una primera conversación con Ninja Tech para revisar tu caso.",
+  ),
+};
 
 export default function AgendaDemoPage() {
   const conApi = capsulaActiva("telemetria");

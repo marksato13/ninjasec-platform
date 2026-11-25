@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PublicPageShell } from "@/components/public/public-page-shell";
 import { ServiceRequestForm } from "@/components/public/service-request-form";
 import { capsulaActiva } from "@/lib/capsulas";
+import { metadatosDePagina } from "@/lib/sitio";
 
 /**
  * Servicios que Ninja Tech ofrece HOY, en sus dos ramas activas: Ninja Sec y Ninja Dev.
@@ -125,6 +126,14 @@ const PLATAFORMA: Grupo = {
     { titulo: "Reporting automatizado", texto: "Generamos reportes técnicos y ejecutivos listos para cliente o gerencia." },
     { titulo: "Dashboards operativos", texto: "Creamos paneles para operación, monitoreo y toma de decisiones." },
   ],
+};
+
+export const metadata = {
+  ...metadatosDePagina(
+    "/servicios",
+    "Servicios",
+    "Servicios de Ninja Tech para pymes: ciberseguridad e infraestructura segura (Ninja Sec) y desarrollo de software a medida (Ninja Dev).",
+  ),
 };
 
 export default function ServiciosPage() {

@@ -3,6 +3,16 @@ import { Suspense } from "react";
 import { LoginForm } from "@/components/dashboard/login-form";
 import { PublicPageShell } from "@/components/public/public-page-shell";
 import { Mascot } from "@/components/ui/mascot";
+import { metadatosDePagina } from "@/lib/sitio";
+
+export const metadata = {
+  ...metadatosDePagina(
+    "/login",
+    "Ingresar",
+    "Acceso al panel de Ninja Tech.",
+  ),
+  robots: { index: false, follow: false },
+};
 
 export default function LoginPage() {
   return (

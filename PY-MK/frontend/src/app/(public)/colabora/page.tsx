@@ -1,5 +1,14 @@
 import { JobApplicationForm } from "@/components/public/job-application-form";
 import { PublicPageShell } from "@/components/public/public-page-shell";
+import { metadatosDePagina } from "@/lib/sitio";
+
+export const metadata = {
+  ...metadatosDePagina(
+    "/colabora",
+    "Colabora",
+    "Forma parte de Ninja Tech como colaborador en proyectos de ciberseguridad y desarrollo.",
+  ),
+};
 
 export default function ColaboraPage() {
   return (
