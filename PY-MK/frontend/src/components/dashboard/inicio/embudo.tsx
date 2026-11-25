@@ -50,7 +50,7 @@ export function Embudo({ etapas }: { etapas: Etapa[] }) {
                     {e.areas.otra ? (
                       <span className={styles.areaChip}>
                         <span className={styles.areaDot} aria-hidden="true" />
-                        Sin área {e.areas.otra}
+                        Sin línea {e.areas.otra}
                       </span>
                     ) : null}
                   </span>

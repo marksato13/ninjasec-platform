@@ -25,6 +25,10 @@ import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { QK } from "@/lib/query-keys";
 import { Modal } from "@/components/ui/modal";
+import { AvisoModo, ChipLinea } from "@/components/dashboard/chip-linea";
+import { getAreas } from "@/lib/api";
+import { lineaDeArea, mapaDeAreas } from "@/lib/lineas";
+import { useModo, visibleEnModo } from "@/lib/modo";
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CFG: Record<string, { label: string; cls: string; next: string[] }> = {
@@ -76,6 +80,14 @@ export default function DashboardServicesPage() {
     queryKey: QK.services(),
     queryFn: () => getServices(),
   });
+
+  // Modo Ninja Sec / Ninja Dev (plan 34). El servicio toma la línea de su área;
+  // mientras el backend no devuelva area_id, cuenta para las dos.
+  const modo = useModo();
+  const { data: areas } = useQuery({ queryKey: QK.areas(), queryFn: getAreas, enabled: isAdmin });
+  const areasPorId = mapaDeAreas(areas);
+  const activos = services.filter((s) => s.active);
+  const activosDelModo = activos.filter((s) => visibleEnModo(lineaDeArea(s.area_id, areasPorId), modo));
 
   const { data: requests = [] } = useQuery<ServiceRequestItem[]>({
     queryKey: QK.serviceRequests(),
@@ -235,8 +247,9 @@ export default function DashboardServicesPage() {
       <article className="panel">
         <div className="panel-head">
           <div><p className="eyebrow">Catálogo</p><h3>Servicios disponibles</h3></div>
-          <span className="muted-small">{services.filter((s) => s.active).length} activos</span>
+          <span className="muted-small">{activosDelModo.length} activos</span>
         </div>
+        <AvisoModo modo={modo} visibles={activosDelModo.length} total={activos.length} />
 
         {services.length === 0 ? (
           <EmptyState
@@ -247,7 +260,7 @@ export default function DashboardServicesPage() {
           />
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-            {services.filter((s) => s.active).map((service) => (
+            {activosDelModo.map((service) => (
               <article key={service.id} style={{
                 borderLeft: "3px solid var(--security)",
                 background: "var(--panel)",
@@ -271,6 +284,7 @@ export default function DashboardServicesPage() {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>{service.title}</div>
+                    <ChipLinea linea={lineaDeArea(service.area_id, areasPorId)} />
                     {service.category && (
                       <div style={{ color: "var(--security)", fontSize: "0.72rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: 2 }}>
                         {service.category}

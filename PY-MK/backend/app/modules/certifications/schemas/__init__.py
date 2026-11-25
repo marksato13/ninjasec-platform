@@ -1,4 +1,8 @@
 from app.modules.certifications.schemas.certification import (
+    CertificacionPublica,
+    FilaMatriz,
+    MiembroCertificado,
+    SkillEnMatriz,
     UserCertificationCreate,
     UserCertificationRead,
     UserCertificationUpdate,
@@ -6,6 +10,10 @@ from app.modules.certifications.schemas.certification import (
 )
 
 __all__ = [
+    "CertificacionPublica",
+    "FilaMatriz",
+    "MiembroCertificado",
+    "SkillEnMatriz",
     "UserCertificationCreate",
     "UserCertificationRead",
     "UserCertificationUpdate",
