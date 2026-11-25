@@ -6,7 +6,7 @@ tickets existentes quedan como "incidencia", que es lo que son. Bajar borra
 solo estas columnas.
 
 Revision ID: 20261201_03
-Revises: 20261201_01
+Revises: 20261201_02
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from alembic import op
 
 revision: str = "20261201_03"
 # Al integrar con 35-P-02 (20261201_02) esta revisión pasa a colgar de ella.
-down_revision: str | None = "20261201_01"
+down_revision: str | None = "20261201_02"
 branch_labels = None
 depends_on = None
 
