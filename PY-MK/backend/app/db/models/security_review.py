@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import (
     ChecklistResult,
@@ -37,9 +38,9 @@ class SecurityReview(Base):
         ForeignKey("users.id"), nullable=True
     )
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=utcnow, onupdate=utcnow
     )
 
     organization = relationship("Organization")
@@ -96,7 +97,7 @@ class ReviewFinding(Base):
         Enum(FindingStatus, name="finding_status_enum"), default=FindingStatus.OPEN
     )
     evidence_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     review = relationship("SecurityReview", back_populates="findings")
     recommendations = relationship("ReviewRecommendation", back_populates="finding")
@@ -123,7 +124,7 @@ class ReviewRecommendation(Base):
         Enum(RecommendationStatus, name="recommendation_status_enum"),
         default=RecommendationStatus.PENDING,
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     review = relationship("SecurityReview", back_populates="recommendations")
     finding = relationship("ReviewFinding", back_populates="recommendations")
@@ -145,7 +146,7 @@ class ReviewAttachment(Base):
     uploaded_by: Mapped[int | None] = mapped_column(
         ForeignKey("users.id"), nullable=True
     )
-    uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    uploaded_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     review = relationship("SecurityReview", back_populates="attachments")
     finding = relationship("ReviewFinding", back_populates="attachments")

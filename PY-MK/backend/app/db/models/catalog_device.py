@@ -3,6 +3,7 @@ from datetime import date, datetime
 from sqlalchemy import Boolean, Date, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -43,7 +44,7 @@ class CatalogDevice(Base):
     # Regla de copyright del módulo 19: se enlaza al datasheet oficial del
     # fabricante, nunca se rehospeda el PDF en la plataforma.
     datasheet_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=utcnow, onupdate=utcnow
     )

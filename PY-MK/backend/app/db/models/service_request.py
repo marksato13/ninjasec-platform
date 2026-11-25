@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import ServiceRequestStatus
 
@@ -23,7 +24,7 @@ class ServiceRequest(Base):
         Enum(ServiceRequestStatus, name="service_request_status_enum"),
         default=ServiceRequestStatus.NEW,
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     service = relationship("Service", back_populates="requests")
     client = relationship("Client", back_populates="service_requests")

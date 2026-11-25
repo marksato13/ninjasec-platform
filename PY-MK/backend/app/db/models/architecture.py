@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -17,8 +18,8 @@ class ArchitectureModel(Base):
     state: Mapped[str] = mapped_column(String(20), nullable=False)
     adm_phase: Mapped[str | None] = mapped_column(String(20))
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="draft")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     elements = relationship("ArchitectureElement", cascade="all, delete-orphan", back_populates="model")
     relationships = relationship("ArchitectureRelationship", cascade="all, delete-orphan", back_populates="model")
