@@ -5,9 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
+  AreaItem,
   createProject,
   createProjectTask,
   DashboardClient,
+  getAreas,
   getClients,
   getMe,
   getProducts,
@@ -48,6 +50,7 @@ export function ProjectForm({ onCreated }: ProjectFormProps) {
       projectTypeId: "",
       serviceId: "",
       productId: "",
+      areaId: "",
       description: "",
       status: "planning",
       startDate: "",
@@ -61,18 +64,20 @@ export function ProjectForm({ onCreated }: ProjectFormProps) {
   const [projectTypes, setProjectTypes] = useState<ProjectTypeItem[]>([]);
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [products, setProducts] = useState<ProductItem[]>([]);
+  const [areas, setAreas] = useState<AreaItem[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<ProjectTemplate | null>(null);
   const firstError = useMemo(() => Object.values(errors)[0]?.message, [errors]);
 
   useEffect(() => {
-    Promise.all([getMe(), getClients(), getProjectTypes(), getServices(), getProducts()])
-      .then(([me, clientsData, typesData, servicesData, productsData]) => {
+    Promise.all([getMe(), getClients(), getProjectTypes(), getServices(), getProducts(), getAreas()])
+      .then(([me, clientsData, typesData, servicesData, productsData, areasData]) => {
         setOrganizationId(me.organization_id ?? null);
         setCurrentUserId(me.id);
         setClients(clientsData);
         setProjectTypes(typesData);
         setServices(servicesData.filter((item) => item.active));
         setProducts(productsData.filter((item) => item.is_active));
+        setAreas(areasData.filter((item) => item.is_active));
       })
       .catch(() => setOrganizationId(null));
   }, []);
@@ -95,6 +100,7 @@ export function ProjectForm({ onCreated }: ProjectFormProps) {
     const parsedProjectTypeId = Number(values.projectTypeId);
     const parsedServiceId = values.serviceId ? Number(values.serviceId) : null;
     const parsedProductId = values.productId ? Number(values.productId) : null;
+    const parsedAreaId = values.areaId ? Number(values.areaId) : null;
 
     try {
       const created = await createProject({
@@ -103,6 +109,7 @@ export function ProjectForm({ onCreated }: ProjectFormProps) {
         project_type_id: parsedProjectTypeId,
         service_id: parsedServiceId,
         product_id: parsedProductId,
+        area_id: parsedAreaId,
         name: values.name,
         description: values.description?.trim() || undefined,
         status: values.status,
@@ -180,6 +187,14 @@ export function ProjectForm({ onCreated }: ProjectFormProps) {
         {projectTypes.map((type) => (
           <option key={type.id} value={type.id}>
             {type.name}
+          </option>
+        ))}
+      </select>
+      <select {...register("areaId")} aria-label="Área">
+        <option value="">Área: según el servicio</option>
+        {areas.map((area) => (
+          <option key={area.id} value={area.id}>
+            {area.name}
           </option>
         ))}
       </select>

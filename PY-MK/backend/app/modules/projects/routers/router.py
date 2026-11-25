@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
+from app.db.models.area import Area
 from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
 from app.db.models.project import Project
@@ -107,6 +108,23 @@ def create_project(
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
         area_id = area_id or product.area_id
+
+    # Area elegida en el alta (Ninja Sec / Ninja Dev). Manda sobre la del servicio
+    # o el producto; antes se ignoraba y un servicio sin area impedia crear el
+    # proyecto. Vale un area propia o una global (organization_id NULL, del seed);
+    # la de otra organizacion responde 404, igual que una inexistente.
+    if payload.area_id is not None:
+        area = db.scalar(
+            select(Area).where(
+                Area.id == payload.area_id,
+                (Area.organization_id == current_user.organization_id) | Area.organization_id.is_(None),
+            )
+        )
+        if not area:
+            raise HTTPException(status_code=404, detail="Area not found")
+        if not area.is_active:
+            raise HTTPException(status_code=400, detail="Area is inactive")
+        area_id = area.id
 
     if not area_id:
         raise HTTPException(status_code=400, detail="Area could not be resolved")
