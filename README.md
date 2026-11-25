@@ -123,5 +123,6 @@ LinkedIn o por el formulario de contacto del sitio.
 
 ## Licencia
 
-**Todos los derechos reservados**, hasta que se elija una licencia. Puedes leer el
-código, pero no reutilizarlo ni redistribuirlo sin permiso por escrito.
+**Propietaria, con el código visible** ([`LICENSE`](LICENSE)). Puedes leer y auditar el
+código; copiarlo, modificarlo, redistribuirlo, ofrecerlo como servicio o usar la marca
+Ninja Tech requiere permiso por escrito. Las dependencias conservan sus propias licencias.

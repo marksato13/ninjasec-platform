@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import ServiceRequestStatus
 
@@ -15,6 +16,10 @@ class ServiceRequest(Base):
     client_id: Mapped[int | None] = mapped_column(
         ForeignKey("clients.id"), nullable=True
     )
+    # La solicitud aprobada se convierte en un proyecto (auditoria funcional A6).
+    project_id: Mapped[int | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     requester_name: Mapped[str] = mapped_column(String(150), nullable=False)
     requester_email: Mapped[str] = mapped_column(String(180), nullable=False)
     request_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
@@ -23,7 +28,7 @@ class ServiceRequest(Base):
         Enum(ServiceRequestStatus, name="service_request_status_enum"),
         default=ServiceRequestStatus.NEW,
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     service = relationship("Service", back_populates="requests")
     client = relationship("Client", back_populates="service_requests")

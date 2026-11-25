@@ -3,6 +3,7 @@ from datetime import date, datetime
 from sqlalchemy import Date, DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -27,7 +28,7 @@ class Integration(Base):
     config_json: Mapped[str | None] = mapped_column(String(2000), nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="pending")
     last_sync_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     # Campos de consola de seguridad
     environment: Mapped[str | None] = mapped_column(String(20), nullable=True)
     license_type: Mapped[str | None] = mapped_column(String(100), nullable=True)

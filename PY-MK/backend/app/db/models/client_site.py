@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import SiteStatus
 
@@ -20,7 +21,7 @@ class ClientSite(Base):
     status: Mapped[SiteStatus] = mapped_column(
         Enum(SiteStatus, name="site_status_enum"), default=SiteStatus.ACTIVE
     )
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     client = relationship("Client", back_populates="sites")
     devices = relationship("Device", back_populates="site")

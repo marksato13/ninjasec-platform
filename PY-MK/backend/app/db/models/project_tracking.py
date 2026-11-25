@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -39,7 +40,7 @@ class ProjectUpdate(Base):
     link_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     """Para desarrollo: el entorno de pruebas o la demo que el cliente puede abrir."""
     visible_to_client: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utcnow)
 
 
 class ProjectDevice(Base):

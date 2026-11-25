@@ -5,14 +5,19 @@ from sqlalchemy.orm import Session
 from app.common.deps.auth import CurrentUser, get_current_user_optional, require_roles
 from app.common.deps.database import get_db
 from app.common.rate_limit import rate_limit
+from app.db.models.client import Client
 from app.db.models.client_profile import ClientProfile
+from app.db.models.project import Project
+from app.db.models.project_type import ProjectType
 from app.db.models.service import Service
 from app.db.models.service_request import ServiceRequest
-from app.db.models.enums import RoleCode, ServiceRequestStatus
+from app.db.models.enums import ProjectStatus, RoleCode, ServiceRequestStatus
 from app.db.repositories.base import Repository
+from app.modules.audit.services.audit_service import AuditService
 from app.modules.services.schemas import (
     ServiceCreate,
     ServiceRead,
+    ServiceRequestConvert,
     ServiceRequestCreate,
     ServiceRequestRead,
     ServiceRequestUpdate,
@@ -134,6 +139,74 @@ def update_service_request(
         raise HTTPException(status_code=422, detail=f"Invalid status: {payload.status}")
     db.commit()
     db.refresh(req)
+    return ServiceRequestRead.model_validate(req)
+
+
+@router.post(
+    "/requests/{request_id}/convert",
+    response_model=ServiceRequestRead,
+    status_code=status.HTTP_201_CREATED,
+)
+def convert_service_request(
+    request_id: int,
+    payload: ServiceRequestConvert,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)
+    ),
+    db: Session = Depends(get_db),
+) -> ServiceRequestRead:
+    """Solicitud aprobada -> proyecto (auditoria funcional A6).
+
+    Cierra el embudo lead -> cliente -> solicitud -> proyecto: crea el proyecto con
+    el servicio y el area de la solicitud, la enlaza y la cierra. Igual que el alta
+    manual de proyectos: sin colaboradores el proyecto nace en `planning`.
+    """
+    req = db.scalar(select(ServiceRequest).where(ServiceRequest.id == request_id).with_for_update())
+    service = db.get(Service, req.service_id) if req else None
+    if not req or not service or service.organization_id != current_user.organization_id:
+        raise HTTPException(status_code=404, detail="Service request not found")
+    if req.project_id is not None:
+        raise HTTPException(status_code=409, detail="Service request already converted")
+    if not service.area_id:
+        raise HTTPException(status_code=400, detail="The service has no area (Ninja Sec / Ninja Dev)")
+
+    client_id = req.client_id or payload.client_id
+    if client_id is None:
+        raise HTTPException(status_code=422, detail="client_id is required for a public request")
+    client = db.scalar(
+        select(Client).where(Client.id == client_id, Client.organization_id == current_user.organization_id)
+    )
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
+    project_type = db.get(ProjectType, payload.project_type_id)
+    # Los tipos de proyecto son globales (sin organizacion) o de una organizacion.
+    if not project_type or project_type.organization_id not in (None, current_user.organization_id):
+        raise HTTPException(status_code=404, detail="Project type not found")
+
+    project = Project(
+        organization_id=current_user.organization_id,
+        client_id=client.id,
+        project_type_id=payload.project_type_id,
+        area_id=service.area_id,
+        service_id=service.id,
+        name=payload.name or f"{service.title} · {client.company_name}"[:160],
+        description=payload.description or (req.message[:255] if req.message else None),
+        status=ProjectStatus.PLANNING,
+    )
+    db.add(project)
+    db.flush()
+    req.project_id = project.id
+    req.client_id = client.id
+    req.status = ServiceRequestStatus.CLOSED
+    db.commit()
+    db.refresh(req)
+    AuditService(db).record(
+        current_user.organization_id,
+        "service_request.converted",
+        "service_requests",
+        str(req.id),
+        current_user.id,
+    )
     return ServiceRequestRead.model_validate(req)
 
 

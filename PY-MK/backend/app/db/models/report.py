@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -33,7 +34,7 @@ class Report(Base):
     report_type: Mapped[str] = mapped_column(String(80), nullable=False)
     template_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     definition_json: Mapped[str | None] = mapped_column(String(3000), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     organization = relationship("Organization", back_populates="reports")
     client = relationship("Client", back_populates="reports")
