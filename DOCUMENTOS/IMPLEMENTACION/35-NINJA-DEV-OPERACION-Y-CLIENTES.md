@@ -1,13 +1,13 @@
 # Implementación - Ninja Dev: operación y gestión de clientes
 
 > Basado en: `PLANIFICACION/35-NINJA-DEV-OPERACION-Y-CLIENTES.md`
-> Creado: 2026-11-25. Ningún módulo está implementado todavía.
+> Creado: 2026-11-25. 35-P-01 tiene el backend en revisión (PR #53).
 
 ## Checklist
 
 | ID | Requisito | Estado | Evidencia esperada |
 |---|---|---|---|
-| `35-P-01` | Sistemas del cliente y entornos | Pendiente | Migración probada; pruebas de permisos por rol; pestaña en cliente y "Mis sistemas" en portal |
+| `35-P-01` | Sistemas del cliente y entornos | 🟡 Backend en PR #53 | ✅ Migración `20261201_01` probada en PostgreSQL 16 (subir, bajar, subir, `alembic check` limpio); ✅ 9 pruebas de permisos por rol, 404 ajeno, 422 secretos y auditoría, más 3 mutaciones detectadas; ⏳ pestaña en cliente y "Mis sistemas" en portal (contrato en `lib/api/systems.ts`) |
 | `35-P-02` | Registro de despliegues | Pendiente | Regla de checklist en `prod` probada; avance en la bitácora al desplegar |
 | `35-P-03` | Solicitudes de cambio en Tickets | Pendiente | `kind` y `system_id` en tickets; decisión del cliente auditada; conversión a tareas |
 | `35-P-04` | Estimador de costos | Pendiente | Tarifas solo admin (prueba de 403/404); versión aprobada inmutable; propuesta de hitos C3 |
