@@ -10,6 +10,31 @@ type ServiceOption = {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8021/api/v1";
 
+/**
+ * A que rama pertenece cada categoria del catalogo. Es solo la ETIQUETA que ve la persona: los
+ * valores que se envian (el id del servicio) y las categorias de la base de datos no cambian.
+ *
+ * «nube» (AWS) no es una rama activa: es la futura Ninja Cloud, que no se contrata desde aqui.
+ * Se omite del formulario, pero el servicio sigue existiendo en la base de datos.
+ */
+const RAMA_DE_CATEGORIA: Record<string, string> = {
+  infraestructura: "Ninja Sec",
+  seguridad: "Ninja Sec",
+  desarrollo: "Ninja Dev",
+};
+const ORDEN_RAMAS = ["Ninja Sec", "Ninja Dev", "Otros"];
+
+function agrupar(servicios: ServiceOption[]): { rama: string; items: ServiceOption[] }[] {
+  const porRama = new Map<string, ServiceOption[]>();
+  for (const s of servicios) {
+    const cat = (s.category ?? "").toLowerCase();
+    if (cat === "nube") continue;
+    const rama = RAMA_DE_CATEGORIA[cat] ?? "Otros";
+    porRama.set(rama, [...(porRama.get(rama) ?? []), s]);
+  }
+  return ORDEN_RAMAS.filter((r) => porRama.has(r)).map((r) => ({ rama: r, items: porRama.get(r)! }));
+}
+
 export function ServiceRequestForm() {
   const [services, setServices] = useState<ServiceOption[]>([]);
   const [serviceId, setServiceId] = useState("");
@@ -77,10 +102,14 @@ export function ServiceRequestForm() {
       <h3>Solicitar un servicio</h3>
       <select value={serviceId} onChange={(event) => setServiceId(event.target.value)} required>
         <option value="">Selecciona un servicio</option>
-        {services.map((service) => (
-          <option key={service.id} value={service.id}>
-            {service.title}{service.category ? ` (${service.category})` : ""}
-          </option>
+        {agrupar(services).map((g) => (
+          <optgroup key={g.rama} label={g.rama}>
+            {g.items.map((service) => (
+              <option key={service.id} value={service.id}>
+                {service.title}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
       <input placeholder="Nombre" value={name} onChange={(event) => setName(event.target.value)} required />

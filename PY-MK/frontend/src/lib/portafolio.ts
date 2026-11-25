@@ -7,6 +7,7 @@
  *
  *   producto      lo construimos y está en línea (se puede ver y se prueba)
  *   laboratorio   implementado y medido en un laboratorio propio, NO en un cliente
+ *   investigacion proyecto de investigacion de codigo abierto: se puede leer y probar, no se vende
  *   caso          entregado a un cliente real
  *   preparacion   se ofrece, pero todavía no hay nada que enseñar
  *
@@ -17,8 +18,12 @@
  * no se publica sin su permiso por escrito, y ese permiso no existe todavía.
  */
 
-export type Linea = "dev" | "infra";
-export type Evidencia = "producto" | "laboratorio" | "caso" | "preparacion";
+/**
+ * La rama a la que pertenece un trabajo. «sec» y «dev» son las dos ramas ACTIVAS; «cloud» es una
+ * rama futura: sus trabajos solo salen en «Areas en preparacion» y no se contratan.
+ */
+export type Linea = "dev" | "sec" | "cloud";
+export type Evidencia = "producto" | "laboratorio" | "investigacion" | "caso" | "preparacion";
 export type Capa = "usuario" | "borde" | "aplicacion" | "datos" | "operacion" | "red" | "externo";
 
 export type NodoDiagrama = {
@@ -41,6 +46,10 @@ export type ProyectoPublico = {
   tecnologias: string[];
   /** Lo que se sabe que NO hace o que falta. Se muestra: es parte de la honestidad. */
   limites?: string;
+  /** Agrupa dentro de una rama, p. ej. «Infraestructura segura» dentro de Ninja Sec. */
+  subarea?: string;
+  /** Enlaces externos (repositorio, documentacion, demo) que existen de verdad. */
+  enlaces?: { texto: string; href: string }[];
   diagrama?: { titulo: string; nodos: NodoDiagrama[]; aristas: AristaDiagrama[] };
   publicar: boolean;
 };
@@ -50,6 +59,10 @@ export const EVIDENCIA_ETIQUETA: Record<Evidencia, { texto: string; ayuda: strin
   laboratorio: {
     texto: "Laboratorio propio",
     ayuda: "Implementado y medido en nuestro laboratorio, no en un cliente.",
+  },
+  investigacion: {
+    texto: "Investigación abierta",
+    ayuda: "Código abierto (licencia MIT): puedes leerlo y probarlo. Es investigación, no un servicio que vendamos hoy.",
   },
   caso: { texto: "Caso de cliente", ayuda: "Entregado a un cliente real." },
   preparacion: { texto: "En preparación", ayuda: "Lo ofrecemos, pero todavía no hay trabajo propio que enseñar." },
@@ -127,10 +140,33 @@ export const PROYECTOS: ProyectoPublico[] = [
     },
     publicar: true,
   },
-  // ---------------------------------------------------------------- INFRA
+  // ------------------------------------------------------------------ SEC
+  {
+    id: "cyberflow",
+    linea: "sec",
+    subarea: "Detección y análisis de redes",
+    titulo: "CyberFlow: detección temprana de anomalías en redes",
+    evidencia: "investigacion",
+    resumen:
+      "Proyecto de código abierto que detecta comportamientos anómalos en el tráfico de una red de datos y responde de forma graduada: permitir, limitar o bloquear.",
+    detalle: [
+      "Detección con aprendizaje no supervisado (Isolation Forest) más reglas deterministas, comparada con un detector por firmas (Suricata).",
+      "La respuesta se aplica en el equipo protegido con nftables, a través de una lista firmada y con caducidad automática.",
+      "Incluye una demo que se ejecuta en tu propio equipo con Docker, con tráfico real entre contenedores y un panel web.",
+    ],
+    tecnologias: ["Python", "Isolation Forest", "Suricata", "nftables", "Docker"],
+    limites:
+      "Es un proyecto de investigación: no es un servicio que vendamos hoy ni está instalado en un cliente. No hay una demo en línea; se ejecuta en tu equipo.",
+    enlaces: [
+      { texto: "Código del sistema", href: "https://github.com/marksato13/inv-cyberflow-sistema" },
+      { texto: "Demo del panel (Docker)", href: "https://github.com/marksato13/CyberFlow-Demo-GUI" },
+    ],
+    publicar: true,
+  },
   {
     id: "lab-alta-disponibilidad",
-    linea: "infra",
+    linea: "sec",
+    subarea: "Infraestructura segura",
     titulo: "Red con alta disponibilidad y doble proveedor",
     evidencia: "laboratorio",
     resumen:
@@ -171,7 +207,8 @@ export const PROYECTOS: ProyectoPublico[] = [
   {
     // Entregado a un cliente real. NO se publica sin su permiso por escrito.
     id: "migracion-firewall",
-    linea: "infra",
+    linea: "sec",
+    subarea: "Infraestructura segura",
     titulo: "Migración de firewall de MikroTik a FortiGate",
     evidencia: "caso",
     resumen:
@@ -185,8 +222,8 @@ export const PROYECTOS: ProyectoPublico[] = [
   },
   {
     id: "aws",
-    linea: "infra",
-    titulo: "Infraestructura en AWS",
+    linea: "cloud",
+    titulo: "Infraestructura en AWS y conexión por VPN",
     evidencia: "preparacion",
     resumen:
       "Diseño y despliegue de infraestructura en la nube y conexión por VPN con la red de la oficina.",
@@ -201,3 +238,31 @@ export const PROYECTOS: ProyectoPublico[] = [
 
 export const proyectosVisibles = (linea?: Linea) =>
   PROYECTOS.filter((p) => p.publicar && (!linea || p.linea === linea));
+
+/**
+ * Ramas futuras. No son servicios: no hay boton para contratarlas y aparecen solo en
+ * «Areas en preparacion». Los casos de infraestructura segura siguen dentro de Ninja Sec,
+ * y la auditoria ISO/IEC 27002 se sigue ofreciendo dentro de Ninja Sec con su alcance actual.
+ */
+export type AreaFutura = { id: string; nombre: string; texto: string; nota?: string; linea?: Linea };
+
+export const AREAS_EN_PREPARACION: AreaFutura[] = [
+  {
+    id: "ninja-infra",
+    nombre: "Ninja Infra",
+    texto: "Futura rama independiente para redes, servidores, virtualización, monitoreo y alta disponibilidad.",
+    nota: "Mientras tanto, los casos de infraestructura segura siguen dentro de Ninja Sec.",
+  },
+  {
+    id: "ninja-cloud",
+    nombre: "Ninja Cloud",
+    texto: "Futura rama de arquitectura y operación en la nube.",
+    linea: "cloud",
+  },
+  {
+    id: "ninja-auditoria",
+    nombre: "Ninja Auditoría",
+    texto: "Futura rama de evaluación de controles, riesgos y cumplimiento.",
+    nota: "Mientras tanto, la auditoría de seguridad ISO/IEC 27002 se ofrece dentro de Ninja Sec, con su alcance actual (solo lectura).",
+  },
+];
