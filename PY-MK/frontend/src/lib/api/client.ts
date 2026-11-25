@@ -1,15 +1,13 @@
-import { clearSession, getStoredToken, isTokenExpired } from "@/lib/auth";
+import { getStoredToken, isTokenExpired } from "@/lib/auth";
+import { notifySessionExpired, SessionExpiredError } from "@/lib/session-expired";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8024/api/v1";
 
 export async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const token = getStoredToken();
   if (token && isTokenExpired(token)) {
-    clearSession();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login?expired=1";
-    }
-    throw new Error("Sesión expirada");
+    notifySessionExpired();
+    throw new SessionExpiredError();
   }
   const isFormData = typeof FormData !== "undefined" && options?.body instanceof FormData;
 
@@ -22,6 +20,14 @@ export async function request<T>(path: string, options?: RequestInit): Promise<T
       ...(options?.headers ?? {}),
     },
   });
+
+  // 401 con token enviado: el servidor ya no lo acepta (revocado, usuario
+  // desactivado, clave rotada). Es lo mismo que caducar. Sin token, el 401 es de
+  // la propia ruta y se trata como cualquier otro error.
+  if (response.status === 401 && token) {
+    notifySessionExpired();
+    throw new SessionExpiredError();
+  }
 
   if (!response.ok) {
     let message = `Error ${response.status}`;
