@@ -147,14 +147,14 @@ def test_sin_ediciones_el_colaborador_ve_lo_que_veia(http_client, collab_tok):
         assert propia in visibles, propia
     # y el portal de colaborador
     assert set(datos["portal"]) == {"/portal", "/portal/profile", "/portal/applications",
-                                    "/portal/tasks", "/portal/resources"}
+                                    "/portal/tasks", "/portal/resources", "/portal/work-windows"}
 
 
 def test_sin_ediciones_el_cliente_solo_tiene_portal(http_client, client_tok):
     datos = http_client.get(f"{API}/me", headers=_auth(client_tok)).json()
     assert datos["staff"] is None
     assert set(datos["portal"]) == {"/portal", "/portal/projects", "/portal/inventory", "/portal/documents",
-                                    "/portal/tickets", "/portal/services", "/portal/profile"}
+                                    "/portal/tickets", "/portal/services", "/portal/profile", "/portal/work-windows"}
 
 
 def test_la_tabla_esta_vacia_si_nadie_edita(db):
