@@ -1123,7 +1123,7 @@ a {
 
 .topbar-left {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
   min-width: 0;
 }
@@ -1170,10 +1170,26 @@ a {
   justify-content: flex-end;
 }
 
+.topbar-actions {
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
 .topbar-actions .button {
-  min-height: 48px;
-  padding: 11px 20px;
-  border-radius: 16px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 12px;
+}
+
+/* Un subtitulo largo se corta con puntos suspensivos en vez de empujar la barra. */
+.topbar-left,
+.topbar__title {
+  min-width: 0;
+}
+.topbar__subtitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .notification-center {
@@ -1224,6 +1240,11 @@ a {
 
 .notification-bell__count--critical {
   background: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-bell,
+  .notification-bell * { animation: none !important; }
 }
 
 @keyframes bell-shake {
@@ -1381,6 +1402,34 @@ a {
   border: 1px solid var(--line);
   background: var(--row);
   color: var(--text);
+}
+
+/* Campo suelto (riesgos, hardening, informe SOC): mismo aspecto que los filtros del panel. */
+.input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--row);
+  color: var(--text);
+}
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--focus);
+}
+.risk-cell-factors .input {
+  margin-top: 0;
+  padding: 3px 22px 3px 6px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  background-position: right 4px center;
+}
+.risk-form label {
+  display: grid;
+  font-size: 0.8rem;
+  color: var(--muted);
 }
 
 .filters-dates {
@@ -2104,6 +2153,14 @@ a {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
+/* Cabecera sin envoltorio (eyebrow y h2 sueltos): space-between mandaba el titulo a la derecha. */
+.section-heading:has(> .eyebrow:first-child) {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0;
+}
+
 .section-heading h2 {
   margin: 0;
   font-size: clamp(1.85rem, 2.6vw, 2.5rem);
@@ -2220,6 +2277,38 @@ a {
   padding: 18px;
   color: var(--muted);
   text-align: center;
+}
+
+/* Estado vacio con siguiente paso (components/ui/empty-state.tsx). */
+.empty-state--rich {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px 24px;
+}
+.empty-state__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+.empty-state__title {
+  margin: 0;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+.empty-state__text {
+  margin: 0 0 8px;
+  max-width: 46ch;
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 /* ─── MASCOT (Kuro) ─────────────────────────────────────────────────── */

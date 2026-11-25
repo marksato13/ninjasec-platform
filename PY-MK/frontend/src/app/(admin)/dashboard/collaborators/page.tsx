@@ -3,7 +3,9 @@
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Trash2, Users } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 
 import {
   CollaboratorProfile,
@@ -449,7 +451,14 @@ export default function DashboardCollaboratorsPage() {
               </article>
             );
           })}
-          {filtered.length === 0 && <div className="empty-state">Sin colaboradores para los filtros seleccionados.</div>}
+          {filtered.length === 0 && (
+            <EmptyState
+              icon={Users}
+              title="Ningún colaborador por aquí"
+              description="Prueba con otros filtros o registra a alguien del equipo."
+              action={isAdmin ? { label: "Nuevo colaborador", onClick: () => setCreateOpen(true) } : undefined}
+            />
+          )}
         </div>
       )}
 

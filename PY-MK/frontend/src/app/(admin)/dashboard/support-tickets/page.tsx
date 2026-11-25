@@ -26,7 +26,9 @@ import {
   SupportTicketStats,
   updateSupportTicket,
 } from "@/lib/api";
-import { AlertTriangle, CheckCircle2, Clock, Ticket as TicketIcon, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Clock, Inbox, Ticket as TicketIcon, Trash2 } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getStatusBadgeClass } from "@/lib/role-utils";
@@ -165,7 +167,7 @@ export default function SupportTicketsPage() {
 
   return (
     <section className="page-stack">
-      <div className="section-heading"><p className="eyebrow">Admin</p><h2>Bandeja de tickets</h2></div>
+      <div className="section-heading"><div><p className="eyebrow">Admin</p><h2>Bandeja de tickets</h2></div></div>
 
       {/* KPI strip (P-02 stats) */}
       {stats ? (
@@ -267,7 +269,12 @@ export default function SupportTicketsPage() {
             <span>ID</span><span>Título</span><span>Cliente</span><span>Prioridad</span><span>SLA</span><span>Estado</span>
           </div>
           {tickets.length === 0 ? (
-            <div className="empty-state">Sin tickets con estado &ldquo;{activeStatus}&rdquo;.</div>
+            <EmptyState
+              icon={Inbox}
+              title="Bandeja al día"
+              description={`No hay tickets con estado “${activeStatus}”. Crea uno a mano o a partir de un hallazgo.`}
+              action={{ label: "Crear ticket", onClick: () => setCreateOpen(true) }}
+            />
           ) : (
             tickets.map((ticket) => {
               const overdue = isOverdue(ticket);
