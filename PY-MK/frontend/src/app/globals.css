@@ -4453,3 +4453,16 @@ a {
   width: 40px;
   min-width: 40px;
 }
+
+/* Logo de marca en la barra lateral: el icono de Kuro, sin el degradado del marcador. */
+.logo-space.logo-space--marca {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.logo-space--marca img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
