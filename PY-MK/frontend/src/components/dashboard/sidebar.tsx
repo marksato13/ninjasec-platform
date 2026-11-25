@@ -58,56 +58,67 @@ type NavGroup = {
 
 const IC = (Icon: React.ElementType) => <Icon size={16} strokeWidth={1.75} />;
 
+// Orden del flujo de la empresa (ninjasec-empresa/OPERACIONES/flujos/01-ORDEN-DEL-SERVICIO.md):
+// primero entra el cliente (Comercial), luego se trabaja (Operacion), con las
+// herramientas tecnicas de Ninja Sec a mano, y al final el equipo y el control.
+// Las opciones de la capsula de telemetria siguen aqui: el menu del servidor las
+// oculta mientras este apagada.
 const navGroups: NavGroup[] = [
   {
-    id: "operations",
-    label: "Operaciones",
+    id: "home",
+    label: "Inicio",
     staffAllowed: true,
     items: [
-      { label: "Dashboard",     href: "/dashboard",                   icon: IC(BarChart3),    adminOnly: true },
-      { label: "Proyectos",     href: "/dashboard/projects",          icon: IC(FolderKanban) },
-      { label: "Integraciones", href: "/dashboard/integrations",      icon: IC(Plug) },
-      { label: "Dispositivos",  href: "/dashboard/devices",           icon: IC(Server) },
-      { label: "Revisiones",    href: "/dashboard/security-reviews",  icon: IC(ShieldCheck) },
-      { label: "Riesgos",       href: "/dashboard/risks",             icon: IC(AlertTriangle) },
-      { label: "Hardening",     href: "/dashboard/hardening",         icon: IC(Lock) },
-      { label: "Vulnerabilidades", href: "/dashboard/vulnerabilities", icon: IC(ShieldAlert) },
-      { label: "Guia SGSI",     href: "/dashboard/sgsi",              icon: IC(BookOpen) },
-      { label: "NetDoctor",     href: "/dashboard/netdoctor",         icon: IC(Stethoscope) },
-      { label: "Catálogo de equipos", href: "/dashboard/catalog-devices", icon: IC(Boxes) },
-      { label: "Informe SOC",   href: "/dashboard/soc-report",        icon: IC(Gauge) },
-      { label: "Tickets",       href: "/dashboard/support-tickets",   icon: IC(Ticket) },
-      { label: "Ventanas de trabajo", href: "/dashboard/work-windows", icon: IC(CalendarClock) },
+      { label: "Dashboard", href: "/dashboard", icon: IC(BarChart3), adminOnly: true },
     ],
   },
   {
     id: "commercial",
-    label: "Clientes",
+    label: "Comercial",
     staffAllowed: true,
     items: [
-      { label: "Clientes",      href: "/dashboard/clients",       icon: IC(Building2) },
+      { label: "Leads",     href: "/dashboard/leads",    icon: IC(Target),    adminOnly: true },
+      { label: "Servicios", href: "/dashboard/services", icon: IC(Layers),    adminOnly: true },
+      { label: "Clientes",  href: "/dashboard/clients",  icon: IC(Building2) },
+    ],
+  },
+  {
+    id: "operations",
+    label: "Operación",
+    staffAllowed: true,
+    items: [
+      { label: "Proyectos",           href: "/dashboard/projects",         icon: IC(FolderKanban) },
+      { label: "Ventanas de trabajo", href: "/dashboard/work-windows",     icon: IC(CalendarClock) },
+      { label: "Tickets",             href: "/dashboard/support-tickets",  icon: IC(Ticket) },
+      { label: "Revisiones",          href: "/dashboard/security-reviews", icon: IC(ShieldCheck) },
+    ],
+  },
+  {
+    id: "sec-tools",
+    label: "Herramientas Ninja Sec",
+    staffAllowed: true,
+    items: [
+      { label: "Riesgos",             href: "/dashboard/risks",           icon: IC(AlertTriangle) },
+      { label: "Vulnerabilidades",    href: "/dashboard/vulnerabilities", icon: IC(ShieldAlert) },
+      { label: "Dispositivos",        href: "/dashboard/devices",         icon: IC(Server) },
+      { label: "Catálogo de equipos", href: "/dashboard/catalog-devices", icon: IC(Boxes) },
+      { label: "NetDoctor",           href: "/dashboard/netdoctor",       icon: IC(Stethoscope) },
+      { label: "Guía SGSI",           href: "/dashboard/sgsi",            icon: IC(BookOpen) },
+      { label: "Integraciones",       href: "/dashboard/integrations",    icon: IC(Plug) },
+      { label: "Hardening",           href: "/dashboard/hardening",       icon: IC(Lock) },
+      { label: "Informe SOC",         href: "/dashboard/soc-report",      icon: IC(Gauge) },
+    ],
+  },
+  {
+    // La formacion es de todo el equipo; Usuarios y Postulaciones, solo de admins.
+    id: "team",
+    label: "Equipo",
+    staffAllowed: true,
+    items: [
       { label: "Colaboradores", href: "/dashboard/collaborators", icon: IC(UserCheck) },
-      { label: "Leads",         href: "/dashboard/leads",         icon: IC(Target),  adminOnly: true },
-      { label: "Servicios",     href: "/dashboard/services",      icon: IC(Layers),  adminOnly: true },
-    ],
-  },
-  {
-    // La formacion es de todo el equipo, no solo de los administradores: por eso va en
-    // su propio grupo y no dentro de "Talento", que los colaboradores no ven.
-    id: "training",
-    label: "Formación",
-    staffAllowed: true,
-    items: [
-      { label: "Formación", href: "/dashboard/formacion", icon: IC(GraduationCap) },
-    ],
-  },
-  {
-    id: "talent",
-    label: "Talento",
-    staffAllowed: false,
-    items: [
-      { label: "Usuarios",      href: "/dashboard/users",         icon: IC(Users) },
-      { label: "Postulaciones", href: "/dashboard/applications",  icon: IC(BriefcaseBusiness) },
+      { label: "Formación",     href: "/dashboard/formacion",     icon: IC(GraduationCap) },
+      { label: "Usuarios",      href: "/dashboard/users",         icon: IC(Users),             adminOnly: true },
+      { label: "Postulaciones", href: "/dashboard/applications",  icon: IC(BriefcaseBusiness), adminOnly: true },
     ],
   },
   {
@@ -115,17 +126,10 @@ const navGroups: NavGroup[] = [
     label: "Control",
     staffAllowed: false,
     items: [
-      { label: "Reportes",      href: "/dashboard/reports",    icon: IC(FileBarChart2) },
-      { label: "Aprobaciones",  href: "/dashboard/approvals",  icon: IC(CheckSquare) },
-      { label: "Auditoria",     href: "/dashboard/audit",      icon: IC(ScrollText) },
-    ],
-  },
-  {
-    id: "system",
-    label: "Sistema",
-    staffAllowed: false,
-    items: [
-      { label: "Configuracion", href: "/dashboard/settings", icon: IC(Settings) },
+      { label: "Reportes",      href: "/dashboard/reports",   icon: IC(FileBarChart2) },
+      { label: "Aprobaciones",  href: "/dashboard/approvals", icon: IC(CheckSquare) },
+      { label: "Auditoría",     href: "/dashboard/audit",     icon: IC(ScrollText) },
+      { label: "Configuración", href: "/dashboard/settings",  icon: IC(Settings) },
     ],
   },
 ];
