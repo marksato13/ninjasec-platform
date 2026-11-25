@@ -114,6 +114,9 @@ services:
       # va a ser publico. Solo hace falta si de verdad quieres poblar este
       # entorno; en una instalacion normal se deja vacia.
       SEED_PASSWORD:               ${SEED_PASSWORD:-}
+      # Login con Google: client_id de una app OAuth (no es secreto). Vacio = sin
+      # boton de Google; el login con correo y contrasena sigue igual.
+      GOOGLE_CLIENT_ID:            ${GOOGLE_CLIENT_ID:-}
       # Capsulas encendidas. Vacio = ninguna. "telemetria" esta apagada
       # porque los conectores son simulados.
       CAPSULAS_ACTIVAS:            ${CAPSULAS_ACTIVAS:-}
