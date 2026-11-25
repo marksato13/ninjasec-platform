@@ -132,7 +132,7 @@ def listar_capsulas() -> dict[str, object]:
 @api_router.get("/")
 def root() -> dict[str, object]:
     return {
-        "message": "Welcome to NinjaSec API",
+        "message": "Welcome to Ninja Tech API",
         "docs": "/docs",
         "modules": [
             "auth",

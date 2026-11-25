@@ -299,7 +299,7 @@ def add_ticket_event(
 
 
 # ---------------------------------------------------------------------------
-# Helper: construir workbook con plantilla corporativa NinjaSec
+# Helper: construir workbook con plantilla corporativa Ninja Tech
 # ---------------------------------------------------------------------------
 
 def _build_tickets_workbook(tickets: list) -> openpyxl.Workbook:
