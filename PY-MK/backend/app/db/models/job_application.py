@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import JobApplicationStatus
 
@@ -23,7 +24,7 @@ class JobApplication(Base):
         default=JobApplicationStatus.NEW,
     )
     source: Mapped[str | None] = mapped_column(String(80), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     assignments = relationship("ApplicationAssignment", back_populates="application")
     reviews = relationship("ApplicationReview", back_populates="application")

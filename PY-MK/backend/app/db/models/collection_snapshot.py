@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -24,7 +25,7 @@ class CollectionSnapshot(Base):
     snapshot_type: Mapped[str] = mapped_column(String(80), nullable=False)
     raw_payload: Mapped[str | None] = mapped_column(String(4000), nullable=True)
     normalized_payload: Mapped[str | None] = mapped_column(String(4000), nullable=True)
-    collected_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    collected_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
     integration = relationship("Integration", back_populates="snapshots")
     device = relationship("Device", back_populates="snapshots")

@@ -16,7 +16,6 @@ opcion a un rol al que el backend no se la dejaria usar.
 from __future__ import annotations
 
 import json
-from datetime import datetime
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -35,6 +34,7 @@ from app.core.navegacion import (
     opcion,
     opciones_de,
 )
+from app.core.time_utils import utcnow
 from app.db.models.enums import RoleCode
 from app.db.models.nav_visibility import NavVisibility
 from app.db.models.organization import Organization
@@ -202,7 +202,7 @@ def guardar_configuracion(
             )
 
     org_id = current_user.organization_id
-    ahora = datetime.utcnow()
+    ahora = utcnow()
     aplicados = []
     for c in payload.cambios:
         fila = db.scalar(

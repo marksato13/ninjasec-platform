@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 from app.db.models.enums import LeadStatus
 
@@ -30,4 +31,4 @@ class Lead(Base):
     source: Mapped[str | None] = mapped_column(String(80), nullable=True)
     # Al convertir el lead en cliente queda enlazado: es lo que impide convertirlo dos veces.
     converted_client_id: Mapped[int | None] = mapped_column(ForeignKey("clients.id"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.core.time_utils import utcnow
 from app.db.base import Base
 
 
@@ -18,9 +19,9 @@ class OrganizationAlertThreshold(Base):
     )
     overdue_days: Mapped[int] = mapped_column(Integer, nullable=False, default=7)
     no_review_days: Mapped[int] = mapped_column(Integer, nullable=False, default=30)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, default=utcnow, onupdate=utcnow
     )
 
     organization = relationship("Organization", back_populates="alert_thresholds")
