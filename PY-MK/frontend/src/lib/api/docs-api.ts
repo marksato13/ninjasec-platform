@@ -1,7 +1,7 @@
 import { request, buildQuery } from "./client";
 
 export type DocTypeItem = { id: number; name: string; scope: string; is_active: boolean; created_at?: string | null };
-export type ProjectDocItem = { id: number; project_id: number; doc_type_id: number; title: string; summary?: string | null; github_url?: string | null; preview_md?: string | null; visibility: string; status: string; enabled: boolean; created_by?: number | null; updated_by?: number | null; verified_by?: number | null; verified_at?: string | null; created_at?: string | null; updated_at?: string | null; file_url?: string | null; doc_type_name?: string | null };
+export type ProjectDocItem = { id: number; project_id: number; doc_type_id: number; title: string; summary?: string | null; github_url?: string | null; preview_md?: string | null; visibility: string; status: string; enabled: boolean; created_by?: number | null; updated_by?: number | null; verified_by?: number | null; verified_at?: string | null; created_at?: string | null; updated_at?: string | null; file_url?: string | null; doc_type_name?: string | null; client_decision?: "approved" | "changes_requested" | null; client_decision_note?: string | null; client_decision_by?: number | null; client_decision_at?: string | null };
 
 export async function getDocTypes(): Promise<DocTypeItem[]> { return request<DocTypeItem[]>("/doc-types"); }
 export async function createDocType(payload: { name: string; scope: string; is_active?: boolean }): Promise<DocTypeItem> { return request<DocTypeItem>("/doc-types", { method: "POST", body: JSON.stringify(payload) }); }
@@ -11,3 +11,6 @@ export async function getProjectDocs(params?: { project_id?: number | null; stat
 export async function createProjectDoc(payload: { project_id: number; doc_type_id: number; title: string; summary?: string | null; github_url?: string | null; preview_md?: string | null; visibility?: string; status?: string; enabled?: boolean }): Promise<ProjectDocItem> { return request<ProjectDocItem>("/project-docs", { method: "POST", body: JSON.stringify(payload) }); }
 export async function updateProjectDoc(id: number, payload: { title?: string | null; summary?: string | null; github_url?: string | null; preview_md?: string | null; visibility?: string | null; status?: string | null; enabled?: boolean | null }): Promise<ProjectDocItem> { return request<ProjectDocItem>(`/project-docs/${id}`, { method: "PUT", body: JSON.stringify(payload) }); }
 export async function toggleProjectDoc(id: number, enabled: boolean): Promise<ProjectDocItem> { return request<ProjectDocItem>(`/project-docs/${id}/toggle`, { method: "POST", body: JSON.stringify({ enabled }) }); }
+
+/** C1: el cliente aprueba un documento o pide cambios (con motivo). */
+export async function decideProjectDoc(id: number, decision: "approved" | "changes_requested", note?: string | null): Promise<ProjectDocItem> { return request<ProjectDocItem>(`/project-docs/${id}/client-decision`, { method: "POST", body: JSON.stringify({ decision, note: note ?? null }) }); }

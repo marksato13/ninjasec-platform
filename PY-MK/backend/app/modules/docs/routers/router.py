@@ -29,6 +29,7 @@ from app.modules.docs.schemas import (
     DocTypeCreate,
     DocTypeRead,
     DocTypeUpdate,
+    ProjectDocClientDecision,
     ProjectDocCreate,
     ProjectDocRead,
     ProjectDocToggle,
@@ -52,6 +53,14 @@ def _get_project_member(
             ProjectMember.user_id == user_id,
         )
     )
+
+
+def _reabrir_decision(doc: ProjectDoc) -> None:
+    """Una version nueva del documento anula la decision del cliente sobre la anterior."""
+    doc.client_decision = None
+    doc.client_decision_note = None
+    doc.client_decision_by = None
+    doc.client_decision_at = None
 
 
 def _get_accessible_doc(
@@ -271,6 +280,7 @@ async def upload_project_doc_file(
     doc.file_type = saved.content_type
     doc.file_size = saved.size
     doc.updated_by = current_user.id
+    _reabrir_decision(doc)  # archivo nuevo: el cliente lo vuelve a revisar
     db.commit()
     db.refresh(doc)
     AuditService(db).record(
@@ -282,6 +292,40 @@ async def upload_project_doc_file(
         metadata_json=json.dumps({"storage_key": saved.key}, ensure_ascii=True),
     )
     return ProjectDocRead.model_validate(doc)
+
+@router.post("/project-docs/{doc_id}/client-decision", response_model=ProjectDocRead)
+def decide_project_doc(
+    doc_id: int,
+    payload: ProjectDocClientDecision,
+    current_user: CurrentUser = Depends(require_roles(RoleCode.CLIENT.value)),
+    db: Session = Depends(get_db),
+) -> ProjectDocRead:
+    """C1: el cliente aprueba un entregable o pide cambios.
+
+    Solo sobre documentos que ya puede ver (de su empresa, visibles para el
+    cliente y no borradores); el resto es 404. Una aprobacion es definitiva
+    hasta que el equipo sube una version nueva.
+    """
+    doc, project = _get_accessible_doc(db, doc_id, current_user)
+    if doc.client_decision == "approved":
+        raise HTTPException(status_code=409, detail="Este documento ya está aprobado.")
+
+    doc.client_decision = payload.decision
+    doc.client_decision_note = payload.note
+    doc.client_decision_by = current_user.id
+    doc.client_decision_at = utcnow()
+    db.commit()
+    db.refresh(doc)
+    AuditService(db).record(
+        project.organization_id,
+        "project_doc.client_approved" if payload.decision == "approved" else "project_doc.client_changes_requested",
+        "project_docs",
+        str(doc.id),
+        current_user.id,
+        metadata_json=json.dumps({"project_id": project.id}, ensure_ascii=True),
+    )
+    return ProjectDocRead.model_validate(doc)
+
 
 @router.get("/project-docs/{doc_id}/download")
 def download_project_doc_file(
@@ -314,11 +358,17 @@ def update_project_doc(
         if not project or project.organization_id != current_user.organization_id:
             raise HTTPException(status_code=404, detail="Document not found")
     else:
+        # Antes `project` quedaba sin asignar en esta rama: el cambio se guardaba y
+        # la auditoria fallaba con 500. Y lo ajeno es 404, no 403.
         member = _get_project_member(db, doc.project_id, current_user.id)
         if not member or not member.can_publish_docs:
-            raise HTTPException(status_code=403, detail="Insufficient permissions")
+            raise HTTPException(status_code=404, detail="Document not found")
+        project = db.scalar(select(Project).where(Project.id == doc.project_id))
 
     updates = payload.model_dump(exclude_unset=True)
+    # Si cambia el contenido, el cliente tiene que revisarlo otra vez.
+    if updates.keys() & {"title", "summary", "github_url", "preview_md"}:
+        _reabrir_decision(doc)
     if "visibility" in updates:
         try:
             updates["visibility"] = DocVisibility(updates["visibility"])

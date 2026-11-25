@@ -19,6 +19,7 @@ import {
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { Modal } from "@/components/ui/modal";
+import { DecisionDocumento } from "@/components/portal/decision-documento";
 
 // ── File type helpers ─────────────────────────────────────────────────────────
 function fileIcon(typeName: string, url?: string | null) {
@@ -267,6 +268,12 @@ export default function PortalDocumentsPage() {
                     📁 {projectMap.get(doc.project_id) || `Proyecto #${doc.project_id}`}
                   </p>
                   {doc.summary && <p className="doc-summary" style={{ fontSize: "0.82rem", margin: 0 }}>{doc.summary}</p>}
+
+                  <DecisionDocumento
+                    doc={doc}
+                    esCliente={role === "client"}
+                    onDecidido={() => queryClient.invalidateQueries({ queryKey: ["portal-documents"] })}
+                  />
 
                   {/* Actions */}
                   <div style={{ display: "flex", gap: 8, marginTop: "auto", paddingTop: 4 }}>
