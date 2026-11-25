@@ -104,7 +104,7 @@ export async function createClientSite(payload: Omit<ClientSiteItem, "id">): Pro
 }
 
 export async function updateClientSite(siteId: number, payload: Partial<Omit<ClientSiteItem, "id" | "client_id">>): Promise<ClientSiteItem> {
-  return request<ClientSiteItem>(`/client-sites/${siteId}`, { method: "PATCH", body: JSON.stringify(payload) });
+  return request<ClientSiteItem>(`/client-sites/${siteId}`, { method: "PUT", body: JSON.stringify(payload) });
 }
 
 export async function deleteClientSite(siteId: number): Promise<{ message: string }> {
@@ -121,7 +121,7 @@ export async function createClientContact(payload: Omit<ClientContactItem, "id">
 }
 
 export async function updateClientContact(contactId: number, payload: Partial<Omit<ClientContactItem, "id" | "client_id">>): Promise<ClientContactItem> {
-  return request<ClientContactItem>(`/client-contacts/${contactId}`, { method: "PATCH", body: JSON.stringify(payload) });
+  return request<ClientContactItem>(`/client-contacts/${contactId}`, { method: "PUT", body: JSON.stringify(payload) });
 }
 
 export async function deleteClientContact(contactId: number): Promise<{ message: string }> {
