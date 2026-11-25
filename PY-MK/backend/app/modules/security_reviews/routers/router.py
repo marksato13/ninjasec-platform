@@ -472,8 +472,13 @@ def update_finding(
     db: Session = Depends(get_db),
 ) -> FindingRead:
     finding = Repository(db).get_by_id(ReviewFinding, finding_id)
-    if not finding:
+    review = db.get(SecurityReview, finding.review_id) if finding else None
+    # 404 tambien si el hallazgo es de otra organizacion: no confirmar que existe.
+    if not finding or not review or review.organization_id != current_user.organization_id:
         raise HTTPException(status_code=404, detail="Finding not found")
+    # Misma regla que editar la revision: un colaborador solo toca las suyas.
+    if current_user.role == RoleCode.COLLABORATOR.value and review.reviewer_user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Collaborators can only edit reviews assigned to them")
     for field, value in payload.model_dump(exclude_unset=True).items():
         if field == "severity" and value is not None:
             value = FindingSeverity(value)
@@ -483,6 +488,9 @@ def update_finding(
     db.add(finding)
     db.commit()
     db.refresh(finding)
+    AuditService(db).record(
+        current_user.organization_id, "review_finding.updated", "review_findings", str(finding.id), current_user.id
+    )
     return FindingRead.model_validate(finding)
 
 
