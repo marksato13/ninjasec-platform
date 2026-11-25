@@ -65,13 +65,16 @@ def list_user_skills(
     current_user: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[UserSkillRead]:
-    stmt = select(UserSkill, Skill.name).join(Skill, Skill.id == UserSkill.skill_id)
-    if current_user.role != RoleCode.SUPER_ADMIN.value:
-        stmt = stmt.join(User, User.id == UserSkill.user_id).where(
-            User.organization_id == current_user.organization_id
-        )
-        if current_user.role not in (RoleCode.ADMIN.value, RoleCode.SUPER_ADMIN.value):
-            stmt = stmt.where(UserSkill.user_id == current_user.id)
+    # Antes el super_admin no pasaba por el filtro de organizacion y veia las
+    # skills de todas. Ahora todos los roles quedan dentro de la suya.
+    stmt = (
+        select(UserSkill, Skill.name)
+        .join(Skill, Skill.id == UserSkill.skill_id)
+        .join(User, User.id == UserSkill.user_id)
+        .where(User.organization_id == current_user.organization_id)
+    )
+    if current_user.role not in (RoleCode.ADMIN.value, RoleCode.SUPER_ADMIN.value):
+        stmt = stmt.where(UserSkill.user_id == current_user.id)
 
     rows = db.execute(stmt).all()
     response: list[UserSkillRead] = []

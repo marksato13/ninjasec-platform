@@ -66,6 +66,8 @@ export const QK = {
   userSkills:      ()                          => ["user-skills"]                as const,
   certifications:  ()                          => ["certifications"]             as const,
   pendingApprovals: ()                          => ["approvals", "pending-count"] as const,
+  teamMatrix:      ()                          => ["certifications", "matrix"]   as const,
+  projectTeamCerts: (id: number)               => ["certifications", "project", id] as const,
 
   // Menus editables por rol
   navMe:           ()                          => ["nav", "me"]                  as const,

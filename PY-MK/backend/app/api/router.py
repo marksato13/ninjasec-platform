@@ -42,6 +42,7 @@ from app.modules.users.routers.router import router as users_router
 from app.modules.navigation.router import router as navigation_router
 from app.modules.study.router import router as study_router
 from app.modules.tracking.router import router as tracking_router
+from app.modules.certifications.routers.router import equipo_router as team_certifications_router
 from app.modules.certifications.routers.router import router as certifications_router
 
 from app.core.config import settings
@@ -92,6 +93,7 @@ _registrar(compliance_router)
 _registrar(audits_router)
 _registrar(skills_router)
 _registrar(certifications_router)
+_registrar(team_certifications_router)
 _registrar(projects_router)
 _registrar(project_extras_router)
 _registrar(project_tasks_router)
