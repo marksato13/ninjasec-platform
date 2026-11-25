@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Shield, ShieldCheck, Zap } from "lucide-react";
+import { Inbox, Layers, Shield, ShieldCheck, Trash2, X, Zap } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 
 import {
   createService,
@@ -56,6 +58,8 @@ export default function DashboardServicesPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sending, setSending] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
+  const [filterServiceId, setFilterServiceId] = useState<number | null>(null);
+  const requestsRef = useRef<HTMLElement>(null);
   const [createOpen, setCreateOpen]   = useState(false);
   const [createForm, setCreateForm]   = useState({ title: "", category: "", summary: "", description: "", price_label: "", is_public: true, active: true });
   const [createSaving, setCreateSaving] = useState(false);
@@ -78,8 +82,19 @@ export default function DashboardServicesPage() {
   }, [services]);
 
   const filteredRequests = useMemo(() =>
-    requests.filter((r) => !filterStatus || r.status === filterStatus),
-  [requests, filterStatus]);
+    requests.filter((r) => (!filterStatus || r.status === filterStatus) && (filterServiceId === null || r.service_id === filterServiceId)),
+  [requests, filterStatus, filterServiceId]);
+
+  const requestCountByService = useMemo(() => {
+    const m: Record<number, number> = {};
+    requests.forEach((r) => { m[r.service_id] = (m[r.service_id] ?? 0) + 1; });
+    return m;
+  }, [requests]);
+
+  function showRequestsFor(serviceId: number) {
+    setFilterServiceId(serviceId);
+    requestsRef.current?.scrollIntoView({ block: "start" });
+  }
 
   // KPIs
   const newCount    = requests.filter((r) => r.status === "NEW").length;
@@ -177,7 +192,12 @@ export default function DashboardServicesPage() {
         </div>
 
         {services.length === 0 ? (
-          <div className="empty-state">No hay servicios registrados.</div>
+          <EmptyState
+            icon={Layers}
+            title="Aún no hay servicios"
+            description="El catálogo es lo que los clientes ven y pueden solicitar desde su portal."
+            action={isAdmin ? { label: "Nuevo servicio", onClick: () => setCreateOpen(true) } : undefined}
+          />
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
             {services.filter((s) => s.active).map((service) => (
@@ -235,22 +255,35 @@ export default function DashboardServicesPage() {
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                  <button
-                    className="button button-primary"
-                    type="button"
-                    onClick={() => setRequestService(service)}
-                    style={{ flex: 1, gap: 6 }}
-                  >
-                    <Shield size={13} /> Solicitar
-                  </button>
+                <div style={{ display: "flex", gap: 8, marginTop: "auto", alignItems: "center" }}>
+                  {isAdmin ? (
+                    <button
+                      className="button button-secondary"
+                      type="button"
+                      onClick={() => showRequestsFor(service.id)}
+                      style={{ flex: 1, gap: 6 }}
+                    >
+                      <Inbox size={13} /> Ver solicitudes ({requestCountByService[service.id] ?? 0})
+                    </button>
+                  ) : (
+                    <button
+                      className="button button-primary"
+                      type="button"
+                      onClick={() => setRequestService(service)}
+                      style={{ flex: 1, gap: 6 }}
+                    >
+                      <Shield size={13} /> Solicitar
+                    </button>
+                  )}
                   {isSuperAdmin && (
                     <button
-                      className="button button-danger button-sm"
+                      className="button button-ghost button-sm"
                       type="button"
                       onClick={() => handleDeleteService(service)}
+                      aria-label={`Eliminar ${service.title}`}
+                      title="Eliminar del catálogo"
                     >
-                      Eliminar
+                      <Trash2 size={14} />
                     </button>
                   )}
                 </div>
@@ -262,10 +295,15 @@ export default function DashboardServicesPage() {
 
       {/* ── REQUESTS (admin only) ── */}
       {isAdmin && (
-        <article className="panel">
+        <article className="panel" ref={requestsRef} style={{ scrollMarginTop: 80 }}>
           <div className="panel-head">
             <div><p className="eyebrow">Gestión</p><h3>Solicitudes recibidas</h3></div>
             <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              {filterServiceId !== null && (
+                <button className="button button-ghost button-sm" type="button" onClick={() => setFilterServiceId(null)} style={{ gap: 6 }}>
+                  {serviceMap[filterServiceId] ?? "Servicio"} <X size={12} aria-label="Quitar filtro" />
+                </button>
+              )}
               {newCount > 0 && <span className="badge badge-pending">{newCount} nuevas</span>}
               {reviewCount > 0 && <span className="badge badge-draft">{reviewCount} en revisión</span>}
               <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{ fontSize: "0.82rem" }}>
@@ -279,7 +317,7 @@ export default function DashboardServicesPage() {
 
           {filteredRequests.length === 0 ? (
             <div className="empty-state">
-              {filterStatus ? `Sin solicitudes con estado "${STATUS_CFG[filterStatus]?.label ?? filterStatus}".` : "No hay solicitudes recibidas aún."}
+              {filterStatus ? `Sin solicitudes con estado "${STATUS_CFG[filterStatus]?.label ?? filterStatus}".` : filterServiceId !== null ? "Este servicio aún no recibe solicitudes." : "No hay solicitudes recibidas aún."}
             </div>
           ) : (
             <div className="table-like">

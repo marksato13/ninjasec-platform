@@ -37,6 +37,7 @@ class ServiceRequestRead(ORMModel):
     request_type: str | None = None
     message: str | None = None
     client_id: int | None = None
+    project_id: int | None = None
     # Era `str`: la base devuelve datetime y crear cualquier solicitud daba 500
     # despues de guardarla. En JSON sigue saliendo como texto ISO 8601.
     created_at: datetime | None = None
@@ -44,6 +45,19 @@ class ServiceRequestRead(ORMModel):
 
 class ServiceRequestUpdate(ORMModel):
     status: str
+
+
+class ServiceRequestConvert(ORMModel):
+    """Datos para convertir una solicitud en proyecto.
+
+    `client_id` solo hace falta si la solicitud llego del formulario publico (sin
+    cliente); si ya tiene uno, se usa ese y este campo se ignora.
+    """
+
+    project_type_id: int
+    client_id: int | None = None
+    name: str | None = Field(default=None, min_length=3, max_length=160)
+    description: str | None = Field(default=None, max_length=255)
 
 
 class ServiceRequestCreate(ORMModel):

@@ -1,4 +1,4 @@
-import { FileBarChart2, UserPlus } from "lucide-react";
+import { FileBarChart2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -26,14 +26,27 @@ const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard/collaborators":      { title: "Colaboradores",         subtitle: "Perfiles y disponibilidad" },
   "/dashboard/applications":       { title: "Postulaciones",         subtitle: "Proceso de selección" },
   "/dashboard/approvals":          { title: "Aprobaciones",          subtitle: "Skills y certificaciones pendientes" },
-  "/dashboard/audit":              { title: "Auditoria",             subtitle: "Trazabilidad de acciones" },
+  "/dashboard/audit":              { title: "Auditoría",             subtitle: "Trazabilidad de acciones" },
+  "/dashboard/risks":              { title: "Riesgos",               subtitle: "Activos, amenazas y tratamiento" },
+  "/dashboard/vulnerabilities":    { title: "Vulnerabilidades",      subtitle: "CVE priorizadas por EPSS" },
+  "/dashboard/sgsi":               { title: "Guía SGSI",             subtitle: "Documentación paso a paso" },
+  "/dashboard/netdoctor":          { title: "NetDoctor",             subtitle: "Diagnóstico guiado de red" },
+  "/dashboard/catalog-devices":    { title: "Catálogo de equipos",   subtitle: "Modelos, precios y ciclo de vida" },
+  "/dashboard/hardening":          { title: "Hardening",             subtitle: "Evaluación de configuración" },
+  "/dashboard/soc-report":         { title: "Informe SOC",           subtitle: "Resumen para el cliente" },
+  "/dashboard/formacion":          { title: "Formación",             subtitle: "Rutas hacia una certificación" },
+  "/dashboard/work-windows":       { title: "Ventanas de trabajo",   subtitle: "Cambios autorizados por el cliente" },
   "/dashboard/settings":           { title: "Configuración",         subtitle: "Ajustes del sistema" },
 };
 
+// La ruta mas larga que coincide gana: antes "/dashboard" atrapaba "/dashboard/risks"
+// y toda pagina sin entrada propia se titulaba "Dashboard".
 function resolveTitle(pathname: string) {
   if (topbarTitles[pathname]) return topbarTitles[pathname];
-  const match = Object.entries(topbarTitles).find(([path]) => pathname.startsWith(`${path}/`));
-  return match?.[1] ?? { title: "Backoffice", subtitle: "Operación centralizada" };
+  const match = Object.entries(topbarTitles)
+    .filter(([path]) => path !== "/dashboard" && pathname.startsWith(`${path}/`))
+    .sort((a, b) => b[0].length - a[0].length)[0];
+  return match?.[1] ?? { title: "Panel", subtitle: "Operación de Ninja Tech" };
 }
 
 export function Topbar({ user, onMenuClick }: TopbarProps) {
@@ -76,10 +89,6 @@ export function Topbar({ user, onMenuClick }: TopbarProps) {
         <Link className="button button-secondary" href="/dashboard/reports" style={{ gap: 6 }}>
           <FileBarChart2 size={14} />
           Reportes
-        </Link>
-        <Link className="button button-primary" href="/dashboard/users" style={{ gap: 6 }}>
-          <UserPlus size={14} />
-          Nuevo usuario
         </Link>
       </div>
     </header>

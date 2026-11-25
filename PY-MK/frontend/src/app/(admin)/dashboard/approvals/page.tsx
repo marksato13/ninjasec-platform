@@ -159,8 +159,10 @@ export default function ApprovalsPage() {
   return (
     <section className="page-stack">
       <div className="section-heading">
-        <p className="eyebrow">Admin</p>
-        <h2>Aprobaciones y catalogos</h2>
+        <div>
+          <p className="eyebrow">Admin</p>
+          <h2>Aprobaciones y catálogos</h2>
+        </div>
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
@@ -172,7 +174,7 @@ export default function ApprovalsPage() {
           <div className="panel-head">
             <div>
               <p className="eyebrow">Skills</p>
-              <h3>Verificacion pendiente</h3>
+              <h3>Verificación pendiente</h3>
             </div>
           </div>
           {skillItems.length === 0 ? (
@@ -208,7 +210,7 @@ export default function ApprovalsPage() {
           <div className="panel-head">
             <div>
               <p className="eyebrow">Certificaciones</p>
-              <h3>Verificacion pendiente</h3>
+              <h3>Verificación pendiente</h3>
             </div>
           </div>
           {certItems.length === 0 ? (

@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CalendarCheck, CheckCircle, Clock, Plus, ShieldAlert } from "lucide-react";
+import { CalendarCheck, CheckCircle, Clock, Plus, ShieldAlert, ShieldCheck } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
+
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
@@ -193,7 +195,12 @@ export default function SecurityReviewsPage() {
         {loading ? (
           <div className="empty-state">Cargando revisiones...</div>
         ) : reviews.length === 0 ? (
-          <div className="empty-state">No hay revisiones{status ? ` con estado "${status}"` : ""}.</div>
+          <EmptyState
+            icon={ShieldCheck}
+            title={status || clientId ? "Ninguna revisión con estos filtros" : "Aún no hay revisiones"}
+            description="Una revisión evalúa una consola del cliente con checklist, hallazgos y recomendaciones."
+            action={isAdmin ? { label: "Nueva revisión", onClick: () => setCreateOpen(true) } : undefined}
+          />
         ) : (
           <div className="card-grid">
             {reviews.map((review) => (

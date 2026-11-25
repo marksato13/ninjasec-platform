@@ -1,0 +1,51 @@
+Licencia propietaria — Ninja Tech
+Copyright (c) 2026 Rubén Mark Salazar Tocas (Ninja Tech). Todos los derechos reservados.
+
+Este repositorio es público para que su código pueda leerse y evaluarse. Que sea
+visible no concede ninguna licencia de uso.
+
+1. Se permite
+   - Ver y leer el código fuente en GitHub.
+   - Clonarlo o descargarlo solo para leerlo, evaluarlo o auditar su seguridad, sin
+     ejecutarlo en producción ni ofrecerlo a terceros.
+   - Proponer cambios mediante issues o pull requests (ver punto 4).
+
+2. No se permite, sin autorización previa y por escrito del titular
+   - Copiar, modificar, adaptar o crear obras derivadas del código, total o
+     parcialmente.
+   - Distribuirlo, sublicenciarlo, venderlo o publicarlo en otro lugar.
+   - Usarlo para prestar servicios a terceros, alojarlo como servicio (SaaS) o
+     integrarlo en otro producto, con o sin fines de lucro.
+   - Usar los nombres «Ninja Tech», «Ninja Sec», «Ninja Dev» o «NinjaSec», sus logotipos,
+     la mascota «Kuro» y demás elementos de marca (carpeta PY-MK/frontend/public/ y
+     similares), que no forman parte de ninguna licencia de código.
+
+3. Componentes de terceros
+   Las dependencias (paquetes de npm, PyPI, imágenes de contenedor y similares)
+   conservan sus propias licencias. Esta licencia no las modifica ni las reemplaza.
+
+4. Contribuciones
+   Quien envíe una contribución (pull request, parche o sugerencia de código) declara
+   que es autor de ella o tiene derecho a aportarla, y concede al titular una licencia
+   perpetua, mundial, gratuita, irrevocable y no exclusiva para usarla, modificarla,
+   sublicenciarla y distribuirla como parte de este proyecto o de otro.
+
+5. Sin garantía
+   El código se ofrece «tal cual», sin garantía de ningún tipo. El titular no responde
+   por daños derivados de su lectura o de un uso no autorizado.
+
+6. Ley aplicable
+   Esta licencia se rige por las leyes de la República del Perú, en particular el
+   Decreto Legislativo 822 (Ley sobre el Derecho de Autor), que protege los programas
+   de ordenador como obras.
+
+Para pedir autorización de uso o una licencia comercial, escribe al titular a través
+de los canales de contacto publicados en el sitio de Ninja Tech.
+
+---
+
+English summary (the Spanish text above prevails): proprietary, source-available.
+You may view and read this code. Copying, modifying, redistributing, hosting it as a
+service or using the Ninja Tech brand requires prior written permission. Third-party
+dependencies keep their own licenses. Provided "as is", without warranty. Governed by
+the laws of Peru.

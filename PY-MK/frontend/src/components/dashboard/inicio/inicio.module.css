@@ -1,0 +1,417 @@
+/* Inicio del panel: la operacion de Ninja Tech de un vistazo.
+   Usa solo los tokens de globals.css; no define colores propios salvo las
+   dos areas, que salen de --primary (Ninja Dev) y --security (Ninja Sec). */
+
+.page {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* ── Cabecera ─────────────────────────────────────────────── */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.greeting {
+  margin: 0;
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.date {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.headActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── Embudo: el elemento protagonista ─────────────────────── */
+.funnel {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 18px 20px 20px;
+}
+
+.funnelTitle {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.funnelHint {
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.stages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+}
+
+.stage {
+  position: relative;
+  min-width: 0;
+}
+
+/* La flecha entre etapas: el orden del servicio es una secuencia real. */
+.stage + .stage::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid var(--line-active);
+  border-right: 1px solid var(--line-active);
+  transform: translateY(-50%) rotate(45deg);
+  pointer-events: none;
+}
+
+.stageLink {
+  display: grid;
+  gap: 4px;
+  height: 100%;
+  padding: 12px 18px;
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stageLink:hover {
+    background: var(--row-hover);
+  }
+}
+
+.stageLink:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.stageLabel {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.stageValue {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.stageValueEmpty {
+  color: var(--disabled);
+}
+
+.stageDetail {
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+.areas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.areaChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+.areaDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+
+.areaDotSec {
+  background: var(--security);
+}
+
+.areaDotDev {
+  background: var(--primary);
+}
+
+/* ── Rejilla inferior ─────────────────────────────────────── */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 18px 20px;
+  min-width: 0;
+}
+
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.cardMeta {
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+a.cardMeta:hover {
+  color: var(--text);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.item:hover {
+    background: var(--row-hover);
+  }
+}
+
+a.item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.itemIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.itemIconWarn {
+  background: color-mix(in srgb, var(--warning) 14%, transparent);
+  color: var(--warning);
+}
+
+.itemIconDanger {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+}
+
+.itemBody {
+  min-width: 0;
+}
+
+.itemTitle {
+  font-size: 0.9rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemSub {
+  font-size: 0.8rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemWhen {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.empty {
+  margin: 0;
+  padding: 14px 10px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.error {
+  margin: 0;
+  padding: 10px;
+  color: var(--danger);
+  font-size: 0.88rem;
+}
+
+/* ── Primeros pasos ───────────────────────────────────────── */
+.setup {
+  border: 1px solid var(--line-active);
+  border-radius: 16px;
+  background: var(--primary-soft);
+  padding: 18px 20px;
+}
+
+.setupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.setupProgress {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+
+a.step:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  a.step:hover {
+    border-color: var(--line-active);
+  }
+}
+
+.stepDone {
+  opacity: 0.6;
+}
+
+.stepCheck {
+  flex: none;
+  margin-top: 1px;
+  color: var(--muted);
+}
+
+.stepDone .stepCheck {
+  color: var(--success);
+}
+
+.stepText {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stepTitle {
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.stepDone .stepTitle {
+  text-decoration: line-through;
+}
+
+.stepHow {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 860px) {
+  .stages {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+  }
+
+  .stage + .stage::before {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .stages {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stageLink,
+  .item {
+    transition: none;
+  }
+}
