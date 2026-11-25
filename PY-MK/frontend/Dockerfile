@@ -26,6 +26,10 @@ ENV NODE_ENV=production
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+# Sin esto `next start` no encuentra la configuracion y usa los valores por defecto en
+# las opciones de ejecucion: volvia a enviar `X-Powered-By: Next.js` aunque el build
+# dijera `poweredByHeader: false`. Las cabeceras y los rewrites si van en el build.
+COPY --from=builder /app/next.config.ts ./next.config.ts
 COPY --from=builder /app/node_modules ./node_modules
 
 USER node
