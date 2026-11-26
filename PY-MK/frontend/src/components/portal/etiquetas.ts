@@ -35,6 +35,12 @@ const EVENTO: Record<string, string> = {
   note: "Nota",
   assignment: "Asignación",
   created: "Creación",
+  manual_note: "Seguimiento",
+  // Solicitudes de cambio (35-P-03): el backend los escribe en inglés.
+  change_estimated: "Cambio estimado",
+  change_approved: "Cambio aprobado",
+  change_rejected: "Cambio rechazado",
+  change_converted: "Convertido en proyecto",
 };
 
 const ESTADO_TICKET: Record<string, string> = {
