@@ -43,13 +43,14 @@ import { notifyError, notifySuccess } from "@/lib/alerts";
 import { formatClientStatus, getStatusBadgeClass } from "@/lib/role-utils";
 import { getDeviceStatusLabel, getReviewStatusLabel, getSeverityLabel, getTicketStatusLabel } from "@/lib/labels";
 import { QK } from "@/lib/query-keys";
+import { SistemasLista } from "@/components/ninja-dev/sistemas-lista";
 
 // Las consolas (integrations) y la puntuacion por host son de la capsula de
 // telemetria. Apagada, sus rutas no existen en el backend: no se consultan ni se
 // muestra lo que depende de ellas.
 const TELEMETRIA = capsulaActiva("telemetria");
 
-type TabKey = "resumen" | "info" | "sites" | "contacts" | "services" | "access" | "integrations" | "inventory" | "tickets" | "reviews";
+type TabKey = "resumen" | "info" | "sites" | "contacts" | "services" | "access" | "integrations" | "inventory" | "sistemas" | "tickets" | "reviews";
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "resumen",      label: "Resumen" },
@@ -60,6 +61,8 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "access",       label: "Acceso" },
   ...(TELEMETRIA ? [{ key: "integrations" as TabKey, label: "Consolas" }] : []),
   { key: "inventory",    label: "Inventario" },
+  // 35-P-01: lo que Ninja Dev le construyo o le mantiene.
+  { key: "sistemas",     label: "Sistemas" },
   { key: "tickets",      label: "Tickets" },
   { key: "reviews",      label: "Revisiones" },
 ];
@@ -535,6 +538,8 @@ export default function ClientDetailPage() {
           </article>
         );
       })() : null}
+
+      {activeTab === "sistemas" ? <SistemasLista clientId={clientId} /> : null}
 
       {activeTab === "tickets" ? (() => {
         const filteredTickets = tickets.filter((t) => {

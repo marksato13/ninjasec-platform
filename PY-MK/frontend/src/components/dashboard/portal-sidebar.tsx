@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AppWindow,
   CalendarClock,
   FileText,
   FolderKanban,
@@ -29,6 +30,7 @@ const IC = (Icon: React.ElementType) => <Icon size={16} strokeWidth={1.75} />;
 const clientNavItems: NavItem[] = [
   { label: "Inicio",     href: "/portal",           icon: IC(LayoutGrid) },
   { label: "Proyectos",  href: "/portal/projects",  icon: IC(FolderKanban) },
+  { label: "Mis sistemas", href: "/portal/sistemas", icon: IC(AppWindow) },
   { label: "Inventario", href: "/portal/inventory", icon: IC(Server) },
   { label: "Documentos", href: "/portal/documents", icon: IC(FileText) },
   { label: "Tickets",    href: "/portal/tickets",   icon: IC(HelpCircle) },

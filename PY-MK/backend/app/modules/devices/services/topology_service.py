@@ -4,7 +4,7 @@ import ipaddress
 from collections import defaultdict
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db.models.client import Client
@@ -23,6 +23,27 @@ from app.modules.devices.schemas import (
     TopologyNode,
     TopologyResponse,
 )
+
+
+def equipos_del_cliente(client_id: int, organization_id: int):
+    """Equipos de un cliente: por su integracion o por su sede.
+
+    Los registrados a mano no tienen integracion (y con la capsula de
+    telemetria apagada no hay ninguna): cuelgan de una sede del cliente.
+    La misma regla que usa DeviceService.list, para que el inventario y la
+    topologia cuenten los mismos equipos.
+    """
+    return (
+        select(Device)
+        .outerjoin(Integration, Device.integration_id == Integration.id)
+        .outerjoin(ClientSite, Device.site_id == ClientSite.id)
+        .where(
+            or_(
+                and_(Integration.client_id == client_id, Integration.organization_id == organization_id),
+                and_(ClientSite.client_id == client_id, ClientSite.client.has(organization_id=organization_id)),
+            )
+        )
+    )
 
 
 class TopologyService:
@@ -44,14 +65,9 @@ class TopologyService:
                 raise HTTPException(status_code=404, detail="Client not found")
 
         devices = list(self.db.scalars(
-            select(Device)
+            equipos_del_cliente(client_id, self.current_user.organization_id)
             .options(selectinload(Device.responsible_user))
-            .join(Integration, Device.integration_id == Integration.id)
-            .where(
-                Integration.client_id == client_id,
-                Integration.organization_id == self.current_user.organization_id,
-            )
-        ).all())
+        ).unique().all())
 
         device_ids = [d.id for d in devices]
         nodes: list[TopologyNode] = []

@@ -1,0 +1,112 @@
+/* Pantallas de Ninja Dev (plan 35). Las columnas van aqui y no en `style`
+   porque un estilo en linea le gana al @media y en el movil la fila no se
+   apilaria. Dos clases para ganarle a la regla global de `.table-row`. */
+
+.lista .fila {
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.lista .sistemas   { grid-template-columns: 1.5fr 1fr 0.9fr 1fr 0.8fr; }
+.lista .despliegues { grid-template-columns: 1.3fr 0.8fr 1.6fr 1fr 0.8fr; }
+.lista .sinClic { cursor: default; }
+
+.nombre { font-weight: 600; font-size: 0.88rem; }
+.celda  { font-size: 0.82rem; }
+.etiquetas { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+.barra {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.barra select { font-size: 0.82rem; }
+
+.dl {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 6px 12px;
+  font-size: 0.85rem;
+  margin: 0;
+}
+.dl dd { margin: 0; overflow-wrap: anywhere; }
+
+.dosColumnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Entornos: una tarjeta por entorno, lado a lado en escritorio. */
+.entornos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.entorno {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.aviso { color: var(--warning); font-size: 0.8rem; font-weight: 600; }
+.peligro { color: var(--danger); font-size: 0.8rem; font-weight: 600; }
+
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+/* Panel: cuatro columnas de alertas que bajan a una en el movil. */
+.panelGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.item:last-child { border-bottom: none; }
+
+/* Solo color y fondo: nada de `transition: all`. */
+.item .nombre { transition: color 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+.item:hover .nombre { color: var(--primary); }
+@media (prefers-reduced-motion: reduce) {
+  .item .nombre { transition: none; }
+}
+
+.vacio { font-size: 0.85rem; color: var(--muted); padding: 10px 0; }
+
+@media (max-width: 640px) {
+  .lista .sistemas,
+  .lista .despliegues { grid-template-columns: 1fr; gap: 6px; }
+  .lista .cabecera { display: none; }
+  .dl { grid-template-columns: 1fr; gap: 2px; }
+  .dl dt { margin-top: 8px; }
+  .dosColumnas { grid-template-columns: 1fr; }
+  .panelGrid { grid-template-columns: 1fr; }
+}
