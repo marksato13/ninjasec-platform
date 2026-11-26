@@ -95,7 +95,7 @@ export default function UsersPage() {
     queryFn: () => getUsers(),
   });
 
-  const users = data ?? [];
+  const users = useMemo(() => data ?? [], [data]);
 
   useEffect(() => {
     if (queryError) {
