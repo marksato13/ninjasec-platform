@@ -13,9 +13,22 @@ from tests.conftest import API
 def test_la_guia_ninja_dev_esta_en_el_menu_del_equipo():
     o = opcion("staff", "/dashboard/ninja-dev")
     assert o is not None
-    assert o.grupo == "Herramientas Ninja Dev"
+    assert o.grupo == "Ninja Dev"
     assert set(o.permitidas) == {"super_admin", "admin", "collaborator"}
     assert o.capsula is None
+
+
+def test_el_grupo_ninja_dev_trae_panel_sistemas_y_despliegues():
+    for clave in ("/dashboard/panel-dev", "/dashboard/sistemas", "/dashboard/despliegues"):
+        o = opcion("staff", clave)
+        assert o is not None, clave
+        assert o.grupo == "Ninja Dev"
+        # El colaborador los usa: el backend le filtra a sus proyectos.
+        assert set(o.permitidas) == {"super_admin", "admin", "collaborator"}
+        assert o.capsula is None
+    o = opcion("portal", "/portal/sistemas")
+    assert o is not None
+    assert o.permitidas == ("client",)
 
 
 def test_el_catalogo_devuelve_el_area_de_cada_servicio(http_client, admin_token, db, seed_data):
