@@ -139,7 +139,7 @@ export default function DashboardCollaboratorsPage() {
   const expiredCertCount = (userId: number) =>
     (certsByUser[userId] ?? []).filter((c) => c.is_expired).length;
 
-  const profiles    = data?.profiles ?? [];
+  const profiles    = useMemo(() => data?.profiles ?? [], [data?.profiles]);
   const usersById   = useMemo(() => {
     const map: Record<number, DashboardUser> = {};
     (data?.users ?? []).forEach((u) => { map[u.id] = u; });
