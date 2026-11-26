@@ -8,6 +8,7 @@ import { createSkill, createUserSkill, getSkills, getUserSkills, updateUserSkill
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { QK } from "@/lib/query-keys";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConMarca } from "@/components/ui/marca-icono";
 
 import s from "./formacion.module.css";
 
@@ -131,7 +132,7 @@ export function MisSkills({ userId }: { userId: number | undefined }) {
             return (
               <div key={m.id} className={s.skill}>
                 <div>
-                  <strong>{m.skill_name}</strong>
+                  <strong><ConMarca nombre={m.skill_name ?? `Skill #${m.skill_id}`} size={18} /></strong>
                   {m.status === "rejected" && m.rejection_reason ? (
                     <p className="muted-small" style={{ margin: "4px 0 0" }}>Motivo: {m.rejection_reason}</p>
                   ) : null}

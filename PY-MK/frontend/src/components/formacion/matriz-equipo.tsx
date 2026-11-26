@@ -7,6 +7,7 @@ import { Users } from "lucide-react";
 import { getTeamMatrix, type AreaCert, type CertificacionPublica } from "@/lib/api";
 import { QK } from "@/lib/query-keys";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConMarca } from "@/components/ui/marca-icono";
 
 import s from "./formacion.module.css";
 import { Nivel } from "./mis-skills";
@@ -74,8 +75,8 @@ export function MatrizEquipo() {
               </div>
               <div role="cell" className={s.chips}>
                 {f.skills.length === 0 ? <span className="muted-small">—</span> : f.skills.map((k) => (
-                  <span key={k.name} className={s.chip} style={{ gap: 8 }}>
-                    {k.name} <Nivel valor={k.level} />
+                  <span key={k.name} className={`${s.chip} ${s.chipMarca}`} style={{ gap: 8 }}>
+                    <ConMarca nombre={k.name} size={14} /> <Nivel valor={k.level} />
                   </span>
                 ))}
               </div>

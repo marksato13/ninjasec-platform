@@ -11,9 +11,10 @@ import { MatrizEquipo } from "@/components/formacion/matriz-equipo";
 import { MisCertificaciones } from "@/components/formacion/mis-certificaciones";
 import { MisSkills } from "@/components/formacion/mis-skills";
 import { RutasEstudio } from "@/components/formacion/rutas-estudio";
+import { Tecnologias } from "@/components/formacion/tecnologias";
 import { Validar } from "@/components/formacion/validar";
 
-type Pestania = "certificaciones" | "skills" | "rutas" | "validar" | "equipo";
+type Pestania = "certificaciones" | "skills" | "tecnologias" | "rutas" | "validar" | "equipo";
 
 /**
  * Formacion: las credenciales del equipo, no un aula.
@@ -39,6 +40,7 @@ function Formacion() {
   const pestanias: { id: Pestania; label: string; visible: boolean }[] = [
     { id: "certificaciones", label: "Mis certificaciones", visible: true },
     { id: "skills", label: "Mis skills", visible: true },
+    { id: "tecnologias", label: "Tecnologías", visible: true },
     { id: "rutas", label: "Rutas de estudio", visible: true },
     {
       id: "validar",
@@ -88,7 +90,8 @@ function Formacion() {
       <div role="tabpanel" id={`panel-${activa}`} aria-labelledby={`tab-${activa}`}>
         {activa === "certificaciones" && <MisCertificaciones userId={user?.id} />}
         {activa === "skills" && <MisSkills userId={user?.id} />}
-        {activa === "rutas" && <RutasEstudio userId={user?.id} />}
+        {activa === "tecnologias" && <Tecnologias />}
+        {activa === "rutas" &&<RutasEstudio userId={user?.id} />}
         {activa === "validar" && esAdmin && <Validar puedeValidar={esSuper} />}
         {activa === "equipo" && esAdmin && <MatrizEquipo />}
       </div>
