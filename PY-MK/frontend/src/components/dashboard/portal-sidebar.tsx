@@ -1,10 +1,7 @@
 "use client";
 
 import {
-  BookOpen,
   CalendarClock,
-  CheckSquare,
-  ClipboardList,
   FileText,
   FolderKanban,
   HelpCircle,
@@ -15,6 +12,7 @@ import {
   User,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -39,22 +37,9 @@ const clientNavItems: NavItem[] = [
   { label: "Perfil",     href: "/portal/profile",   icon: IC(User) },
 ];
 
-const baseItems: NavItem[] = [
-  { label: "Portal",    href: "/portal",          icon: IC(LayoutGrid) },
-  { label: "Perfil",    href: "/portal/profile",  icon: IC(User) },
-];
-
-const collaboratorItems: NavItem[] = [
-  { label: "Postulaciones", href: "/portal/applications", icon: IC(ClipboardList) },
-  { label: "Tareas",        href: "/portal/tasks",        icon: IC(CheckSquare) },
-  { label: "Ventanas",      href: "/portal/work-windows", icon: IC(CalendarClock) },
-  { label: "Recursos",      href: "/portal/resources",    icon: IC(BookOpen) },
-];
-
+/** El portal es solo del cliente (PortalGuard); el equipo trabaja en el panel. */
 function getNavItems(role?: string | null) {
-  if (role === "client")       return clientNavItems;
-  if (role === "collaborator") return [...baseItems, ...collaboratorItems];
-  return baseItems;
+  return role === "client" ? clientNavItems : [];
 }
 
 type PortalSidebarProps = {
@@ -88,7 +73,9 @@ export function PortalSidebar({ isOpen = false, isCollapsed = false, onClose }: 
 
       {/* Brand */}
       <div className="brand-block sidebar-header">
-        <div className="logo-space">NS</div>
+        <div className="logo-space logo-space--marca">
+          <Image src="/brand/icono-cabeza.webp" alt="Ninja Tech" width={36} height={36} priority />
+        </div>
         {!isCollapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Ninja Tech</p>

@@ -18,6 +18,9 @@ from app.modules.support_tickets.schemas import (
     SupportTicketDetail,
     SupportTicketRead,
     SupportTicketUpdate,
+    TicketClientDecision,
+    TicketConvert,
+    TicketEstimate,
     TicketEventCreate,
     TicketEventRead,
     TicketFromFindingCreate,
@@ -193,6 +196,21 @@ async def import_tickets_xlsx(
             continue
 
         try:
+            # Las mismas comprobaciones que el alta normal: un Excel no puede
+            # colar clientes, integraciones ni equipos de otra organizacion.
+            TicketService(db, current_user)._validar_referencias(SupportTicketCreate(
+                client_id=int(client_id_val),
+                title=str(title_val).strip(),
+                priority=priority_val,
+                integration_id=int(_cell(row, "integration_id")) if _cell(row, "integration_id") else None,
+                device_id=int(_cell(row, "device_id")) if _cell(row, "device_id") else None,
+            ))
+        except HTTPException as exc:
+            errors.append(f"Fila {row_num}: {exc.detail}")
+            skipped += 1
+            continue
+
+        try:
             db.add(SupportTicket(
                 organization_id=current_user.organization_id,
                 client_id=int(client_id_val),
@@ -296,6 +314,49 @@ def add_ticket_event(
     db: Session = Depends(get_db),
 ) -> TicketEventRead:
     return TicketEventRead.model_validate(TicketService(db, current_user).add_event(ticket_id, payload))
+
+
+# ---------------------------------------------------------------------------
+# 35-P-03 · solicitudes de cambio
+# ---------------------------------------------------------------------------
+
+@router.post("/{ticket_id}/estimate", response_model=SupportTicketRead)
+def estimate_change(
+    ticket_id: int,
+    payload: TicketEstimate,
+    current_user: CurrentUser = Depends(
+        require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value)
+    ),
+    db: Session = Depends(get_db),
+) -> SupportTicketRead:
+    """El equipo estima las horas de un cambio."""
+    return SupportTicketRead.model_validate(TicketService(db, current_user).estimate(ticket_id, payload))
+
+
+@router.post("/{ticket_id}/client-decision", response_model=SupportTicketRead)
+def decide_change(
+    ticket_id: int,
+    payload: TicketClientDecision,
+    current_user: CurrentUser = Depends(
+        require_roles(
+            RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value, RoleCode.COLLABORATOR.value, RoleCode.CLIENT.value
+        )
+    ),
+    db: Session = Depends(get_db),
+) -> SupportTicketRead:
+    """El cliente aprueba o rechaza la estimación. El equipo recibe 403: no decide por él."""
+    return SupportTicketRead.model_validate(TicketService(db, current_user).decide(ticket_id, payload))
+
+
+@router.post("/{ticket_id}/convert", response_model=SupportTicketRead)
+def convert_change(
+    ticket_id: int,
+    payload: TicketConvert,
+    current_user: CurrentUser = Depends(require_roles(RoleCode.SUPER_ADMIN.value, RoleCode.ADMIN.value)),
+    db: Session = Depends(get_db),
+) -> SupportTicketRead:
+    """El admin convierte un cambio aprobado en una tarea de un proyecto existente o nuevo."""
+    return SupportTicketRead.model_validate(TicketService(db, current_user).convert(ticket_id, payload))
 
 
 # ---------------------------------------------------------------------------

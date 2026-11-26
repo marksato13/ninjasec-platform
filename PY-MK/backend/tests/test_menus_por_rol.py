@@ -141,13 +141,13 @@ def test_sin_ediciones_el_colaborador_ve_lo_que_veia(http_client, collab_tok):
     visibles = datos["staff"]
     for oculta in ("/dashboard", "/dashboard/leads", "/dashboard/services",
                    "/dashboard/users", "/dashboard/applications", "/dashboard/reports",
-                   "/dashboard/approvals", "/dashboard/audit", "/dashboard/settings"):
+                   "/dashboard/audit", "/dashboard/settings"):
         assert oculta not in visibles, oculta
     for propia in ("/dashboard/projects", "/dashboard/clients", "/dashboard/collaborators"):
         assert propia in visibles, propia
-    # y el portal de colaborador
-    assert set(datos["portal"]) == {"/portal", "/portal/profile", "/portal/applications",
-                                    "/portal/tasks", "/portal/resources", "/portal/work-windows"}
+    assert "/dashboard/mis-tareas" in visibles
+    # El portal es solo del cliente: el colaborador trabaja en el panel.
+    assert not datos.get("portal")
 
 
 def test_sin_ediciones_el_cliente_solo_tiene_portal(http_client, client_tok):

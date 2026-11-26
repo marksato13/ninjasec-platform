@@ -8,15 +8,14 @@ import {
   Boxes,
   BriefcaseBusiness,
   Building2,
-  CheckSquare,
   Code2,
   ChevronDown,
   ChevronUp,
-  Cpu,
   FileBarChart2,
   FolderKanban,
   GraduationCap,
   Layers,
+  ListChecks,
   Lock,
   LogOut,
   Plug,
@@ -33,6 +32,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -92,6 +92,7 @@ const navGroups: NavGroup[] = [
     staffAllowed: true,
     items: [
       { label: "Proyectos",           href: "/dashboard/projects",         icon: IC(FolderKanban) },
+      { label: "Mis tareas",          href: "/dashboard/mis-tareas",       icon: IC(ListChecks) },
       { label: "Ventanas de trabajo", href: "/dashboard/work-windows",     icon: IC(CalendarClock) },
       { label: "Tickets",             href: "/dashboard/support-tickets",  icon: IC(Ticket) },
       { label: "Revisiones",          href: "/dashboard/security-reviews", icon: IC(ShieldCheck) },
@@ -141,7 +142,6 @@ const navGroups: NavGroup[] = [
     staffAllowed: false,
     items: [
       { label: "Reportes",      href: "/dashboard/reports",   icon: IC(FileBarChart2) },
-      { label: "Aprobaciones",  href: "/dashboard/approvals", icon: IC(CheckSquare) },
       { label: "Auditoría",     href: "/dashboard/audit",     icon: IC(ScrollText) },
       { label: "Configuración", href: "/dashboard/settings",  icon: IC(Settings) },
     ],
@@ -205,7 +205,9 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
 
       {/* Brand */}
       <div className="brand-block sidebar-header">
-        <div className="logo-space">NS</div>
+        <div className="logo-space logo-space--marca">
+          <Image src="/brand/icono-cabeza.webp" alt="Ninja Tech" width={36} height={36} priority />
+        </div>
         {!isCollapsed && (
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Ninja Tech</p>
@@ -273,8 +275,8 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
                     >
                       <span className="nav-item-icon-wrap">{item.icon}</span>
                       {!isCollapsed && <strong>{item.label}</strong>}
-                      {item.href === "/dashboard/approvals" && (pendingApprovals?.pending ?? 0) > 0 && (
-                        <span className="badge badge-pending" aria-label={`${pendingApprovals?.pending} aprobaciones pendientes`}>
+                      {item.href === "/dashboard/formacion" && (pendingApprovals?.pending ?? 0) > 0 && (
+                        <span className="badge badge-pending" aria-label={`${pendingApprovals?.pending} certificaciones por validar`}>
                           {pendingApprovals?.pending}
                         </span>
                       )}

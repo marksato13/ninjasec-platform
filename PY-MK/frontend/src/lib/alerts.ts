@@ -198,6 +198,48 @@ export async function confirmApprove({
   return result.isConfirmed;
 }
 
+// ── Pedir un motivo por escrito (devuelve el texto, o null si cancela) ─
+export async function askReason({
+  title,
+  text,
+  placeholder = "Escribe aquí…",
+  confirmText = "Enviar",
+  cancelText = "Cancelar",
+  minLength = 5,
+  maxLength = 1000,
+}: {
+  title: string;
+  text?: string;
+  placeholder?: string;
+  confirmText?: string;
+  cancelText?: string;
+  minLength?: number;
+  maxLength?: number;
+}): Promise<string | null> {
+  const result = await Swal.fire({
+    ...dialogo("warning", "button-primary"),
+    iconHtml: icono("warning"),
+    title,
+    text,
+    input: "textarea",
+    inputPlaceholder: placeholder,
+    inputAttributes: { "aria-label": title, maxlength: String(maxLength) },
+    showCancelButton: true,
+    confirmButtonText: confirmText,
+    cancelButtonText: cancelText,
+    reverseButtons: true,
+    preConfirm: (value: string) => {
+      const limpio = (value ?? "").trim();
+      if (limpio.length < minLength) {
+        Swal.showValidationMessage(`Escribe al menos ${minLength} caracteres.`);
+        return false;
+      }
+      return limpio;
+    },
+  });
+  return result.isConfirmed ? (result.value as string) : null;
+}
+
 // ── Avisos ────────────────────────────────────────────────────────────
 export function notifySuccess(title: string, text?: string) {
   return avisar("success", title, text, 3000);

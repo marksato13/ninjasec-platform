@@ -81,6 +81,7 @@ export const QK = {
 
   // Seguimiento de proyectos
   tracking:        (id: number)                => ["tracking", id]               as const,
+  paymentMilestones: (id: number)              => ["payment-milestones", id]     as const,
 
   // Ventanas de trabajo
   workWindows:     (f?: object)               => ["work-windows", f]            as const,

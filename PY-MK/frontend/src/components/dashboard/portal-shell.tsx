@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MessageCircleQuestion, FileText, FolderKanban, Package, Server, Ticket } from "lucide-react";
 
@@ -15,6 +16,7 @@ import {
   SupportTicketItem,
 } from "@/lib/api";
 import { clearSession, getStoredToken, isPortalRole, isTokenExpired } from "@/lib/auth";
+import { LOGIN_EXPIRED_PATH, SessionExpiredError } from "@/lib/session-expired";
 import { ProyectoResumen } from "@/components/portal/proyecto-resumen";
 import { hace } from "@/components/portal/etiquetas";
 import s from "@/components/portal/portal.module.css";
@@ -41,6 +43,7 @@ function hoy(): string {
 }
 
 export function PortalShell() {
+  const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [proyectos, setProyectos] = useState<ProjectItem[] | null>(null);
   const [tickets, setTickets] = useState<SupportTicketItem[]>([]);
@@ -52,12 +55,12 @@ export function PortalShell() {
   useEffect(() => {
     const token = getStoredToken();
     if (!token) {
-      window.location.href = "/login";
+      router.replace("/login");
       return;
     }
     if (isTokenExpired(token)) {
       clearSession();
-      window.location.href = "/login?expired=1";
+      router.replace(LOGIN_EXPIRED_PATH);
       return;
     }
 
@@ -65,7 +68,7 @@ export function PortalShell() {
       try {
         const me = await getMe();
         if (!isPortalRole(me.role)) {
-          window.location.href = "/dashboard";
+          router.replace("/dashboard");
           return;
         }
         setUser(me);
@@ -81,6 +84,7 @@ export function PortalShell() {
         if (equiposRes.status === "fulfilled") setEquipos(equiposRes.value.filter((d) => d.status === "active").length);
         if (docsRes.status === "fulfilled") setDocumentos(docsRes.value.length);
       } catch (err) {
+        if (err instanceof SessionExpiredError) return;
         clearSession();
         setError(err instanceof Error ? err.message : "No se pudo cargar el portal");
       } finally {
@@ -89,7 +93,7 @@ export function PortalShell() {
     }
 
     cargar();
-  }, []);
+  }, [router]);
 
   if (loading) return <div className="state-panel">Cargando tu portal…</div>;
   if (error) return <div className="state-panel state-error">{error}</div>;

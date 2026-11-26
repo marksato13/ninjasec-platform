@@ -8,7 +8,7 @@ Guía para Claude Code al trabajar en este repositorio.
 
 **Ninja Tech** es una plataforma full-stack de infraestructura + ciberseguridad para PYMEs, consultoras y MSPs. Genera reportes automáticos desde pfSense, FortiGate, Suricata IDS y similares, y sirve como portafolio de servicios profesionales.
 
-**Estado:** MVP avanzado (backend v0.2.0). Se ejecutó un seed masivo con data peruana realista (17 clientes, 73 dispositivos, 28 revisiones con 62 hallazgos, 15 proyectos, etc.). Todos los módulos del checklist `IMPLEMENTACION/01–14.md` están cerrados.
+**Estado (2026-11-25):** en producción en <https://ninjasec-pe.duckdns.org>, desplegada sola desde `main`. Hoy sirve para la relación con el cliente (portal, entregables, seguimiento) y la gestión de proyectos con colaboradores, con dos líneas visibles: Ninja Sec y Ninja Dev. Los datos demo se retiraron (#148) y la cápsula de telemetría por API está **apagada**: los conectores con pfSense, FortiGate y similares son simulados y no se ofrecen. Lo que viene, en el plan de tareas del mantenedor y en `DOCUMENTOS/ROADMAP.md`.
 
 **Origen:** consultoría inicial pensada para que estudiantes UPeU de Desarrollo, Infraestructura y Ciberseguridad practiquen y entreguen valor real a SMEs peruanas.
 

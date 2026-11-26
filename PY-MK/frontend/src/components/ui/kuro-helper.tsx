@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FileText, HelpCircle, LifeBuoy, Package, Mail, ShieldCheck, Ticket, User, X } from "lucide-react";
+import { FileText, HelpCircle, LifeBuoy, Package, Mail, Ticket, User, X } from "lucide-react";
 
 import { Mascot } from "@/components/ui/mascot";
 
@@ -17,7 +17,7 @@ const PORTAL_ACTIONS: QuickAction[] = [
   {
     icon: <Ticket size={18} />,
     label: "Crear ticket de soporte",
-    href: "/portal/support",
+    href: "/portal/tickets",
     description: "Reportar un problema o solicitar ayuda técnica",
   },
   {
@@ -25,12 +25,6 @@ const PORTAL_ACTIONS: QuickAction[] = [
     label: "Ver mis dispositivos",
     href: "/portal/inventory",
     description: "Inventario de equipos monitoreados",
-  },
-  {
-    icon: <ShieldCheck size={18} />,
-    label: "Mis revisiones de seguridad",
-    href: "/portal/reviews",
-    description: "Hallazgos y reportes ejecutivos",
   },
   {
     icon: <FileText size={18} />,

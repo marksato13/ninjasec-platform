@@ -1,5 +1,7 @@
 # Qué convertir en módulos de la plataforma
 
+> **Actualización 2026-11-25:** esta propuesta se convirtió en planificación aprobada: `DOCUMENTOS/PLANIFICACION/35-NINJA-DEV-OPERACION-Y-CLIENTES.md` (IDs `35-P-01`…`35-P-08`).
+
 **Corte de revisión: 2026-11-25.** Se contrastaron las carpetas `PY-MK/backend/app/modules` y las rutas `PY-MK/frontend/src/app`. Esto es una propuesta de producto, no un pendiente aprobado del roadmap. Antes de implementarla, crear planificación, ID `NN-P-NN` y checklist según las reglas del repositorio. **S/M/L** expresa esfuerzo relativo de una primera versión, no horas comprometidas.
 
 | Prioridad | Propuesta y primera versión útil | Esfuerzo | Qué ya existe y diferencia |

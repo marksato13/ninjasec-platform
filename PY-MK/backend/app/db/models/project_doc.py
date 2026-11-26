@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Index, String
+from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.time_utils import utcnow
@@ -13,6 +13,10 @@ class ProjectDoc(Base):
 
     __table_args__ = (
         Index("ix_project_docs_project", "project_id"),
+        CheckConstraint(
+            "client_decision IS NULL OR client_decision IN ('approved', 'changes_requested')",
+            name="ck_project_docs_client_decision",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -46,6 +50,14 @@ class ProjectDoc(Base):
         ForeignKey("users.id"), nullable=True
     )
     verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # C1: el cliente aprueba el entregable o pide cambios. Se vacia cuando el
+    # equipo sube una version nueva, para que el cliente la vuelva a revisar.
+    client_decision: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    client_decision_note: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    client_decision_by: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
+    client_decision_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=utcnow, onupdate=utcnow
