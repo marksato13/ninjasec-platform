@@ -35,8 +35,6 @@ export const QK = {
   // Support Tickets
   tickets:         (f?: object)               => ["tickets", f]                 as const,
   ticket:          (id: number)               => ["tickets", id]                as const,
-  // 35-P-03: sistemas del cliente. Misma clave y valor que en PR #66: al fusionar, queda una.
-  clientSystems:   (clientId?: number)         => ["client-systems", clientId]   as const,
 
   // Leads
   leads:           ()                          => ["leads"]                      as const,
@@ -45,8 +43,6 @@ export const QK = {
   projects:        ()                          => ["projects"]                   as const,
   project:         (id: number)               => ["projects", id]               as const,
   projectMembers:  (id: number)               => ["projects", id, "members"]    as const,
-  // 35-P-05: pruebas de aceptación (UAT). Misma clave y valor que en PR #66.
-  acceptance:      (projectId: number)         => ["acceptance", projectId]      as const,
 
   // Services
   services:        ()                          => ["services"]                   as const,
@@ -89,6 +85,12 @@ export const QK = {
 
   // Ventanas de trabajo
   workWindows:     (f?: object)               => ["work-windows", f]            as const,
+
+  // Ninja Dev (plan 35)
+  clientSystems:   (clientId?: number)         => ["client-systems", clientId]   as const,
+  clientSystem:    (id: number)                => ["client-systems", "detail", id] as const,
+  deployments:     (f?: object)               => ["deployments", f]             as const,
+  acceptance:      (projectId: number)         => ["acceptance", projectId]      as const,
 
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
