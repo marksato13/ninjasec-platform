@@ -15,6 +15,9 @@ type TopbarProps = {
 const topbarTitles: Record<string, { title: string; subtitle: string }> = {
   "/dashboard":                    { title: "Dashboard",             subtitle: "Indicadores y seguimiento operativo" },
   "/dashboard/ninja-dev":          { title: "Guía Ninja Dev",        subtitle: "Cómo trabaja el área de desarrollo" },
+  "/dashboard/panel-dev":          { title: "Panel Ninja Dev",       subtitle: "Vencimientos, despliegues, cambios y UAT" },
+  "/dashboard/sistemas":           { title: "Sistemas",              subtitle: "Lo que construimos y mantenemos por cliente" },
+  "/dashboard/despliegues":        { title: "Despliegues",           subtitle: "Qué versión salió, a dónde y cómo" },
   "/dashboard/clients":            { title: "Clientes",              subtitle: "Empresas, sedes y servicios" },
   "/dashboard/integrations":       { title: "Integraciones",         subtitle: "Conectores, licencias y salud" },
   "/dashboard/devices":            { title: "Dispositivos",          subtitle: "Activos monitoreados por consola" },

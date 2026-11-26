@@ -100,7 +100,13 @@ OPCIONES: tuple[Opcion, ...] = (
     _staff("/dashboard/netdoctor", "NetDoctor", "Herramientas Ninja Sec"),
     _staff("/dashboard/catalog-devices", "Catálogo de equipos", "Herramientas Ninja Sec"),
     _staff("/dashboard/soc-report", "Informe SOC", "Herramientas Ninja Sec", capsula="telemetria"),
-    _staff("/dashboard/ninja-dev", "Guía Ninja Dev", "Herramientas Ninja Dev"),
+    # Ninja Dev (plan 35): lo que un dev necesita para llevar al cliente. Las
+    # tres pantallas son del equipo; el backend ya filtra al colaborador a los
+    # sistemas de sus proyectos.
+    _staff("/dashboard/panel-dev", "Panel Ninja Dev", "Ninja Dev"),
+    _staff("/dashboard/sistemas", "Sistemas", "Ninja Dev"),
+    _staff("/dashboard/despliegues", "Despliegues", "Ninja Dev"),
+    _staff("/dashboard/ninja-dev", "Guía Ninja Dev", "Ninja Dev"),
     _staff("/dashboard/mis-tareas", "Mis tareas", "Operación"),
     _staff("/dashboard/support-tickets", "Tickets", "Operación"),
     _staff("/dashboard/work-windows", "Ventanas de trabajo", "Operación"),
@@ -120,6 +126,7 @@ OPCIONES: tuple[Opcion, ...] = (
     # --- Portal -------------------------------------------------------------
     _portal("/portal", "Inicio", ("client",)),
     _portal("/portal/projects", "Proyectos", ("client",)),
+    _portal("/portal/sistemas", "Mis sistemas", ("client",)),
     _portal("/portal/inventory", "Inventario", ("client",)),
     _portal("/portal/documents", "Documentos", ("client",)),
     _portal("/portal/tickets", "Tickets", ("client",)),
