@@ -401,7 +401,6 @@ export default function DashboardSettingsPage() {
 
 function CatalogRow({
   item,
-  catalogTab,
   isAdmin,
   editingId,
   setEditingId,
