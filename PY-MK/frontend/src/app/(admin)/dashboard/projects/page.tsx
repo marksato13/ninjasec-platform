@@ -71,6 +71,8 @@ export default function DashboardProjectsPage() {
     },
   });
 
+  const loadError = queryError ? (queryError instanceof Error ? queryError.message : "No se pudo cargar proyectos") : "";
+
   const items = data?.projects ?? emptyProjects;
 
   // P-05: cargar miembros de proyectos
@@ -111,11 +113,6 @@ export default function DashboardProjectsPage() {
   const services = data?.services ?? emptyServices;
   const products = data?.products ?? emptyProducts;
 
-  useEffect(() => {
-    if (queryError) {
-      setError(queryError instanceof Error ? queryError.message : "No se pudo cargar proyectos");
-    }
-  }, [queryError]);
 
   async function handleDelete(projectId: number) {
     const confirmed = await confirmDelete({
@@ -255,7 +252,7 @@ export default function DashboardProjectsPage() {
               )}
             </div>
           </div>
-          {error ? <p className="form-error">{error}</p> : null}
+          {error || loadError ? <p className="form-error">{error || loadError}</p> : null}
           {(() => {
             const renderCard = (item: ProjectItem) => {
               const members = membersByProject[item.id] ?? [];
