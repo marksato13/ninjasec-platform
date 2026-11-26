@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Background,
   Controls,
@@ -117,7 +117,7 @@ function buildFlow(topology: TopologyResponse) {
     type: "smoothstep",
     style: { stroke: LINK_COLOR[edge.link_type], strokeWidth: bandwidthWidth(edge.bandwidth_mbps), strokeDasharray: dashFor(edge.link_type) },
     labelStyle: { fill: "var(--text)", fontSize: 10, fontWeight: 600 },
-    labelBgStyle: { fill: "var(--surface)", fillOpacity: 0.92 },
+    labelBgStyle: { fill: "var(--panel-strong)", fillOpacity: 0.92 },
   }));
   return { nodes, edges };
 }
@@ -126,6 +126,14 @@ type PendingConnection = { source: string; target: string };
 
 export function NetworkTopology({ clientId }: { clientId?: number }) {
   const [selected, setSelected] = useState<TopologyNode | null>(null);
+  const fichaRef = useRef<HTMLElement | null>(null);
+
+  // En pantallas estrechas la ficha queda debajo del lienzo: se acerca a la vista al elegir un nodo.
+  useEffect(() => {
+    if (!selected || !fichaRef.current || window.innerWidth > 850) return;
+    const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    fichaRef.current.scrollIntoView({ block: "nearest", behavior: quieto ? "auto" : "smooth" });
+  }, [selected]);
   const [pendingConnection, setPendingConnection] = useState<PendingConnection | null>(null);
   const [linkForm, setLinkForm] = useState({ link_type: "ethernet" as LinkType, port_source: "", port_target: "", vlan_id: "" });
   const [saving, setSaving] = useState(false);
@@ -201,9 +209,9 @@ export function NetworkTopology({ clientId }: { clientId?: number }) {
   const devices = data.nodes;
 
   return (
-    <div className="topology-shell">
+    <div className="topology">
       {canEdit && (
-        <div className="panel-actions" style={{ marginBottom: 8 }}>
+        <div className="topology-toolbar">
           <button
             type="button"
             className="button button-primary button-sm"
@@ -216,8 +224,10 @@ export function NetworkTopology({ clientId }: { clientId?: number }) {
         </div>
       )}
       {!data.edges.length && (
-        <div className="empty-state">Sin conexiones todavía -- crea la primera con el botón de arriba o arrastrando entre nodos.</div>
+        <div className="empty-state">Sin conexiones todavía: crea la primera con el botón de arriba o arrastrando entre nodos.</div>
       )}
+      {/* La rejilla solo lleva el lienzo y la ficha: si entra la barra, el lienzo cae en la columna «auto» y mide 0. */}
+      <div className="topology-shell">
       <div className="topology-canvas" aria-label={`Topología de ${data.client_name || "cliente"}`}>
         <ReactFlow
           nodes={flow.nodes}
@@ -233,9 +243,25 @@ export function NetworkTopology({ clientId }: { clientId?: number }) {
           onEdgeClick={handleEdgeClick}
         >
           <Background gap={22} size={1} />
-          <MiniMap pannable zoomable nodeColor={(node) => node.type === "group" ? "#334155" : CRITICALITY_COLOR[(node.data as DeviceNodeData).device?.criticality || ""] || "#94a3b8"} />
+          <MiniMap pannable zoomable maskColor="color-mix(in srgb, var(--bg) 70%, transparent)" nodeColor={(node) => node.type === "group" ? "#334155" : CRITICALITY_COLOR[(node.data as DeviceNodeData).device?.criticality || ""] || "#94a3b8"} />
           <Controls showInteractive={false} />
         </ReactFlow>
+      </div>
+      {selected && (
+        <aside ref={fichaRef} className="topology-detail" aria-label="Ficha del activo">
+          <button className="topology-detail-close" type="button" onClick={() => setSelected(null)} aria-label="Cerrar ficha"><X size={18} /></button>
+          <div className="topology-detail-title"><span className="topology-device-icon"><DeviceIcon type={selected.device_type} /></span><div><small>Activo seleccionado</small><h3>{selected.label}</h3></div></div>
+          <dl>
+            <div><dt>Tipo</dt><dd>{selected.device_type || "Otro"}</dd></div>
+            <div><dt>Estado</dt><dd>{selected.status}</dd></div>
+            <div><dt>Criticidad</dt><dd>{selected.criticality || "Sin clasificar"}</dd></div>
+            <div><dt>Fabricante</dt><dd>{[selected.vendor, selected.model].filter(Boolean).join(" · ") || "—"}</dd></div>
+            <div><dt>Responsable</dt><dd>{selected.responsible_user_name || "—"}</dd></div>
+            {!isClient && <div><dt>Dirección IP</dt><dd>{selected.ip_address || "—"}</dd></div>}
+          </dl>
+          {isClient && <p className="topology-privacy-note">La vista de cliente oculta direcciones IP y detalles de puertos.</p>}
+        </aside>
+      )}
       </div>
       <Modal
         isOpen={Boolean(pendingConnection)}
@@ -284,21 +310,6 @@ export function NetworkTopology({ clientId }: { clientId?: number }) {
           </div>
         )}
       </Modal>
-      {selected && (
-        <aside className="topology-detail" aria-label="Ficha del activo">
-          <button className="topology-detail-close" type="button" onClick={() => setSelected(null)} aria-label="Cerrar ficha"><X size={18} /></button>
-          <div className="topology-detail-title"><span className="topology-device-icon"><DeviceIcon type={selected.device_type} /></span><div><small>Activo seleccionado</small><h3>{selected.label}</h3></div></div>
-          <dl>
-            <div><dt>Tipo</dt><dd>{selected.device_type || "Otro"}</dd></div>
-            <div><dt>Estado</dt><dd>{selected.status}</dd></div>
-            <div><dt>Criticidad</dt><dd>{selected.criticality || "Sin clasificar"}</dd></div>
-            <div><dt>Fabricante</dt><dd>{[selected.vendor, selected.model].filter(Boolean).join(" · ") || "—"}</dd></div>
-            <div><dt>Responsable</dt><dd>{selected.responsible_user_name || "—"}</dd></div>
-            {!isClient && <div><dt>Dirección IP</dt><dd>{selected.ip_address || "—"}</dd></div>}
-          </dl>
-          {isClient && <p className="topology-privacy-note">La vista de cliente oculta direcciones IP y detalles de puertos.</p>}
-        </aside>
-      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 # Implementación — Módulo Topología de Red
 
 > Basado en: `PLANIFICACION/23-MODULO-TOPOLOGIA.md`
-> Creado: 2026-08-05 · Actualizado: 2026-08-08 · **23-P1 documentado para PR**
+> Creado: 2026-08-05 · Actualizado: 2026-11-25 · **23-P1 validado visualmente**
 
 ---
 
@@ -71,9 +71,17 @@
 
 ### Evidencia visual para PR
 
-- Pendiente explícito de PR: adjuntar capturas de `/dashboard/devices` en pestaña "Topología" con un cliente con conexiones, incluyendo vista desktop y mobile, panel lateral tras click en nodo, estado vacío y modo claro/oscuro.
-- Tarea pendiente: ejecutar el bucle visual con la rama de implementación servida localmente y adjuntar las capturas al PR. Esta rama de documentación no puede cerrar la validación visual porque no contiene el componente `NetworkTopology` ni `@xyflow/react`.
-- El bucle visual no queda marcado como completado en este checklist hasta que esas capturas estén adjuntas al PR o se registre una validación manual equivalente con navegador.
+**Bucle visual ejecutado el 2026-11-25** (rama `feat/topologia-ui`), con Playwright a 1280 px y 390 px exactos. El entorno era desechable: Postgres en contenedor, un cliente con dos sedes, 7 equipos y 6 enlaces. **Encontró un fallo que dejaba el diagrama invisible en escritorio**, y quedó corregido:
+
+| Antes | Después | Por qué |
+|---|---|---|
+| En escritorio no se veía el diagrama: el botón "Nueva conexión" ocupaba ~640 px y el lienzo medía 0 px de ancho | El lienzo mide 883×640 px con los 7 nodos y la ficha a la derecha | La barra y el aviso de "sin conexiones" eran hijos de la rejilla `.topology-shell` (`minmax(0,1fr) auto`), así que el lienzo caía en la columna `auto`. Ahora van en un contenedor `.topology` propio y la rejilla solo contiene el lienzo y la ficha |
+| En móvil el minimapa salía blanco y la ficha quedaba fuera de la vista | El minimapa usa la máscara del tema, la ficha aparece bajo el lienzo y se desplaza a la vista al elegir un nodo | Las reglas usaban `var(--border)` y `var(--surface)`, que no existen en el tema. Se cambiaron por `--line-active` y `--panel-strong` |
+| La ficha aparecía de golpe | Entra con opacidad y desplazamiento de 8 px (200 ms, `var(--ease-out)`), y sin animación si el usuario pide movimiento reducido | Reglas de interfaz del proyecto: `@starting-style`, nunca `transition: all`, hover solo con puntero fino |
+
+Medidas en las capturas: escritorio `vw=1280 scroll=1280 lienzo=883x640 nodos=7 ficha=1`; móvil `vw=390 scroll=390 lienzo=299x460 nodos=7 ficha=1`. La página no tiene scroll horizontal; el lienzo hace pan y zoom por dentro.
+
+Las capturas no se versionan porque el repositorio es público y muestran el nombre del usuario sembrado. Se describen en el PR. **No se cubrió:** el modo claro ni el estado vacío con captura propia, aunque el texto del estado vacío sí se ve en la rama.
 
 ## ✅ P2 — Editor de conexiones — Resuelto 2026-08-09
 
@@ -140,7 +148,9 @@ Ambos casos son señales de proximidad de red razonables, no una verdad topológ
 | Campos ISO en `Device` | ✅ migrados |
 | Librería de diagramación | ✅ `@xyflow/react` 12.11.2 aprobado para P1 |
 
-**P1 queda documentado y técnicamente cerrado en la rama de implementación.** Queda pendiente sólo el bucle de validación visual de PR indicado arriba; P2/P3/P4 no forman parte de este cierre.
+**P1 queda cerrado, con validación visual el 2026-11-25.** Esa validación encontró y corrigió el fallo de la rejilla en escritorio.
+
+⚠️ **Hallazgo de backend, no corregido aquí:** `TopologyService` solo encuentra los equipos que cuelgan de una `Integration` del cliente. Con la cápsula de telemetría apagada, `/integrations/` devuelve 404, así que **los equipos registrados a mano nunca aparecen en la topología**. Para las capturas, la integración se insertó directamente en la base desechable.
 
 ---
 
