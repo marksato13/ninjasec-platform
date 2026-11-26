@@ -84,7 +84,7 @@ export default function IntegrationDetailPage() {
   const integrationId = Number(params?.id);
   const [saving, setSaving] = useState(false);
 
-  const { data: integration, isLoading: intLoading, error: intError, refetch: refetchIntegration } = useQuery<IntegrationItem>({
+  const { data: integration, isLoading: intLoading, error: intError } = useQuery<IntegrationItem>({
     queryKey: QK.integration(integrationId),
     queryFn: () => getIntegration(integrationId),
     enabled: !!integrationId,
