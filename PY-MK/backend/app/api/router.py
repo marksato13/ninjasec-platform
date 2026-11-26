@@ -45,6 +45,7 @@ from app.modules.tracking.router import router as tracking_router
 from app.modules.payments.router import router as payments_router
 from app.modules.client_systems.router import router as client_systems_router
 from app.modules.deployments.router import router as deployments_router
+from app.modules.acceptance.router import router as acceptance_router
 from app.modules.certifications.routers.router import equipo_router as team_certifications_router
 from app.modules.certifications.routers.router import router as certifications_router
 
@@ -85,6 +86,7 @@ _registrar(tracking_router)
 _registrar(payments_router)
 _registrar(client_systems_router)
 _registrar(deployments_router)
+_registrar(acceptance_router)
 _registrar(clients_router)
 _registrar(client_sites_router)
 _registrar(client_contacts_router)
