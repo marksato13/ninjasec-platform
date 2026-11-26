@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Monitor, Network, Router, Server } from "lucide-react";
 
 import { DeviceItem, getAllClientSites, getDevices } from "@/lib/api";
-import { getStatusBadgeClass } from "@/lib/role-utils";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {

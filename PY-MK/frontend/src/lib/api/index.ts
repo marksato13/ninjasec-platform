@@ -33,4 +33,5 @@ export * from "./tracking";
 export * from "./payments";
 export * from "./systems";
 export * from "./deployments";
+export * from "./uat";
 export * from "./work-windows";

@@ -79,19 +79,19 @@ export default function ClientDetailPage() {
     enabled: !!clientId,
   });
 
-  const { data: sites = [], isLoading: sitesLoading } = useQuery<ClientSiteItem[]>({
+  const { data: sites = [] } = useQuery<ClientSiteItem[]>({
     queryKey: QK.clientSites(clientId),
     queryFn: () => getClientSites(clientId),
     enabled: !!clientId,
   });
 
-  const { data: contacts = [], isLoading: contactsLoading } = useQuery<ClientContactItem[]>({
+  const { data: contacts = [] } = useQuery<ClientContactItem[]>({
     queryKey: QK.clientContacts(clientId),
     queryFn: () => getClientContacts(clientId),
     enabled: !!clientId,
   });
 
-  const { data: clientServices = [], isLoading: clientServicesLoading } = useQuery<ClientServiceItem[]>({
+  const { data: clientServices = [] } = useQuery<ClientServiceItem[]>({
     queryKey: QK.clientServices(clientId),
     queryFn: () => getClientServices(clientId),
     enabled: !!clientId,
