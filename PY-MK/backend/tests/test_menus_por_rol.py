@@ -146,6 +146,9 @@ def test_sin_ediciones_el_colaborador_ve_lo_que_veia(http_client, collab_tok):
     for propia in ("/dashboard/projects", "/dashboard/clients", "/dashboard/collaborators"):
         assert propia in visibles, propia
     assert "/dashboard/mis-tareas" in visibles
+    # Ninja Dev: el colaborador lleva los sistemas y despliegues de sus proyectos.
+    for dev in ("/dashboard/panel-dev", "/dashboard/sistemas", "/dashboard/despliegues"):
+        assert dev in visibles, dev
     # El portal es solo del cliente: el colaborador trabaja en el panel.
     assert not datos.get("portal")
 
@@ -154,7 +157,8 @@ def test_sin_ediciones_el_cliente_solo_tiene_portal(http_client, client_tok):
     datos = http_client.get(f"{API}/me", headers=_auth(client_tok)).json()
     assert datos["staff"] is None
     assert set(datos["portal"]) == {"/portal", "/portal/projects", "/portal/inventory", "/portal/documents",
-                                    "/portal/tickets", "/portal/services", "/portal/profile", "/portal/work-windows"}
+                                    "/portal/tickets", "/portal/services", "/portal/profile", "/portal/work-windows",
+                                    "/portal/sistemas"}
 
 
 def test_la_tabla_esta_vacia_si_nadie_edita(db):

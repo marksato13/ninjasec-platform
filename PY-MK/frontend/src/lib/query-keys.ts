@@ -86,6 +86,12 @@ export const QK = {
   // Ventanas de trabajo
   workWindows:     (f?: object)               => ["work-windows", f]            as const,
 
+  // Ninja Dev (plan 35)
+  clientSystems:   (clientId?: number)         => ["client-systems", clientId]   as const,
+  clientSystem:    (id: number)                => ["client-systems", "detail", id] as const,
+  deployments:     (f?: object)               => ["deployments", f]             as const,
+  acceptance:      (projectId: number)         => ["acceptance", projectId]      as const,
+
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
   projectDocs:     (f?: object)               => ["project-docs", f]            as const,
