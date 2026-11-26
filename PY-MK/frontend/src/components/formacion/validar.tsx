@@ -16,6 +16,7 @@ import {
 import { notifyError, notifySuccess } from "@/lib/alerts";
 import { QK } from "@/lib/query-keys";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConMarca } from "@/components/ui/marca-icono";
 
 import { Credencial } from "./credencial";
 import s from "./formacion.module.css";
@@ -225,7 +226,7 @@ export function Validar({ puedeValidar }: { puedeValidar: boolean }) {
             {pendientesSkill.map((k) => (
               <div key={k.id} className={s.skill} style={{ gridTemplateColumns: "minmax(0,1.4fr) auto minmax(0,1.4fr)" }}>
                 <div>
-                  <strong>{k.skill_name}</strong>
+                  <strong><ConMarca nombre={k.skill_name ?? `Skill #${k.skill_id}`} /></strong>
                   <p className="muted-small" style={{ margin: "2px 0 0" }}>{nombres.get(k.user_id) ?? `Persona #${k.user_id}`}</p>
                 </div>
                 <Nivel valor={k.level} />
