@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle, Minus, Plus, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, Plus, XCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import {
@@ -21,7 +21,6 @@ import {
   patchReviewFinding,
   ReviewChecklistItem,
   ReviewFindingItem,
-  ReviewRecommendationItem,
   SecurityReviewDetail,
   SupportTicketItem,
   updateSecurityReview,
@@ -44,7 +43,6 @@ const SEVERITY_BADGE: Record<string, string> = {
 
 const RESULT_OPTIONS = ["", "pass", "fail", "n/a", "partial"];
 const FINDING_STATUS = ["open", "in_progress", "resolved", "accepted_risk"];
-const REC_STATUS = ["open", "in_progress", "completed"];
 
 export default function SecurityReviewDetailPage() {
   const params = useParams();
