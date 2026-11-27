@@ -72,7 +72,7 @@ export function DesplieguesBoard({ systemId }: Props) {
     entornoElegido?.kind === "prod" && form.result === "ok" && !(form.backup_done && form.smoke_test_passed);
 
   function refrescar() {
-    queryClient.invalidateQueries({ queryKey: ["deployments"] });
+    queryClient.invalidateQueries({ queryKey: QK.deploymentsAll() });
   }
 
   async function registrar() {

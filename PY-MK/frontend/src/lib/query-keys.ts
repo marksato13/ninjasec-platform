@@ -134,4 +134,14 @@ export const QK = {
   // Catálogo de equipos
   catalogDevices:  (filters?: Record<string, unknown>) => ["catalog-devices", filters] as const,
   catalogDevice:   (id: number)                => ["catalog-device", id]          as const,
+
+  // Claves raíz para invalidar por prefijo
+  ticketsAll: () => ["tickets"] as const,
+  workWindowsAll: () => ["work-windows"] as const,
+  clientSystemsAll: () => ["client-systems"] as const,
+  deploymentsAll: () => ["deployments"] as const,
+  studyAll: () => ["study"] as const,
+  myTasks: () => ["portal-my-tasks"] as const,
+  lastExports: () => ["last-exports"] as const,
+  userCertificationsAll: () => ["user-certifications", "all"] as const,
 } as const;
