@@ -4,6 +4,7 @@ import Image from "next/image";
 import { FormEvent, useState } from "react";
 
 import { requestPublic } from "@/lib/api/client";
+import { etiquetaFuente, leerOrigen } from "@/lib/marketing";
 
 type LeadFormProps = {
   title: string;
@@ -28,7 +29,8 @@ export function LeadForm({ title, endpoint, submitLabel, payloadType }: LeadForm
     setStatus(null);
 
     const fallbackInterest = payloadType === "lead" ? "Demo comercial" : "Contacto general";
-    const sourceTag = payloadType === "lead" ? "website" : "website-contact";
+    // Con ?origen=tiktok-03 queda «website:tiktok-03»: así se sabe qué pieza trajo el contacto.
+    const sourceTag = etiquetaFuente(payloadType === "lead" ? "website" : "website-contact", leerOrigen());
 
     const payload = {
       company_name: company || null,

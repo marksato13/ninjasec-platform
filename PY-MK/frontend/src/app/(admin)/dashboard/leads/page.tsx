@@ -53,6 +53,9 @@ function interestIcon(area?: string | null) {
 }
 
 // ── Component ────────────────────────────────────────────────────────────────
+// Fuentes que se eligen a mano en el panel; las del sitio llegan como «website:<origen>».
+const FUENTES_FIJAS = ["linkedin", "referral", "website", "event", "google_ads", "cold_outreach", "other"];
+
 export default function LeadsPipelinePage() {
   const currentUser  = getStoredUser();
   const isSuperAdmin = currentUser?.role === "super_admin";
@@ -456,6 +459,10 @@ export default function LeadsPipelinePage() {
               <option value="google_ads">Google Ads</option>
               <option value="cold_outreach">Outreach en frío</option>
               <option value="other">Otro</option>
+              {/* Lo que llega del sitio con ?origen= (website:tiktok-03) no está en la lista: se muestra tal cual. */}
+              {editForm.source && !FUENTES_FIJAS.includes(editForm.source) && (
+                <option value={editForm.source}>Origen: {editForm.source}</option>
+              )}
             </select>
             <textarea value={editForm.message ?? ""} onChange={(e) => setEditForm((f) => ({ ...f, message: e.target.value }))} placeholder="Mensaje / notas" rows={3} />
             <div className="panel-actions">
