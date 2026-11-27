@@ -83,6 +83,7 @@ export default function IntegrationDetailPage() {
   const params = useParams();
   const integrationId = Number(params?.id);
   const [saving, setSaving] = useState(false);
+  const [now] = useState(() => Date.now());
 
   const { data: integration, isLoading: intLoading, error: intError } = useQuery<IntegrationItem>({
     queryKey: QK.integration(integrationId),
@@ -153,7 +154,7 @@ export default function IntegrationDetailPage() {
     ? reviews.reduce((a, b) => (a.executed_at ?? "") > (b.executed_at ?? "") ? a : b)
     : null;
   const daysSinceReview = lastReview?.executed_at
-    ? Math.floor((Date.now() - new Date(lastReview.executed_at).getTime()) / 86400000)
+    ? Math.floor((now - new Date(lastReview.executed_at).getTime()) / 86400000)
     : null;
 
   return (
