@@ -26,6 +26,7 @@ import {
 import { confirmDelete, notifyError, notifySuccess } from "@/lib/alerts";
 import { getStoredUser } from "@/lib/auth";
 import { getDocScopeLabel } from "@/lib/role-utils";
+import { QK } from "@/lib/query-keys";
 
 type Tab = "project-types" | "areas" | "doc-types";
 type CatalogTab = "project-types" | "areas";
@@ -47,6 +48,12 @@ const CATALOG_API = {
   "areas": { create: createArea, update: updateArea, usage: getAreaUsage },
   "project-types": { create: createProjectType, update: updateProjectType, usage: getProjectTypeUsage },
 } as const;
+
+const TAB_KEY: Record<Tab, readonly unknown[]> = {
+  "project-types": QK.projectTypes(),
+  areas: QK.areas(),
+  "doc-types": QK.docTypes(),
+};
 
 export default function DashboardSettingsPage() {
   const user         = getStoredUser();
@@ -75,17 +82,17 @@ export default function DashboardSettingsPage() {
   });
 
   const { data: projectTypes = [], isLoading: ptLoading } = useQuery<ProjectTypeItem[]>({
-    queryKey: ["project-types"],
+    queryKey: QK.projectTypes(),
     queryFn:  () => getProjectTypes(),
   });
 
   const { data: areas = [], isLoading: arLoading } = useQuery<AreaItem[]>({
-    queryKey: ["areas"],
+    queryKey: QK.areas(),
     queryFn:  () => getAreas(),
   });
 
   const { data: docTypes = [], isLoading: dtLoading } = useQuery<DocTypeItem[]>({
-    queryKey: ["doc-types"],
+    queryKey: QK.docTypes(),
     queryFn:  () => getDocTypes(),
   });
 
@@ -95,7 +102,7 @@ export default function DashboardSettingsPage() {
       notifySuccess("Tipo de documento creado");
       reset();
       setShowCreate(false);
-      queryClient.invalidateQueries({ queryKey: ["doc-types"] });
+      queryClient.invalidateQueries({ queryKey: QK.docTypes() });
     },
     onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
   });
@@ -110,7 +117,7 @@ export default function DashboardSettingsPage() {
       catalogForm.reset();
       setNuevaLinea("");
       setShowCreate(false);
-      queryClient.invalidateQueries({ queryKey: [tab] });
+      queryClient.invalidateQueries({ queryKey: TAB_KEY[tab] });
     },
     onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
   });
@@ -122,7 +129,7 @@ export default function DashboardSettingsPage() {
       notifySuccess("Nombre actualizado");
       setEditingId(null);
       editForm.reset();
-      queryClient.invalidateQueries({ queryKey: [tab] });
+      queryClient.invalidateQueries({ queryKey: TAB_KEY[tab] });
     },
     onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
   });
@@ -132,7 +139,7 @@ export default function DashboardSettingsPage() {
       updateArea(id, { business_line: linea || null }),
     onSuccess: (_data, { linea }) => {
       notifySuccess(linea ? `Área asignada a ${linea === "sec" ? "Ninja Sec" : "Ninja Dev"}` : "Área de las dos líneas");
-      queryClient.invalidateQueries({ queryKey: ["areas"] });
+      queryClient.invalidateQueries({ queryKey: QK.areas() });
     },
     onError: (err) => notifyError("No se pudo cambiar la línea", err instanceof Error ? err.message : undefined),
   });
@@ -142,7 +149,7 @@ export default function DashboardSettingsPage() {
       CATALOG_API[catalogTab].update(id, { is_active: isActive, confirm_deactivation: confirmDeactivation ?? false }),
     onSuccess: (_data, variables) => {
       notifySuccess(variables.isActive ? "Registro activado" : "Registro desactivado");
-      queryClient.invalidateQueries({ queryKey: [tab] });
+      queryClient.invalidateQueries({ queryKey: TAB_KEY[tab] });
     },
     onError: (err) => notifyError("Error", err instanceof Error ? err.message : undefined),
   });
