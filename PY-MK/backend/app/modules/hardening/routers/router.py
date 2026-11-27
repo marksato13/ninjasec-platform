@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 
 from app.common.deps.auth import CurrentUser, require_roles
 from app.common.deps.database import get_db
-from app.db.models.client import Client
 from app.db.models.enums import RoleCode
 from app.db.models.hardening import HardeningRule
 from app.modules.audit.services.audit_service import AuditService
