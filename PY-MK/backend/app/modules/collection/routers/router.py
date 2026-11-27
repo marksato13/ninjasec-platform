@@ -7,7 +7,6 @@ from app.common.deps.database import get_db
 from app.db.models.collection_snapshot import CollectionSnapshot
 from app.db.models.integration import Integration
 from app.db.models.enums import RoleCode
-from app.db.repositories.base import Repository
 from app.modules.collection.schemas import SnapshotRead
 
 router = APIRouter(prefix="/collection", tags=["collection"])
