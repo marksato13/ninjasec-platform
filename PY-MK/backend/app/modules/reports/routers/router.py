@@ -345,7 +345,6 @@ def _build_consolidated_workbook(
     COLOR_ALT_ROW    = "F1F5F9"   # slate-100
     COLOR_BORDER     = "CBD5E1"   # slate-300
     COLOR_ACCENT     = "0F172A"   # slate-950 para títulos de sección
-    COLOR_ACCENT_FG  = "94A3B8"   # slate-400
 
     thin = Side(style="thin", color=COLOR_BORDER)
     border = Border(left=thin, right=thin, top=thin, bottom=thin)
