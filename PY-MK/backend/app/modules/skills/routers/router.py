@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from app.core.time_utils import utcnow
 
 import json
