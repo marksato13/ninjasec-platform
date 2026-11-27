@@ -52,7 +52,7 @@ export function SiteHeader() {
   const porDefecto = links.filter((l) => l.href !== "/solucion" || conApi);
   const enlaces = visibles ? links.filter((l) => visibles.includes(l.href)) : porDefecto;
 
-  // El subtitulo promete reporting por API, y los conectores todavia son
+  // El subtitulo promete reporting por API, y los conectores todavía son
   // simulados: solo se dice con la capsula de telemetria encendida.
   const subtitulo = conApi
     ? "API Reporting Platform"

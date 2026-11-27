@@ -4,6 +4,7 @@
 export const QK = {
   // Auth
   me:              ()                          => ["me"]                         as const,
+  myProfile:       ()                          => ["me", "profile"]              as const,
 
   // Users
   users:           ()                          => ["users"]                      as const,
@@ -11,6 +12,7 @@ export const QK = {
 
   // Clients
   clients:         ()                          => ["clients"]                    as const,
+  allClientSites:  ()                          => ["clients", "sites", "all"]    as const,
   client:          (id: number)                => ["clients", id]                as const,
   clientSites:     (clientId: number)          => ["clients", clientId, "sites"]      as const,
   clientContacts:  (clientId: number)          => ["clients", clientId, "contacts"]   as const,
