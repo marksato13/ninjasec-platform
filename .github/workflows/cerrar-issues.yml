@@ -1,0 +1,68 @@
+# Cierra el issue de una tarea cuando su PR se fusiona en `develop`.
+#
+# GitHub solo cierra issues solos al fusionar en la rama por defecto (`main`).
+# Las tareas de los carriles (obrero, OpenCode, Claude) se fusionan en
+# `develop`, y sus dependientes (`## Bloqueado por #N`) no arrancan hasta que
+# #N se cierra: sin esto, la cadena se paraba hasta que alguien lo cerrara a
+# mano.
+#
+# Solo cuenta una línea que EMPIECE por `Refs #N`, `Closes #N`, `Fixes #N` o
+# `Cierra #N` en el cuerpo del PR, que es como lo escriben los tres carriles.
+# Una mención suelta de otro issue en el texto no cierra nada. Quita además
+# las etiquetas `<carril>:en-curso` y `<carril>:pr-abierto`.
+#
+# El cuerpo del PR llega por variable de entorno, nunca interpolado en el
+# script. Solo PR de ramas de este repositorio.
+name: Cerrar issues
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [develop]
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  cerrar:
+    name: Cerrar issue de la tarea
+    if: github.event.pull_request.merged == true && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Cerrar los issues citados
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -eu
+          nums=$(printf '%s\n' "$BODY" | tr -d '\r' \
+            | grep -oE '^(Refs|Closes|Fixes|Cierra) #[0-9]+' \
+            | grep -oE '[0-9]+' | sort -un || true)
+          if [ -z "$nums" ]; then
+            echo "El PR #$PR no cita ninguna tarea con Refs/Closes/Fixes/Cierra #N."
+            exit 0
+          fi
+          for n in $nums; do
+            info=$(gh issue view "$n" -R "$REPO" --json state,labels \
+              -q '.state + " " + ([.labels[].name] | join(","))' 2>/dev/null || true)
+            if [ -z "$info" ]; then
+              echo "#$n no es un issue de este repositorio; se ignora."
+              continue
+            fi
+            state=${info%% *}
+            labels=${info#* }
+            for l in $(printf '%s' "$labels" | tr ',' '\n' | grep -E ':(en-curso|pr-abierto)$' || true); do
+              gh issue edit "$n" -R "$REPO" --remove-label "$l" >/dev/null
+            done
+            if [ "$state" = "OPEN" ]; then
+              gh issue close "$n" -R "$REPO" -r completed \
+                -c "Cerrado al fusionar #$PR en \`develop\`. Las tareas que lo tenían en \`## Bloqueado por\` ya pueden arrancar."
+              echo "#$n cerrado."
+            else
+              echo "#$n ya estaba cerrado."
+            fi
+          done
