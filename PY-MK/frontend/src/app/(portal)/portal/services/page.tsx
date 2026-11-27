@@ -6,6 +6,7 @@ import { Package, ShieldCheck } from "lucide-react";
 
 import { createServiceRequest, getMe, getServiceRequests, getServices, ServiceItem, ServiceRequestItem } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
+import { QK } from "@/lib/query-keys";
 import { Modal } from "@/components/ui/modal";
 import { claseSolicitud, estadoSolicitud, fecha } from "@/components/portal/etiquetas";
 
@@ -23,12 +24,12 @@ export default function PortalServicesPage() {
   const queryClient = useQueryClient();
 
   const { data: services = [], isLoading, error } = useQuery<ServiceItem[]>({
-    queryKey: ["portal-services"],
+    queryKey: QK.services(),
     queryFn: getServices,
   });
 
   const { data: myRequests = [] } = useQuery<ServiceRequestItem[]>({
-    queryKey: ["portal-service-requests"],
+    queryKey: QK.serviceRequests(),
     queryFn: getServiceRequests,
   });
 
@@ -53,7 +54,7 @@ export default function PortalServicesPage() {
         message: formMessage.trim() || null,
       });
       notifySuccess("Solicitud enviada", "Te contactaremos a la brevedad.");
-      await queryClient.invalidateQueries({ queryKey: ["portal-service-requests"] });
+      await queryClient.invalidateQueries({ queryKey: QK.serviceRequests() });
       setRequestOpen(false);
     } catch (err) {
       notifyError("No se pudo enviar la solicitud", err instanceof Error ? err.message : "");
