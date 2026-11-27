@@ -2,9 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { capsulaActiva } from "@/lib/capsulas";
+import { REDES } from "@/lib/marketing";
 
 export function SiteFooter() {
   const conApi = capsulaActiva("telemetria");
+  const redes = REDES.filter((r) => r.url);
 
   return (
     <footer className="site-footer">
@@ -30,6 +32,19 @@ export function SiteFooter() {
             <li><Link href="/colabora">Colabora</Link></li>
           </ul>
         </div>
+
+        {redes.length > 0 && (
+          <div>
+            <h4>Síguenos</h4>
+            <ul>
+              {redes.map((r) => (
+                <li key={r.nombre}>
+                  <a href={r.url} target="_blank" rel="noopener noreferrer">{r.nombre}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </footer>
   );
