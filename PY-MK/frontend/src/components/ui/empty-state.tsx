@@ -6,14 +6,14 @@ type EmptyStateProps = {
   title: string;
   /** Una linea: que falta y que pasa cuando exista. */
   description?: string;
-  /** Accion principal (normalmente el mismo boton de crear de la cabecera). */
+  /** Acción principal (normalmente el mismo boton de crear de la cabecera). */
   action?: { label: string; onClick: () => void };
-  /** Contenido extra bajo la accion (p. ej. un enlace secundario). */
+  /** Contenido extra bajo la acción (p. ej. un enlace secundario). */
   children?: ReactNode;
 };
 
 /**
- * Estado vacio de una lista: dice que no hay nada todavia y ofrece el siguiente paso.
+ * Estado vacío de una lista: dice que no hay nada todavía y ofrece el siguiente paso.
  * Usa el mismo borde discontinuo que `.empty-state` para no introducir otro lenguaje.
  */
 export function EmptyState({ icon: Icon, title, description, action, children }: EmptyStateProps) {
