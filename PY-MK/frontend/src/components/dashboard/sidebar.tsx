@@ -237,7 +237,7 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
         {visibleGroups.map((group) => {
           const isExpanded = isCollapsed ? true : expandedGroups[group.id];
 
-          // Filtrar items: collaborator no ve los adminOnly, admin no ve Auditoria (solo super_admin)
+          // Filtrar items: collaborator no ve los adminOnly, admin no ve Auditoría (solo super_admin)
           const items = group.items.filter((item) => {
             if (visiblesDelServidor) {
               if (!visiblesDelServidor.includes(item.href)) return false;

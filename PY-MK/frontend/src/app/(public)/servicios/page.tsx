@@ -10,7 +10,7 @@ import { metadatosDePagina } from "@/lib/sitio";
  * Servicios que Ninja Tech ofrece HOY, en sus dos ramas activas: Ninja Sec y Ninja Dev.
  *
  * Sale del catalogo comercial, que separa lo que esta probado de lo que
- * todavia no se vende. Por eso no aparece aqui: conectarse a los equipos del
+ * todavía no se vende. Por eso no aparece aqui: conectarse a los equipos del
  * cliente por API, el informe SOC ni el hardening automatizado. Los
  * conectores son simulados, y eso lo descubre un cliente tecnico en la
  * primera demo.
@@ -19,7 +19,7 @@ import { metadatosDePagina } from "@/lib/sitio";
  * propuesta sin validar.
  *
  * La nube (AWS) NO se ofrece desde aqui: es la futura rama Ninja Cloud. Sigue visible, marcada
- * «en preparacion» y sin boton, porque todavia no tiene el respaldo de evidencia que tienen los
+ * «en preparación» y sin botón, porque todavía no tiene el respaldo de evidencia que tienen los
  * de redes. El formulario tampoco la lista (ver service-request-form.tsx).
  */
 
