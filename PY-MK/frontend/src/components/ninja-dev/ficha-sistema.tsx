@@ -76,7 +76,7 @@ export function FichaSistema({ id }: { id: number }) {
 
   function aplicar(f: Ficha) {
     queryClient.setQueryData(QK.clientSystem(id), f);
-    queryClient.invalidateQueries({ queryKey: ["client-systems"] });
+    queryClient.invalidateQueries({ queryKey: QK.clientSystemsAll() });
   }
 
   async function guardar(payload: SistemaIn) {
@@ -105,7 +105,7 @@ export function FichaSistema({ id }: { id: number }) {
     if (!ok) return;
     try {
       await deleteClientSystem(id);
-      queryClient.invalidateQueries({ queryKey: ["client-systems"] });
+      queryClient.invalidateQueries({ queryKey: QK.clientSystemsAll() });
       notifySuccess("Sistema borrado");
       router.push("/dashboard/sistemas");
     } catch (err) {

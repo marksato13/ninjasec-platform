@@ -65,7 +65,7 @@ export function SistemasLista({ clientId }: Props) {
     setSaving(true);
     try {
       const nuevo = await createClientSystem(payload);
-      queryClient.invalidateQueries({ queryKey: ["client-systems"] });
+      queryClient.invalidateQueries({ queryKey: QK.clientSystemsAll() });
       notifySuccess("Sistema registrado", "Añádele sus entornos desde la ficha.");
       setAltaOpen(false);
       router.push(`/dashboard/sistemas/${nuevo.id}`);
