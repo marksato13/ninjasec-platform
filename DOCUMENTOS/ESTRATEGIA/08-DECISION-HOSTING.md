@@ -1,7 +1,7 @@
 # Decisión de hosting — dónde se despliega NinjaSec
 
 > Creado: 2026-11-22 · **Documento de decisión, para retomar en otra sesión.**
-> Complementa a [`DESPLIEGUE-PRODUCCION.md`](DESPLIEGUE-PRODUCCION.md), que
+> Complementa a [`DESPLIEGUE-PRODUCCION.md`](../FLUJOS/DESPLIEGUE-PRODUCCION.md), que
 > tiene el runbook, y corrige sus cifras de Oracle (ver §6).
 
 ---
