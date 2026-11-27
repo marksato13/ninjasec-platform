@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { AuditItem, DashboardUser, exportAuditLogs, getAuditLogs, getUsers } from "@/lib/api";
@@ -44,25 +44,22 @@ function formatTs(iso?: string | null) {
 export default function DashboardAuditPage() {
   return (
     <Suspense fallback={<div className="state-panel">Cargando auditoría...</div>}>
-      <AuditPageInner />
+      <AuditPageWithSearchParams />
     </Suspense>
   );
+}
+
+function AuditPageWithSearchParams() {
+  const searchParams = useSearchParams();
+  return <AuditPageInner key={searchParams.toString()} />;
 }
 
 function AuditPageInner() {
   const searchParams = useSearchParams();
   const [filterAction, setFilterAction] = useState("");
-  const [filterEntity, setFilterEntity] = useState("");
-  const [filterEntityId, setFilterEntityId] = useState("");
+  const [filterEntity, setFilterEntity] = useState(() => searchParams.get("entity_type") ?? "");
+  const [filterEntityId, setFilterEntityId] = useState(() => searchParams.get("entity_id") ?? "");
   const [exporting, setExporting] = useState<"pdf" | "xlsx" | null>(null);
-
-  // P-02: aceptar filtros via query string (?entity_type=users&entity_id=N)
-  useEffect(() => {
-    const et = searchParams.get("entity_type");
-    const eid = searchParams.get("entity_id");
-    if (et) setFilterEntity(et);
-    if (eid) setFilterEntityId(eid);
-  }, [searchParams]);
 
   const { data: items = [], error: itemsError } = useQuery<AuditItem[]>({
     queryKey: QK.auditLogs(),
