@@ -51,12 +51,12 @@ class DeviceConnectionService:
         return device
 
     def list_for_client(self, client_id: int) -> list[DeviceConnection]:
+        from app.modules.devices.services.topology_service import equipos_del_cliente
+
         device_ids = [
             d.id for d in self.db.scalars(
-                select(Device).join(Integration, Device.integration_id == Integration.id)
-                .where(Integration.client_id == client_id,
-                       Integration.organization_id == self.current_user.organization_id)
-            ).all()
+                equipos_del_cliente(client_id, self.current_user.organization_id)
+            ).unique().all()
         ]
         if not device_ids:
             return []

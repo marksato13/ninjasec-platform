@@ -2,6 +2,7 @@
 
 import {
   AlertTriangle,
+  AppWindow,
   BarChart3,
   BookOpen,
   CalendarClock,
@@ -15,10 +16,12 @@ import {
   FolderKanban,
   GraduationCap,
   Layers,
+  LayoutDashboard,
   ListChecks,
   Lock,
   LogOut,
   Plug,
+  Rocket,
   ScrollText,
   Server,
   Settings,
@@ -99,6 +102,19 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    // Ninja Dev (plan 35): lo que un dev necesita para llevar al cliente
+    // despues de la entrega. Las solicitudes de cambio viven en Tickets.
+    id: "dev-tools",
+    label: "Ninja Dev",
+    staffAllowed: true,
+    items: [
+      { label: "Panel Ninja Dev", href: "/dashboard/panel-dev",   icon: IC(LayoutDashboard), line: "dev" },
+      { label: "Sistemas",        href: "/dashboard/sistemas",    icon: IC(AppWindow), line: "dev" },
+      { label: "Despliegues",     href: "/dashboard/despliegues", icon: IC(Rocket), line: "dev" },
+      { label: "Guía Ninja Dev",  href: "/dashboard/ninja-dev",   icon: IC(Code2), line: "dev" },
+    ],
+  },
+  {
     id: "sec-tools",
     label: "Herramientas Ninja Sec",
     staffAllowed: true,
@@ -112,16 +128,6 @@ const navGroups: NavGroup[] = [
       { label: "Integraciones",       href: "/dashboard/integrations",    icon: IC(Plug), line: "sec" },
       { label: "Hardening",           href: "/dashboard/hardening",       icon: IC(Lock), line: "sec" },
       { label: "Informe SOC",         href: "/dashboard/soc-report",      icon: IC(Gauge), line: "sec" },
-    ],
-  },
-  {
-    // Ninja Dev: la guia del area. El estimador, el registro de despliegues y los
-    // documentos desde plantilla llegaran aqui como modulos (plan 34).
-    id: "dev-tools",
-    label: "Herramientas Ninja Dev",
-    staffAllowed: true,
-    items: [
-      { label: "Guía Ninja Dev", href: "/dashboard/ninja-dev", icon: IC(Code2), line: "dev" },
     ],
   },
   {
@@ -231,7 +237,7 @@ export function Sidebar({ isOpen = false, isCollapsed = false, onClose }: Sideba
         {visibleGroups.map((group) => {
           const isExpanded = isCollapsed ? true : expandedGroups[group.id];
 
-          // Filtrar items: collaborator no ve los adminOnly, admin no ve Auditoria (solo super_admin)
+          // Filtrar items: collaborator no ve los adminOnly, admin no ve Auditoría (solo super_admin)
           const items = group.items.filter((item) => {
             if (visiblesDelServidor) {
               if (!visiblesDelServidor.includes(item.href)) return false;

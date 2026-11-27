@@ -42,10 +42,11 @@ import { getDocStatusLabel, getProjectStatusLabel } from "@/lib/labels";
 import { Modal } from "@/components/ui/modal";
 import { ControlDocumento } from "@/components/docs/control-documento";
 import { WorkWindowsBoard } from "@/components/work-windows/work-windows-board";
+import { PruebasAceptacion } from "@/components/uat/pruebas-aceptacion";
 import { projectEditFormSchema, type ProjectEditFormValues } from "@/lib/validation";
 import { QK } from "@/lib/query-keys";
 
-type TabKey = "info" | "members" | "docs" | "skills" | "recommendations" | "windows";
+type TabKey = "info" | "members" | "docs" | "skills" | "recommendations" | "windows" | "acceptance";
 
 const tabs: { key: TabKey; label: string }[] = [
   { key: "info", label: "Info" },
@@ -54,6 +55,7 @@ const tabs: { key: TabKey; label: string }[] = [
   { key: "skills", label: "Skills" },
   { key: "recommendations", label: "Recomendaciones" },
   { key: "windows", label: "Ventanas" },
+  { key: "acceptance", label: "Aceptación" },
 ];
 
 const statusOptions = [
@@ -558,6 +560,8 @@ export default function ProjectDetailPage() {
       ) : null}
 
       {activeTab === "windows" ? <WorkWindowsBoard mode="staff" projectId={projectId} /> : null}
+
+      {activeTab === "acceptance" ? <PruebasAceptacion projectId={projectId} modo="equipo" /> : null}
 
       {activeTab === "recommendations" ? (
         <article className="panel">

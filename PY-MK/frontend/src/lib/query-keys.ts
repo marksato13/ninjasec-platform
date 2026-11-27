@@ -4,6 +4,7 @@
 export const QK = {
   // Auth
   me:              ()                          => ["me"]                         as const,
+  myProfile:       ()                          => ["me", "profile"]              as const,
 
   // Users
   users:           ()                          => ["users"]                      as const,
@@ -11,6 +12,7 @@ export const QK = {
 
   // Clients
   clients:         ()                          => ["clients"]                    as const,
+  allClientSites:  ()                          => ["clients", "sites", "all"]    as const,
   client:          (id: number)                => ["clients", id]                as const,
   clientSites:     (clientId: number)          => ["clients", clientId, "sites"]      as const,
   clientContacts:  (clientId: number)          => ["clients", clientId, "contacts"]   as const,
@@ -86,6 +88,12 @@ export const QK = {
   // Ventanas de trabajo
   workWindows:     (f?: object)               => ["work-windows", f]            as const,
 
+  // Ninja Dev (plan 35)
+  clientSystems:   (clientId?: number)         => ["client-systems", clientId]   as const,
+  clientSystem:    (id: number)                => ["client-systems", "detail", id] as const,
+  deployments:     (f?: object)               => ["deployments", f]             as const,
+  acceptance:      (projectId: number)         => ["acceptance", projectId]      as const,
+
   // Docs
   docTypes:        ()                          => ["doc-types"]                  as const,
   projectDocs:     (f?: object)               => ["project-docs", f]            as const,
@@ -126,4 +134,14 @@ export const QK = {
   // Catálogo de equipos
   catalogDevices:  (filters?: Record<string, unknown>) => ["catalog-devices", filters] as const,
   catalogDevice:   (id: number)                => ["catalog-device", id]          as const,
+
+  // Claves raíz para invalidar por prefijo
+  ticketsAll: () => ["tickets"] as const,
+  workWindowsAll: () => ["work-windows"] as const,
+  clientSystemsAll: () => ["client-systems"] as const,
+  deploymentsAll: () => ["deployments"] as const,
+  studyAll: () => ["study"] as const,
+  myTasks: () => ["portal-my-tasks"] as const,
+  lastExports: () => ["last-exports"] as const,
+  userCertificationsAll: () => ["user-certifications", "all"] as const,
 } as const;

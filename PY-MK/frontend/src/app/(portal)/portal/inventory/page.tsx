@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, Monitor, Network, Router, Server } from "lucide-react";
 
 import { DeviceItem, getAllClientSites, getDevices } from "@/lib/api";
+import { QK } from "@/lib/query-keys";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const STATUS_COLOR: Record<string, string> = {
@@ -53,12 +54,12 @@ export default function PortalInventoryPage() {
   const [filterSite,   setFilterSite]   = useState("");
 
   const { data: sites = [] } = useQuery({
-    queryKey: ["portal-inventory-sites"],
+    queryKey: QK.allClientSites(),
     queryFn:  () => getAllClientSites(),
   });
 
   const { data: allDevices = [], isLoading, error } = useQuery<DeviceItem[]>({
-    queryKey: ["portal-inventory", filterSite],
+    queryKey: QK.devices(filterSite ? { site_id: Number(filterSite) } : {}),
     queryFn:  () => getDevices(filterSite ? { site_id: Number(filterSite) } : {}),
   });
 

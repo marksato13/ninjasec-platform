@@ -1,14 +1,16 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+
+import { createServiceRequest, getServices } from "@/lib/api";
+import { QK } from "@/lib/query-keys";
 
 type ServiceOption = {
   id: number;
   title: string;
   category?: string | null;
 };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8021/api/v1";
 
 /**
  * A que rama pertenece cada categoria del catalogo. Es solo la ETIQUETA que ve la persona: los
@@ -36,33 +38,21 @@ function agrupar(servicios: ServiceOption[]): { rama: string; items: ServiceOpti
 }
 
 export function ServiceRequestForm() {
-  const [services, setServices] = useState<ServiceOption[]>([]);
+  const { data: services = [], error: servicesError } = useQuery({
+    queryKey: QK.services(),
+    queryFn: getServices,
+  });
+  const mutation = useMutation({ mutationFn: createServiceRequest });
   const [serviceId, setServiceId] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [requestType, setRequestType] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    async function loadServices() {
-      try {
-        const response = await fetch(`${API_URL}/services/`);
-        if (!response.ok) return;
-        const data = (await response.json()) as ServiceOption[];
-        setServices(data.filter((item) => item.id));
-      } catch {
-        // ignore
-      }
-    }
-
-    loadServices();
-  }, []);
+  const statusMessage = status || (servicesError ? "No se pudo cargar el catálogo de servicios" : "");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setLoading(true);
     setStatus("");
 
     const payload = {
@@ -74,15 +64,7 @@ export function ServiceRequestForm() {
     };
 
     try {
-      const response = await fetch(`${API_URL}/services/requests`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("No se pudo registrar la solicitud");
-      }
+      await mutation.mutateAsync(payload);
 
       setStatus("Solicitud enviada correctamente.");
       setServiceId("");
@@ -91,9 +73,7 @@ export function ServiceRequestForm() {
       setRequestType("");
       setMessage("");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Ocurrio un error");
-    } finally {
-      setLoading(false);
+      setStatus(error instanceof Error ? error.message : "Ocurrió un error");
     }
   }
 
@@ -102,7 +82,7 @@ export function ServiceRequestForm() {
       <h3>Solicitar un servicio</h3>
       <select value={serviceId} onChange={(event) => setServiceId(event.target.value)} required>
         <option value="">Selecciona un servicio</option>
-        {agrupar(services).map((g) => (
+        {agrupar(services.filter((item) => item.id)).map((g) => (
           <optgroup key={g.rama} label={g.rama}>
             {g.items.map((service) => (
               <option key={service.id} value={service.id}>
@@ -116,9 +96,9 @@ export function ServiceRequestForm() {
       <input placeholder="Correo" value={email} onChange={(event) => setEmail(event.target.value)} required />
       <input placeholder="Tipo de solicitud" value={requestType} onChange={(event) => setRequestType(event.target.value)} />
       <textarea placeholder="Describe tu necesidad" value={message} onChange={(event) => setMessage(event.target.value)} rows={5} required />
-      {status ? <p className="form-status">{status}</p> : null}
-      <button className="button button-primary" type="submit" disabled={loading}>
-        {loading ? "Enviando..." : "Enviar solicitud"}
+      {statusMessage ? <p className="form-status">{statusMessage}</p> : null}
+      <button className="button button-primary" type="submit" disabled={mutation.isPending}>
+        {mutation.isPending ? "Enviando..." : "Enviar solicitud"}
       </button>
     </form>
   );

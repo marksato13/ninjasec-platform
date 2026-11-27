@@ -104,3 +104,6 @@ PY-MK/frontend/out/
 *.bbl
 *.blg
 *.out
+
+# Base SQLite que crean y borran las pruebas del backend
+PY-MK/backend/tests/test.db

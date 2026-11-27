@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2, Users } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ConMarca } from "@/components/ui/marca-icono";
 
 
 import {
@@ -138,7 +139,7 @@ export default function DashboardCollaboratorsPage() {
   const expiredCertCount = (userId: number) =>
     (certsByUser[userId] ?? []).filter((c) => c.is_expired).length;
 
-  const profiles    = data?.profiles ?? [];
+  const profiles    = useMemo(() => data?.profiles ?? [], [data?.profiles]);
   const usersById   = useMemo(() => {
     const map: Record<number, DashboardUser> = {};
     (data?.users ?? []).forEach((u) => { map[u.id] = u; });
@@ -422,7 +423,7 @@ export default function DashboardCollaboratorsPage() {
 
                 {skills.length > 0 && (
                   <div className="card-tags">
-                    {visSkills.map((sk) => <span className="tag" key={sk}>{sk}</span>)}
+                    {visSkills.map((sk) => <span className="tag" key={sk}><ConMarca nombre={sk} size={13} /></span>)}
                     {skills.length > 4 && (
                       <button
                         type="button"
@@ -504,7 +505,7 @@ export default function DashboardCollaboratorsPage() {
                   <span style={{ fontSize: "0.82rem" }}>{profile.position_title || "—"}</span>
                   <span className="muted-small">{profile.seniority || "—"}</span>
                   <span style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {skills.slice(0, 2).map((sk) => <span className="tag" key={sk} style={{ fontSize: "0.68rem" }}>{sk}</span>)}
+                    {skills.slice(0, 2).map((sk) => <span className="tag" key={sk} style={{ fontSize: "0.68rem" }}><ConMarca nombre={sk} size={11} /></span>)}
                     {skills.length > 2 && <span style={{ fontSize: "0.68rem", color: "var(--muted)" }}>+{skills.length - 2}</span>}
                   </span>
                   <span style={{ fontWeight: 600, fontSize: "0.75rem", color }}>{availLabel(profile.availability_status)}</span>

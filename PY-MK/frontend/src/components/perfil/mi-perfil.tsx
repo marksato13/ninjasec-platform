@@ -16,6 +16,8 @@ import {
   UserSkillItem,
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
+import { QK } from "@/lib/query-keys";
+import { ConMarca } from "@/components/ui/marca-icono";
 import { Modal } from "@/components/ui/modal";
 
 const ROLES: Record<string, string> = {
@@ -89,6 +91,15 @@ function ResumenFormacion({ skills, certifications }: { skills: UserSkillItem[];
           <GraduationCap size={14} aria-hidden="true" /> Gestionar en Formación
         </Link>
       </div>
+      {skills.length > 0 ? (
+        <ul aria-label="Tus skills" style={{ display: "flex", flexWrap: "wrap", gap: 6, listStyle: "none", margin: "12px 0 0", padding: 0 }}>
+          {skills.map((k) => (
+            <li key={k.id} className="tag" style={{ opacity: k.status === "approved" ? 1 : 0.7 }} title={k.status === "approved" ? "Validada" : "Sin validar"}>
+              <ConMarca nombre={k.skill_name ?? `Skill #${k.skill_id}`} size={14} />
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </article>
   );
 }
@@ -106,7 +117,7 @@ export function MiPerfil() {
 
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
-    queryKey: ["portal-profile"],
+    queryKey: QK.myProfile(),
     queryFn: async () => {
       const me = await getMe();
       if (me.role === "client") {
@@ -117,7 +128,8 @@ export function MiPerfil() {
     },
   });
   const user = data?.me ?? null;
-  const userSkills = data?.userSkills ?? [];
+  // Admin y super admin reciben las skills de toda su organización: aquí solo cuentan las propias.
+  const userSkills = (data?.userSkills ?? []).filter((u) => u.user_id === data?.me.id);
   const certifications = data?.certifications ?? [];
 
   async function handleEditProfile(event: React.FormEvent<HTMLFormElement>) {
@@ -130,7 +142,7 @@ export function MiPerfil() {
       });
       notifySuccess("Perfil actualizado");
       setEditOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["portal-profile"] });
+      queryClient.invalidateQueries({ queryKey: QK.myProfile() });
     } catch (err) {
       notifyError("No se pudo actualizar el perfil", err instanceof Error ? err.message : "");
     } finally {

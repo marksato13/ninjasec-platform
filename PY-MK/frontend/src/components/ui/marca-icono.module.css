@@ -1,0 +1,66 @@
+/*
+ * Logos de marca en cualquier tema. `--tinta` es el color con que se pinta un
+ * logo de una sola tinta o un icono de lucide; los temas oscuros son el valor
+ * por defecto del panel y el claro es la excepción.
+ */
+
+.icono {
+  --tinta: var(--marca);
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+
+/* Casi negro (Next.js, GitHub, Splunk…): en temas oscuros, el color del texto. */
+.oscuro { --tinta: var(--text); }
+:global(:root[data-theme="light"]) .oscuro { --tinta: var(--marca); }
+
+/* Muy claro (JavaScript, Vault, React…): en el tema claro, más profundo. */
+:global(:root[data-theme="light"]) .claro { --tinta: color-mix(in srgb, var(--marca) 62%, #000); }
+
+.mono {
+  background-color: var(--tinta);
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+.lucide { color: var(--tinta); }
+
+.color img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Logo a color con texto oscuro (AWS): una placa clara lo hace legible en oscuro. */
+.placa {
+  padding: 2px;
+  border-radius: 4px;
+  background: #fff;
+  box-sizing: content-box;
+}
+
+.iniciales {
+  border-radius: 6px;
+  background: var(--primary-soft);
+  border: 1px solid var(--line-active);
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+.conMarca {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
