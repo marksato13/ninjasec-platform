@@ -16,6 +16,7 @@ import {
   UserSkillItem,
 } from "@/lib/api";
 import { notifyError, notifySuccess } from "@/lib/alerts";
+import { QK } from "@/lib/query-keys";
 import { ConMarca } from "@/components/ui/marca-icono";
 import { Modal } from "@/components/ui/modal";
 
@@ -116,7 +117,7 @@ export function MiPerfil() {
 
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
-    queryKey: ["portal-profile"],
+    queryKey: QK.myProfile(),
     queryFn: async () => {
       const me = await getMe();
       if (me.role === "client") {
@@ -141,7 +142,7 @@ export function MiPerfil() {
       });
       notifySuccess("Perfil actualizado");
       setEditOpen(false);
-      queryClient.invalidateQueries({ queryKey: ["portal-profile"] });
+      queryClient.invalidateQueries({ queryKey: QK.myProfile() });
     } catch (err) {
       notifyError("No se pudo actualizar el perfil", err instanceof Error ? err.message : "");
     } finally {
