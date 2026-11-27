@@ -43,8 +43,6 @@ export function useAlertsSocket(enabled: boolean, clientId?: number) {
 
   useEffect(() => {
     if (!enabled) {
-      setConnected(false);
-      setPushedAlerts(null);
       return;
     }
 
@@ -104,5 +102,5 @@ export function useAlertsSocket(enabled: boolean, clientId?: number) {
     };
   }, [enabled, clientId]);
 
-  return { pushedAlerts, connected };
+  return { pushedAlerts: enabled ? pushedAlerts : null, connected: enabled && connected };
 }
