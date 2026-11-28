@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from app.core.time_utils import utcnow
 
