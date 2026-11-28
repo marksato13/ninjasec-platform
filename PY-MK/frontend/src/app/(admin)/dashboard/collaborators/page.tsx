@@ -115,7 +115,7 @@ export default function DashboardCollaboratorsPage() {
 
   // P-02: certificaciones por colaborador
   const { data: certifications = [] } = useQuery<UserCertificationItem[]>({
-    queryKey: ["user-certifications", "all"],
+    queryKey: QK.userCertificationsAll(),
     queryFn: () => getUserCertifications(),
   });
   const certsByUser = useMemo(() => {

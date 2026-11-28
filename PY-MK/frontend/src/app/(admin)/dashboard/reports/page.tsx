@@ -168,7 +168,7 @@ export default function DashboardReportsPage() {
   });
 
   const { data: lastExports = {} } = useQuery<Record<string, string | null>>({
-    queryKey: ["last-exports"],
+    queryKey: QK.lastExports(),
     queryFn: () => getLastExports(),
   });
 
@@ -194,7 +194,7 @@ export default function DashboardReportsPage() {
 
   function trackExport(type: string) {
     const now = new Date().toISOString();
-    queryClient.setQueryData<Record<string, string | null>>(["last-exports"], (prev = {}) => ({
+    queryClient.setQueryData<Record<string, string | null>>(QK.lastExports(), (prev = {}) => ({
       ...prev,
       [type]: now,
     }));

@@ -90,7 +90,7 @@ export function Validar({ puedeValidar }: { puedeValidar: boolean }) {
   const pendientesSkill = (skills.data ?? []).filter((k) => k.status === "pending");
 
   const refrescar = () => {
-    qc.invalidateQueries({ queryKey: ["certifications"] });
+    qc.invalidateQueries({ queryKey: QK.certifications() });
     qc.invalidateQueries({ queryKey: QK.userSkills() });
     qc.invalidateQueries({ queryKey: QK.pendingApprovals() });
   };

@@ -34,7 +34,7 @@ export function RutasEstudio({ userId }: { userId: number | undefined }) {
   const preparar = useMutation({
     mutationFn: (planId: number) => inscribirse(planId),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["study"] });
+      qc.invalidateQueries({ queryKey: QK.studyAll() });
       notifySuccess("Ruta marcada", "Cuando apruebes, registra la certificación y adjunta el certificado.");
     },
     onError: (e) => notifyError("No se pudo marcar la ruta", e instanceof Error ? e.message : undefined),

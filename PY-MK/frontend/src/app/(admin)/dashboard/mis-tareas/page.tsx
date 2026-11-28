@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { getProjectTasks, updateMyTaskStatus } from "@/lib/api";
 import { notifyError } from "@/lib/alerts";
+import { QK } from "@/lib/query-keys";
 
 const STATUS_LABEL: Record<string, string> = {
   pending:     "Pendiente",
@@ -20,13 +21,13 @@ export default function MisTareasPage() {
   const mover = useMutation({
     mutationFn: ({ id, status }: { id: number; status: "pending" | "in_progress" | "done" }) =>
       updateMyTaskStatus(id, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["portal-my-tasks"] }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: QK.myTasks() }),
     onError: (e: unknown) =>
       notifyError("No se pudo cambiar el estado", e instanceof Error ? e.message : undefined),
   });
 
   const { data: tasks = [], isLoading, error } = useQuery({
-    queryKey: ["portal-my-tasks"],
+    queryKey: QK.myTasks(),
     queryFn:  () => getProjectTasks(),
   });
 
