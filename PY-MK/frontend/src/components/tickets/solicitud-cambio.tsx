@@ -147,7 +147,7 @@ export function CambioEquipo({
 
   function alTerminar(t: SupportTicketItem) {
     onActualizado(t);
-    queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    queryClient.invalidateQueries({ queryKey: QK.ticketsAll() });
   }
 
   const estimar = useMutation({
@@ -302,7 +302,7 @@ export function CambioCliente({
     onSuccess: (t, v) => {
       notifySuccess(v.decision === "approved" ? "Estimación aprobada" : "Rechazo enviado al equipo");
       onActualizado(t);
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      queryClient.invalidateQueries({ queryKey: QK.ticketsAll() });
     },
     onError: (err) => notifyError("No se pudo registrar tu decisión", err instanceof Error ? err.message : undefined),
   });
