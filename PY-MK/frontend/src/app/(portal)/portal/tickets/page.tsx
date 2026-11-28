@@ -66,7 +66,7 @@ export default function PortalTicketsPage() {
         system_id: formSystem ? Number(formSystem) : null,
       });
       notifySuccess(formKind === "cambio" ? "Solicitud de cambio enviada" : "Ticket creado", formKind === "cambio" ? "El equipo la estimará y verás aquí las horas para aprobarlas." : undefined);
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+      queryClient.invalidateQueries({ queryKey: QK.ticketsAll() });
       setCreateOpen(false);
       setFormTitle("");
       setFormDescription("");

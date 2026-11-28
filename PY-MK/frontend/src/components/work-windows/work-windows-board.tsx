@@ -115,7 +115,7 @@ export function WorkWindowsBoard({ mode, projectId }: Props) {
   const pendientes = windows.filter((w) => w.status === "requested").length;
 
   function refrescar(actualizada: WorkWindowItem) {
-    queryClient.invalidateQueries({ queryKey: ["work-windows"] });
+    queryClient.invalidateQueries({ queryKey: QK.workWindowsAll() });
     setSelected(actualizada);
   }
 
@@ -145,7 +145,7 @@ export function WorkWindowsBoard({ mode, projectId }: Props) {
         starts_at: localAIso(form.starts_at),
         ends_at: localAIso(form.ends_at),
       });
-      queryClient.invalidateQueries({ queryKey: ["work-windows"] });
+      queryClient.invalidateQueries({ queryKey: QK.workWindowsAll() });
       notifySuccess("Ventana pedida", "El cliente la verá en su portal para aprobarla o rechazarla.");
       setCreateOpen(false);
       setForm({ ...FORM_VACIO, project_id: projectId ? String(projectId) : "" });
