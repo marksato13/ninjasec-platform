@@ -118,7 +118,7 @@ export default function DashboardDevicesPage() {
   });
 
   const { data: sites = [] } = useQuery<ClientSiteItem[]>({
-    queryKey: ["client-sites", "all"],
+    queryKey: QK.allClientSites(),
     queryFn: () => getAllClientSites(),
   });
   const siteName = (id?: number | null) =>
