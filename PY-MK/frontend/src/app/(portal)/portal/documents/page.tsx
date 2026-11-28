@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { Download, File, FileBarChart2, FileSpreadsheet, FileText, ExternalLink } from "lucide-react";
@@ -42,11 +42,14 @@ const STATUS_BADGE: Record<string, { cls: string; label: string }> = {
   archived: { cls: "badge-archived",  label: "Archivado" },
 };
 
+type PortalDocumentsData = {
+  me: Awaited<ReturnType<typeof getMe>>;
+  docsData: ProjectDocItem[];
+  projectsData: ProjectItem[];
+  docTypesData: DocTypeItem[];
+};
+
 export default function PortalDocumentsPage() {
-  const [docs, setDocs] = useState<ProjectDocItem[]>([]);
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
-  const [docTypes, setDocTypes] = useState<DocTypeItem[]>([]);
-  const [role, setRole] = useState<string>("client");
   const [error, setError] = useState("");
   const [filterProjectId, setFilterProjectId] = useState("");
   const [filterDocTypeId, setFilterDocTypeId] = useState("");
@@ -65,7 +68,7 @@ export default function PortalDocumentsPage() {
   const [editorOpen, setEditorOpen] = useState(false);
 
   const queryClient = useQueryClient();
-  const { data, isLoading, error: queryError } = useQuery({
+  const { data, isLoading, error: queryError } = useQuery<PortalDocumentsData>({
     queryKey: ["portal-documents"],
     queryFn: async () => {
       const [me, docsData, projectsData, docTypesData] = await Promise.all([
@@ -78,19 +81,16 @@ export default function PortalDocumentsPage() {
     },
   });
 
-  useEffect(() => {
-    if (!data) return;
-    setRole(data.me.role);
-    setDocs(data.docsData);
-    setProjects(data.projectsData);
-    setDocTypes(data.docTypesData.filter((item) => item.is_active));
-  }, [data]);
+  const loadError = queryError
+    ? queryError instanceof Error
+      ? queryError.message
+      : "No se pudo cargar documentos"
+    : "";
 
-  useEffect(() => {
-    if (queryError) {
-      setError(queryError instanceof Error ? queryError.message : "No se pudo cargar documentos");
-    }
-  }, [queryError]);
+  const role = data?.me.role ?? "client";
+  const projects = useMemo(() => data?.projectsData ?? [], [data]);
+  const docTypes = useMemo(() => (data?.docTypesData ?? []).filter((item) => item.is_active), [data]);
+  const docs = useMemo(() => data?.docsData ?? [], [data]);
 
   const filteredDocs = useMemo(() =>
     docs.filter((doc) => {
@@ -166,8 +166,9 @@ export default function PortalDocumentsPage() {
           visibility: formVisibility,
           status: formStatus,
         });
-        setDocs((current) => current.map((item) => (item.id === updated.id ? updated : item)));
-        queryClient.invalidateQueries({ queryKey: ["portal-documents"] });
+        queryClient.setQueryData<PortalDocumentsData>(["portal-documents"], (old) =>
+          old ? { ...old, docsData: old.docsData.map((item) => (item.id === updated.id ? updated : item)) } : old,
+        );
       } else {
         const created = await createProjectDoc({
           project_id: Number(formProjectId),
@@ -180,8 +181,9 @@ export default function PortalDocumentsPage() {
           status: formStatus,
           enabled: true,
         });
-        setDocs((current) => [created, ...current]);
-        queryClient.invalidateQueries({ queryKey: ["portal-documents"] });
+        queryClient.setQueryData<PortalDocumentsData>(["portal-documents"], (old) =>
+          old ? { ...old, docsData: [created, ...old.docsData] } : old,
+        );
       }
       notifySuccess(editingDoc ? "Documento actualizado" : "Documento creado");
       closeEditor();
@@ -200,7 +202,7 @@ export default function PortalDocumentsPage() {
         <h2>Documentos</h2>
       </div>
 
-      {error ? <p className="form-error">{error}</p> : null}
+      {error || loadError ? <p className="form-error">{error || loadError}</p> : null}
 
       <article className="panel">
         <div className="panel-head">
